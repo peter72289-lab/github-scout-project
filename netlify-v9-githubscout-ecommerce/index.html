@@ -328,11 +328,12 @@ nav.scrolled{padding:11px 60px;border-bottom-color:var(--adim);}
 .video-header p{font-size:17px;color:var(--body);max-width:580px;margin:14px auto 0;line-height:1.75;}
 .video-header p strong{color:var(--white);font-weight:500;}
 .video-embed-wrap{width:100%;border:1px solid var(--blt);background:var(--black);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);}
-.video-embed-wrap iframe{display:block;width:100%;height:540px;border:none;}
+.video-embed-wrap video{display:block;width:100%;aspect-ratio:16/10;background:var(--black);}
 .video-caption{text-align:center;margin-top:16px;font-size:14px;color:var(--faint);font-style:italic;}
-.video-chapter-strip{display:grid;grid-template-columns:repeat(9,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-top:none;}
-.vcs-item{background:var(--surface);padding:10px 8px;cursor:pointer;transition:background .2s;text-align:center;}
+.video-chapter-strip{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-top:none;}
+.vcs-item{background:var(--surface);padding:10px 8px;cursor:pointer;transition:background .2s;text-align:center;border:0;font:inherit;}
 .vcs-item:hover{background:var(--surf2);}
+.vcs-item:focus-visible{outline:2px solid var(--amber);outline-offset:-2px;}
 .vcs-time{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:3px;}
 .vcs-label{font-size:12px;color:var(--muted);}
 
@@ -687,7 +688,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
   .mode-btn{border-right:none;border-bottom:1px solid var(--border);}
   .mode-btn:last-child{border-bottom:none;}
   .int-grid{grid-template-columns:repeat(3,1fr);}
-  .video-chapter-strip{grid-template-columns:repeat(9,72px);overflow-x:auto;}
+  .video-chapter-strip{grid-template-columns:repeat(8,88px);overflow-x:auto;}
   .vs-compare-table{overflow-x:auto;}
   .vct-head,.vct-row{min-width:620px;}
   .vct-head,.vct-row{grid-template-columns:160px repeat(4,1fr);font-size:12px;}
@@ -1144,29 +1145,30 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
   <div class="video-inner">
     <div class="video-header">
       <div class="sec-label" style="justify-content:center;">Product Demo</div>
-      <h2>Watch the Engine <em>Run a Live Query</em></h2>
-      <p>60 seconds. 9 scenes. Direct response. <strong>Real query running across 15 sources, scored, ranked, surfaced.</strong> Hit play and see exactly what happens after you sign up — before you commit to anything.</p>
+      <h2>Watch the Cockpit <em>Tab by Tab</em></h2>
+      <p>60 seconds inside the GitHub Scout cockpit. <strong>Actual dashboard tabs, captured live: opportunities, source coverage, funnel flow, and the no-black-box methodology.</strong> Hit play and see the operating room before you commit.</p>
     </div>
     <div class="video-embed-wrap">
-      <iframe
-        src="scout-demo-video.html"
-        title="Scout — 60-Second Product Demo"
-        allowfullscreen
-        scrolling="no">
-      </iframe>
+      <video
+        id="cockpit-demo-video"
+        controls
+        preload="metadata"
+        poster="assets/githubscout-cockpit-v2-demo-poster.png"
+        aria-label="GitHub Scout Cockpit V2 clicked tabs demo">
+        <source src="assets/githubscout-cockpit-v2-clicked-tabs-demo-60s.mp4" type="video/mp4">
+      </video>
     </div>
     <div class="video-chapter-strip">
-      <div class="vcs-item"><div class="vcs-time">0:00</div><div class="vcs-label">Hook</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:06</div><div class="vcs-label">The Burn</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:14</div><div class="vcs-label">Pivot</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:20</div><div class="vcs-label">Live Demo</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:36</div><div class="vcs-label">Hidden Gem</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:44</div><div class="vcs-label">Proof</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:50</div><div class="vcs-label">The Offer</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:55</div><div class="vcs-label">Urgency</div></div>
-      <div class="vcs-item"><div class="vcs-time">0:58</div><div class="vcs-label">CTA</div></div>
+      <button class="vcs-item" type="button" data-seek="0"><div class="vcs-time">0:00</div><div class="vcs-label">Command</div></button>
+      <button class="vcs-item" type="button" data-seek="7.5"><div class="vcs-time">0:07</div><div class="vcs-label">Pools</div></button>
+      <button class="vcs-item" type="button" data-seek="15"><div class="vcs-time">0:15</div><div class="vcs-label">Explorer</div></button>
+      <button class="vcs-item" type="button" data-seek="22.5"><div class="vcs-time">0:22</div><div class="vcs-label">Actions</div></button>
+      <button class="vcs-item" type="button" data-seek="30"><div class="vcs-time">0:30</div><div class="vcs-label">Deep Dives</div></button>
+      <button class="vcs-item" type="button" data-seek="37.5"><div class="vcs-time">0:37</div><div class="vcs-label">Funnel</div></button>
+      <button class="vcs-item" type="button" data-seek="45"><div class="vcs-time">0:45</div><div class="vcs-label">Sources</div></button>
+      <button class="vcs-item" type="button" data-seek="52.5"><div class="vcs-time">0:52</div><div class="vcs-label">Method</div></button>
     </div>
-    <div class="video-caption">60-second animated product demo · 9-scene infomercial structure · Direct response principles · No voiceover required</div>
+    <div class="video-caption">60-second cockpit walkthrough · Actual clicked tab views · Command center, pools, explorer, actions, funnel, sources, and methodology</div>
   </div>
 </section>
 
@@ -1732,6 +1734,16 @@ function runFreeQuery(){
 document.getElementById('free-query-input').addEventListener('keydown',e=>{if(e.key==='Enter')runFreeQuery();});
 
 function toggleFilter(el){el.classList.toggle('on');}
+
+/* ── COCKPIT DEMO CHAPTERS ── */
+document.querySelectorAll('.vcs-item[data-seek]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const video=document.getElementById('cockpit-demo-video');
+    if(!video)return;
+    video.currentTime=Number(btn.dataset.seek||0);
+    video.play().catch(()=>{});
+  });
+});
 
 /* ── ROI CALCULATOR ── */
 function calcUpdate(){
