@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Scout Operator Shopify Savings Ads</title>
+<style>
+  :root {
+    --black: #080e16;
+    --deep: #0f1c2c;
+    --surface: rgba(22,40,64,.84);
+    --border: rgba(60,94,122,.72);
+    --amber: #f5b030;
+    --white: #f6f2ed;
+    --body: #d4e6f4;
+    --muted: #a6c4dc;
+    --green: #50d8a0;
+    --blue: #56a8ec;
+    --red: #ee8888;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #111;
+    color: var(--white);
+    font-family: Inter, Avenir Next, Barlow, Helvetica, Arial, sans-serif;
+  }
+  .ad {
+    width: 1080px;
+    height: 1920px;
+    position: relative;
+    overflow: hidden;
+    background: var(--black);
+  }
+  .bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(1.1) contrast(1.1);
+  }
+  .shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(8,14,22,.95) 0%, rgba(8,14,22,.72) 30%, rgba(8,14,22,.28) 52%, rgba(8,14,22,.78) 80%, rgba(8,14,22,.97) 100%),
+      radial-gradient(circle at 70% 42%, rgba(80,216,160,.18), transparent 34%),
+      radial-gradient(circle at 18% 70%, rgba(245,176,48,.16), transparent 30%);
+  }
+  .frame {
+    position: absolute;
+    inset: 40px;
+    border: 1px solid rgba(245,176,48,.34);
+    pointer-events: none;
+  }
+  .brand {
+    position: absolute;
+    top: 80px;
+    left: 76px;
+    right: 76px;
+    display: flex;
+    justify-content: space-between;
+    gap: 22px;
+    align-items: center;
+    font-size: 27px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-weight: 800;
+  }
+  .pill {
+    border: 1px solid rgba(80,216,160,.55);
+    background: rgba(80,216,160,.13);
+    color: var(--body);
+    padding: 12px 18px;
+    font-size: 18px;
+    letter-spacing: .13em;
+    white-space: nowrap;
+  }
+  .copy {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    top: 210px;
+  }
+  .kicker {
+    color: var(--green);
+    font-size: 24px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 26px;
+  }
+  h1 {
+    margin: 0;
+    max-width: 860px;
+    font-family: Georgia, Times New Roman, serif;
+    font-size: 90px;
+    line-height: .96;
+    letter-spacing: 0;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  h1 .accent { color: var(--amber); }
+  .sub {
+    margin-top: 32px;
+    max-width: 790px;
+    color: var(--body);
+    font-size: 37px;
+    line-height: 1.2;
+    font-weight: 550;
+  }
+  .mini {
+    display: inline-flex;
+    margin-top: 28px;
+    border: 1px solid rgba(245,176,48,.5);
+    background: rgba(245,176,48,.12);
+    color: var(--white);
+    padding: 14px 18px;
+    font-size: 22px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 800;
+  }
+  .proof {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    bottom: 262px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    border: 1px solid var(--border);
+    background: var(--border);
+  }
+  .proof div {
+    background: rgba(15,28,44,.84);
+    padding: 24px 16px;
+    text-align: center;
+  }
+  .proof strong {
+    display: block;
+    color: var(--green);
+    font-size: 38px;
+    line-height: 1;
+    font-family: Georgia, Times New Roman, serif;
+  }
+  .proof span {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 800;
+  }
+  .cta {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    bottom: 92px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: center;
+  }
+  .button {
+    background: var(--amber);
+    color: var(--black);
+    padding: 30px 36px;
+    font-size: 27px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-weight: 950;
+    min-width: 440px;
+    text-align: center;
+  }
+  .note {
+    color: var(--muted);
+    font-size: 24px;
+    line-height: 1.26;
+    text-align: right;
+    font-weight: 650;
+  }
+  .variant-amber .kicker,
+  .variant-amber .proof strong { color: var(--amber); }
+  .variant-blue .kicker,
+  .variant-blue .proof strong { color: var(--blue); }
+  .variant-red .kicker { color: var(--red); }
+</style>
+</head>
+<body>
+<div id="ad" class="ad">
+  <img class="bg" id="bg" alt="">
+  <div class="shade"></div>
+  <div class="frame"></div>
+  <div class="brand">
+    <div>GitHub Scout</div>
+    <div class="pill" id="pill">Operator</div>
+  </div>
+  <main class="copy">
+    <div class="kicker" id="kicker"></div>
+    <h1 id="headline"></h1>
+    <div class="sub" id="sub"></div>
+    <div class="mini" id="mini"></div>
+  </main>
+  <section class="proof">
+    <div><strong id="stat1"></strong><span id="label1"></span></div>
+    <div><strong id="stat2"></strong><span id="label2"></span></div>
+    <div><strong id="stat3"></strong><span id="label3"></span></div>
+  </section>
+  <footer class="cta">
+    <div class="button" id="button"></div>
+    <div class="note" id="note"></div>
+  </footer>
+</div>
+<script>
+const ads = [
+  {
+    file: "bg-01-url-savings.png", slug: "01-paste-url-find-savings",
+    cls: "", pill: "Operator", kicker: "Shopify URL analysis",
+    headline: "Paste your URL. Find cheaper tools.",
+    accent: "cheaper", sub: "Scout scans your storefront stack and recommends better plugins, embeds, and widgets.",
+    mini: "Built for solo operators",
+    stats: ["10", "URLs/mo", "15", "Sources", "$17", "Per mo"],
+    button: "Analyze a URL", note: "Cost savings and conversion ideas from one storefront scan."
+  },
+  {
+    file: "bg-02-app-bill-audit.png", slug: "02-app-bill-profit-leak",
+    cls: "variant-red", pill: "App Bill Audit", kicker: "Your app bill is hiding profit",
+    headline: "Find the apps draining margin.",
+    accent: "draining", sub: "Spot duplicate tools, overpriced plugins, and cheaper alternatives for your store.",
+    mini: "Plugin spend check",
+    stats: ["App", "Audit", "Swap", "Ideas", "Save", "Monthly"],
+    button: "Audit my stack", note: "A cleaner stack can cost less and run better."
+  },
+  {
+    file: "bg-03-better-plugins.png", slug: "03-better-plugins-better-conversion",
+    cls: "variant-amber", pill: "Plugin Finder", kicker: "Better plugins. Better conversion.",
+    headline: "Upgrade the widgets that matter.",
+    accent: "matter", sub: "Reviews, bundles, forms, upsells, trust, speed, and checkout tools ranked for fit.",
+    mini: "Conversion-ready picks",
+    stats: ["Better", "Widgets", "More", "Trust", "Lift", "CRO"],
+    button: "Find better plugins", note: "Recommendations built around what your storefront actually needs."
+  },
+  {
+    file: "bg-04-before-after-stack.png", slug: "04-cut-app-stack-bloat",
+    cls: "", pill: "Stack Cleanup", kicker: "Too many apps slows the store",
+    headline: "Cut the app stack bloat.",
+    accent: "bloat", sub: "Replace overlapping apps with cleaner plugins, embeds, and third-party software.",
+    mini: "Before and after stack map",
+    stats: ["Less", "Bloat", "More", "Speed", "Lower", "Cost"],
+    button: "Clean up my stack", note: "Scout helps operators choose what to keep, swap, or remove."
+  },
+  {
+    file: "bg-05-ten-storefronts.png", slug: "05-ten-storefront-analyses",
+    cls: "variant-blue", pill: "Operator Plan", kicker: "Focused monthly intelligence",
+    headline: "Analyze 10 storefronts a month.",
+    accent: "10", sub: "Search, compare, and get recommendations for your Shopify store or competitor URLs.",
+    mini: "All 15 sources included",
+    stats: ["10", "Scans", "15", "Sources", "$17", "Monthly"],
+    button: "Choose Operator", note: "Enough capacity for one serious operator to stay sharp."
+  },
+  {
+    file: "bg-06-cut-app-bloat.png", slug: "06-speed-and-savings",
+    cls: "variant-amber", pill: "Speed + Savings", kicker: "App bloat costs twice",
+    headline: "Spend less. Load faster.",
+    accent: "faster", sub: "Find heavy tools, cheaper replacements, and cleaner embeds for your storefront.",
+    mini: "Cost plus performance scan",
+    stats: ["Fewer", "Apps", "Faster", "Pages", "Better", "UX"],
+    button: "Scan for bloat", note: "Lower software spend can also mean a smoother shopping experience."
+  },
+  {
+    file: "bg-07-widgets-stack.png", slug: "07-widgets-that-pay-for-themselves",
+    cls: "", pill: "Embeds + Widgets", kicker: "Widgets should earn their keep",
+    headline: "Install tools that pay back.",
+    accent: "pay", sub: "Scout recommends widgets for reviews, subscriptions, bundles, chat, trust, and capture.",
+    mini: "No more random app installs",
+    stats: ["Reviews", "Upsells", "Trust", "Embeds", "Email", "Capture"],
+    button: "Get widget picks", note: "Choose third-party tools by fit, cost, and conversion potential."
+  },
+  {
+    file: "bg-08-software-scorecard.png", slug: "08-score-every-app",
+    cls: "variant-blue", pill: "Scorecard", kicker: "Compare before you install",
+    headline: "Score every app before buying.",
+    accent: "before", sub: "Compare cost, speed, reliability, conversion impact, and storefront fit.",
+    mini: "Third-party software ranking",
+    stats: ["Cost", "Score", "CRO", "Fit", "Risk", "Check"],
+    button: "Compare app options", note: "Make app decisions with evidence instead of marketplace hype."
+  },
+  {
+    file: "bg-09-checkout-conversion.png", slug: "09-checkout-tool-finder",
+    cls: "variant-amber", pill: "Checkout CRO", kicker: "Conversion leaks hide in the stack",
+    headline: "Find checkout tools worth testing.",
+    accent: "testing", sub: "Scout flags embeds, trust widgets, upsells, and post-purchase tools that fit your URL.",
+    mini: "Storefront-specific CRO ideas",
+    stats: ["Trust", "Widgets", "Upsell", "Ideas", "Fit", "Ranked"],
+    button: "Find CRO tools", note: "Better software choices can improve both margin and conversion."
+  },
+  {
+    file: "bg-10-url-action-plan.png", slug: "10-url-to-action-plan",
+    cls: "", pill: "URL To Plan", kicker: "From storefront URL to next steps",
+    headline: "Get a software action plan.",
+    accent: "action", sub: "Scout turns your URL into plugin swaps, widget picks, savings ideas, and conversion tips.",
+    mini: "Recommendations, not research tabs",
+    stats: ["URL", "Input", "Tips", "Output", "Next", "Steps"],
+    button: "Build my plan", note: "The Operator plan is built for practical monthly improvement."
+  }
+];
+
+function applyAd(index) {
+  const ad = ads[index];
+  const root = document.getElementById("ad");
+  root.className = `ad ${ad.cls || ""}`;
+  document.getElementById("bg").src = ad.file;
+  document.getElementById("pill").textContent = ad.pill;
+  document.getElementById("kicker").textContent = ad.kicker;
+  document.getElementById("headline").innerHTML = ad.headline.replace(ad.accent, `<span class="accent">${ad.accent}</span>`);
+  document.getElementById("sub").textContent = ad.sub;
+  document.getElementById("mini").textContent = ad.mini;
+  document.getElementById("stat1").textContent = ad.stats[0];
+  document.getElementById("label1").textContent = ad.stats[1];
+  document.getElementById("stat2").textContent = ad.stats[2];
+  document.getElementById("label2").textContent = ad.stats[3];
+  document.getElementById("stat3").textContent = ad.stats[4];
+  document.getElementById("label3").textContent = ad.stats[5];
+  document.getElementById("button").textContent = ad.button;
+  document.getElementById("note").textContent = ad.note;
+}
+
+window.ads = ads;
+window.applyAd = applyAd;
+applyAd(Number(new URLSearchParams(location.search).get("ad") || 0));
+</script>
+</body>
+</html>
