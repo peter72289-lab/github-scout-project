@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Scout V9 Ads</title>
+<style>
+  :root {
+    --black: #080e16;
+    --deep: #0f1c2c;
+    --surface: rgba(22,40,64,.82);
+    --border: rgba(60,94,122,.72);
+    --amber: #f5b030;
+    --white: #f6f2ed;
+    --body: #d4e6f4;
+    --muted: #a6c4dc;
+    --green: #50d8a0;
+    --blue: #56a8ec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #111;
+    color: var(--white);
+    font-family: Inter, Avenir Next, Barlow, Helvetica, Arial, sans-serif;
+  }
+  .ad {
+    width: 1080px;
+    height: 1920px;
+    position: relative;
+    overflow: hidden;
+    background: var(--black);
+  }
+  .bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(1.08) contrast(1.08);
+  }
+  .shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(8,14,22,.94) 0%, rgba(8,14,22,.68) 28%, rgba(8,14,22,.22) 48%, rgba(8,14,22,.72) 76%, rgba(8,14,22,.96) 100%),
+      radial-gradient(circle at 72% 38%, rgba(245,176,48,.18), transparent 34%);
+  }
+  .frame {
+    position: absolute;
+    inset: 40px;
+    border: 1px solid rgba(245,176,48,.35);
+    pointer-events: none;
+  }
+  .brand {
+    position: absolute;
+    top: 86px;
+    left: 76px;
+    right: 76px;
+    display: flex;
+    justify-content: space-between;
+    gap: 22px;
+    align-items: center;
+    font-size: 28px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .pill {
+    border: 1px solid rgba(245,176,48,.55);
+    background: rgba(245,176,48,.13);
+    color: var(--body);
+    padding: 12px 18px;
+    font-size: 18px;
+    letter-spacing: .13em;
+    white-space: nowrap;
+  }
+  .copy {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    top: 212px;
+  }
+  .kicker {
+    color: var(--green);
+    font-size: 24px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 28px;
+  }
+  h1 {
+    margin: 0;
+    max-width: 860px;
+    font-family: Georgia, Times New Roman, serif;
+    font-size: 92px;
+    line-height: .96;
+    letter-spacing: 0;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  h1 .accent { color: var(--amber); }
+  .sub {
+    margin-top: 34px;
+    max-width: 775px;
+    color: var(--body);
+    font-size: 38px;
+    line-height: 1.22;
+    font-weight: 500;
+  }
+  .proof {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    bottom: 260px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    border: 1px solid var(--border);
+    background: var(--border);
+  }
+  .proof div {
+    background: rgba(15,28,44,.82);
+    padding: 24px 18px;
+    text-align: center;
+  }
+  .proof strong {
+    display: block;
+    color: var(--amber);
+    font-size: 36px;
+    line-height: 1;
+    font-family: Georgia, Times New Roman, serif;
+  }
+  .proof span {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 17px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .cta {
+    position: absolute;
+    left: 76px;
+    right: 76px;
+    bottom: 96px;
+    display: flex;
+    justify-content: space-between;
+    gap: 26px;
+    align-items: center;
+  }
+  .button {
+    background: var(--amber);
+    color: #080e16;
+    padding: 30px 38px;
+    font-size: 28px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-weight: 900;
+    min-width: 430px;
+    text-align: center;
+  }
+  .note {
+    color: var(--muted);
+    font-size: 24px;
+    line-height: 1.28;
+    text-align: right;
+    font-weight: 600;
+  }
+  .variant-light .shade {
+    background:
+      linear-gradient(180deg, rgba(8,14,22,.9) 0%, rgba(8,14,22,.48) 34%, rgba(8,14,22,.18) 54%, rgba(8,14,22,.76) 82%, rgba(8,14,22,.97) 100%),
+      radial-gradient(circle at 35% 43%, rgba(86,168,236,.2), transparent 36%);
+  }
+  .variant-green .kicker,
+  .variant-green .proof strong { color: var(--green); }
+  .variant-blue .kicker,
+  .variant-blue .proof strong { color: var(--blue); }
+</style>
+</head>
+<body>
+<div id="ad" class="ad">
+  <img class="bg" id="bg" alt="">
+  <div class="shade"></div>
+  <div class="frame"></div>
+  <div class="brand">
+    <div>GitHub Scout</div>
+    <div class="pill" id="pill">V9 Ecommerce</div>
+  </div>
+  <main class="copy">
+    <div class="kicker" id="kicker"></div>
+    <h1 id="headline"></h1>
+    <div class="sub" id="sub"></div>
+  </main>
+  <section class="proof">
+    <div><strong id="stat1"></strong><span id="label1"></span></div>
+    <div><strong id="stat2"></strong><span id="label2"></span></div>
+    <div><strong id="stat3"></strong><span id="label3"></span></div>
+  </section>
+  <footer class="cta">
+    <div class="button" id="button"></div>
+    <div class="note" id="note"></div>
+  </footer>
+</div>
+<script>
+const ads = [
+  {
+    file: "bg-01-cockpit.png", slug: "01-cockpit-intelligence",
+    cls: "", pill: "V9 Ecommerce", kicker: "Open intelligence engine",
+    headline: "Stop guessing what to build next",
+    accent: "next", sub: "Turn 15 public sources into ranked ecommerce recommendations.",
+    stats: ["15", "Sources", "60 sec", "Demo", "Action", "Ready"],
+    button: "Try one free query", note: "For operators who want signal before the market gets loud."
+  },
+  {
+    file: "bg-02-sources.png", slug: "02-fifteen-sources",
+    cls: "variant-light", pill: "15 Source Coverage", kicker: "One signal, not fifteen tabs",
+    headline: "15 sources. One ranked signal.",
+    accent: "One", sub: "Repos, launch sites, alternatives directories, forums, and adoption signals in one cockpit.",
+    stats: ["15", "Sources", "All", "Plans", "Live", "Signals"],
+    button: "See the sources", note: "Operator and Director both access the full source graph."
+  },
+  {
+    file: "bg-03-saas-stack.png", slug: "03-replace-saas-stack",
+    cls: "variant-green", pill: "Savings Mode", kicker: "Your SaaS stack is leaking cash",
+    headline: "Find open-source replacements faster",
+    accent: "faster", sub: "Scout cost-saving alternatives and practical swap recommendations for ecommerce teams.",
+    stats: ["$17", "Operator", "$37", "Director", "0", "Guesswork"],
+    button: "Start scouting", note: "Built for marketers, agencies, and developer-led stores."
+  },
+  {
+    file: "bg-04-hidden-gems.png", slug: "04-hidden-gems",
+    cls: "", pill: "Hidden Gems", kicker: "Find them before everyone else",
+    headline: "Hidden gems for ecommerce operators",
+    accent: "gems", sub: "Fresh tools, launches, replacements, and rising projects ranked for action.",
+    stats: ["Fresh", "Signals", "Ranked", "Tips", "Weekly", "Moves"],
+    button: "Find hidden gems", note: "The cockpit turns discovery into decisions."
+  },
+  {
+    file: "bg-05-storefront-scan.png", slug: "05-storefront-scan",
+    cls: "variant-blue", pill: "Storefront Scans", kicker: "Audit real ecommerce storefronts",
+    headline: "Analyze 10 storefronts a month",
+    accent: "10", sub: "Operator gives solo teams focused search, recommendations, and tips across all sources.",
+    stats: ["10", "Stores", "15", "Sources", "$17", "Per mo"],
+    button: "Choose Operator", note: "For focused monthly storefront intelligence."
+  },
+  {
+    file: "bg-06-agency-volume.png", slug: "06-agency-volume",
+    cls: "", pill: "Agency Volume", kicker: "More than 30 storefronts?",
+    headline: "Agency volume gets custom pricing",
+    accent: "Agency", sub: "Shared workflows, higher storefront capacity, and pricing built around your pipeline.",
+    stats: ["30+", "Stores", "Team", "Flow", "Custom", "Pricing"],
+    button: "Contact for pricing", note: "For agencies, studios, and multi-client ecommerce teams."
+  },
+  {
+    file: "bg-07-methodology.png", slug: "07-no-black-box",
+    cls: "variant-green", pill: "Methodology", kicker: "No black box",
+    headline: "See why Scout recommends it",
+    accent: "why", sub: "Every recommendation includes source coverage, scoring logic, confidence, and next steps.",
+    stats: ["Score", "Visible", "Sources", "Shown", "Next", "Steps"],
+    button: "Review methodology", note: "Trust the recommendation because you can inspect the reasoning."
+  },
+  {
+    file: "bg-08-pricing.png", slug: "08-operator-director",
+    cls: "variant-light", pill: "Operator / Director", kicker: "Simple plans",
+    headline: "Pick 10 or 30 storefronts",
+    accent: "30", sub: "Both paid plans unlock all 15 sources. Choose based on monthly storefront volume.",
+    stats: ["10", "Operator", "30", "Director", "15", "Sources"],
+    button: "Compare plans", note: "No command tier. Agencies can contact for pricing."
+  },
+  {
+    file: "bg-09-competitor-blindspot.png", slug: "09-clarity-vs-noise",
+    cls: "variant-blue", pill: "Competitive Edge", kicker: "Search shows results",
+    headline: "Scout shows the next move",
+    accent: "move", sub: "Turn noisy public signals into ranked ecommerce opportunities your team can act on.",
+    stats: ["Noise", "Filtered", "Moves", "Ranked", "Tips", "Included"],
+    button: "Open the cockpit", note: "Built for operators who need decisions, not another tab."
+  },
+  {
+    file: "bg-10-action-standup.png", slug: "10-weekly-action-standup",
+    cls: "", pill: "Top Actions", kicker: "Your weekly action standup",
+    headline: "Five moves worth shipping now",
+    accent: "now", sub: "Prioritized actions, source-backed evidence, and practical recommendations for the week.",
+    stats: ["Top", "Actions", "Source", "Backed", "Ship", "Now"],
+    button: "Get recommendations", note: "From signal to action without the research spiral."
+  }
+];
+
+function applyAd(index) {
+  const ad = ads[index];
+  const root = document.getElementById("ad");
+  root.className = `ad ${ad.cls || ""}`;
+  document.getElementById("bg").src = ad.file;
+  document.getElementById("pill").textContent = ad.pill;
+  document.getElementById("kicker").textContent = ad.kicker;
+  const headline = ad.headline.replace(ad.accent, `<span class="accent">${ad.accent}</span>`);
+  document.getElementById("headline").innerHTML = headline;
+  document.getElementById("sub").textContent = ad.sub;
+  document.getElementById("stat1").textContent = ad.stats[0];
+  document.getElementById("label1").textContent = ad.stats[1];
+  document.getElementById("stat2").textContent = ad.stats[2];
+  document.getElementById("label2").textContent = ad.stats[3];
+  document.getElementById("stat3").textContent = ad.stats[4];
+  document.getElementById("label3").textContent = ad.stats[5];
+  document.getElementById("button").textContent = ad.button;
+  document.getElementById("note").textContent = ad.note;
+}
+
+window.ads = ads;
+window.applyAd = applyAd;
+applyAd(Number(new URLSearchParams(location.search).get("ad") || 0));
+</script>
+</body>
+</html>
