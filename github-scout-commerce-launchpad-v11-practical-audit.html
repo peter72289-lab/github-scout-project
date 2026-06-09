@@ -1,0 +1,1552 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitHubScout Commerce Launchpad V11</title>
+  <style>
+    :root {
+      --ink: #182026;
+      --muted: #5d6872;
+      --soft: #eef3f5;
+      --line: #d9e2e5;
+      --paper: #fbfcfa;
+      --white: #ffffff;
+      --green: #1f8a5b;
+      --green-soft: #dff3e9;
+      --blue: #2457a6;
+      --blue-soft: #e5edf9;
+      --coral: #c4563c;
+      --coral-soft: #f8e8e2;
+      --gold: #a97918;
+      --gold-soft: #f7edcf;
+      --shadow: 0 18px 42px rgba(24, 32, 38, .08);
+      --radius: 8px;
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    * { min-width: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+
+    .page {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px clamp(18px, 4vw, 46px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(251, 252, 250, .94);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      font-weight: 800;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 13px;
+      letter-spacing: .04em;
+      flex: 0 0 auto;
+    }
+
+    .brand span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a, .btn {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 12px;
+      background: var(--white);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--ink);
+    }
+
+    .btn.primary {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--white);
+    }
+
+    .btn.good {
+      border-color: rgba(31, 138, 91, .35);
+      background: var(--green);
+      color: var(--white);
+    }
+
+    main {
+      display: grid;
+      gap: 24px;
+      padding: 26px clamp(18px, 4vw, 46px) 56px;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(300px, .88fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .intro-copy {
+      display: grid;
+      gap: 18px;
+      align-content: center;
+      padding: clamp(22px, 4vw, 42px) 0;
+    }
+
+    .eyebrow {
+      width: fit-content;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--white);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      max-width: 940px;
+      font-size: clamp(38px, 6vw, 76px);
+      line-height: .96;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    h2, h3, p, span, strong, a, label, td, th {
+      overflow-wrap: anywhere;
+    }
+
+    .lead {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 22px);
+      line-height: 1.55;
+    }
+
+    .plain-value {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      max-width: 880px;
+    }
+
+    .plain-value div {
+      min-height: 96px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+    }
+
+    .plain-value strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .plain-value span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      max-width: 100%;
+    }
+
+    .audit-panel {
+      display: grid;
+      gap: 16px;
+      padding: 18px;
+      box-shadow: none;
+      align-self: start;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title h2 {
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .panel-title p {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status-pill {
+      padding: 5px 8px;
+      border-radius: 7px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--paper);
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(36, 87, 166, .12);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      min-height: 112px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 9px;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1;
+    }
+
+    .metric p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(320px, .84fr) minmax(0, 1.16fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stack-editor {
+      padding: 18px;
+      box-shadow: none;
+    }
+
+    .app-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .app-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(90px, .55fr) minmax(120px, .75fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--white);
+      color: var(--coral);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .results {
+      display: grid;
+      gap: 18px;
+    }
+
+    .result-panel {
+      padding: 18px;
+      box-shadow: none;
+    }
+
+    .recommendation {
+      display: grid;
+      gap: 13px;
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: var(--radius);
+      background: var(--blue-soft);
+      border: 1px solid rgba(36, 87, 166, .2);
+    }
+
+    .recommendation h3 {
+      font-size: 24px;
+      line-height: 1.15;
+    }
+
+    .recommendation p {
+      color: #334253;
+    }
+
+    .path-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .path {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+    }
+
+    .path.best {
+      border-color: rgba(31, 138, 91, .35);
+      background: var(--green-soft);
+    }
+
+    .path strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .path p, .path li {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .path ul, .checklist {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 7px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tag.good { background: var(--green-soft); color: var(--green); }
+    .tag.warn { background: var(--gold-soft); color: var(--gold); }
+    .tag.stop { background: var(--coral-soft); color: var(--coral); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .copy-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: var(--paper);
+      white-space: pre-wrap;
+      color: #26343c;
+      font-size: 14px;
+    }
+
+    .detected-list, .history-list, .alt-list, .monitor-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .detected-item, .history-item, .alt-item, .monitor-item {
+      display: grid;
+      gap: 6px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--paper);
+    }
+
+    .history-item {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .history-item strong, .detected-item strong, .alt-item strong, .monitor-item strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .history-item span, .detected-item span, .alt-item span, .monitor-item span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mode-toggle {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+    }
+
+    .mode-toggle button {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .mode-toggle button.active {
+      background: var(--ink);
+      color: var(--white);
+    }
+
+    .benchmark-card {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+    }
+
+    .benchmark-bar {
+      height: 12px;
+      border-radius: 99px;
+      background: #dfe8eb;
+      overflow: hidden;
+    }
+
+    .benchmark-bar i {
+      display: block;
+      width: min(calc(var(--ratio, 0) * 100%), 100%);
+      height: 100%;
+      background: var(--green);
+    }
+
+    .mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: flex-end;
+    }
+
+    .mini-actions button {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--white);
+      padding: 7px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pricing {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .pricing .panel {
+      padding: 18px;
+      box-shadow: none;
+    }
+
+    .price {
+      font-size: clamp(42px, 6vw, 72px);
+      line-height: 1;
+      font-weight: 900;
+      margin: 14px 0 6px;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-list li {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--paper);
+      color: var(--muted);
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 8px 0 0;
+    }
+
+    @media (max-width: 980px) {
+      .intro, .workspace, .pricing, .two-col {
+        grid-template-columns: 1fr;
+      }
+      .summary-strip, .plain-value, .path-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .nav { justify-content: flex-start; }
+      .summary-strip, .plain-value, .path-grid, .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .app-row {
+        grid-template-columns: 1fr;
+      }
+      .icon-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">GS</div>
+        <div>GitHubScout Commerce <span>V11 practical audit</span></div>
+      </div>
+      <nav class="nav" aria-label="Page sections">
+        <a href="#audit">Audit</a>
+        <a href="#plan">Plan</a>
+        <a href="#report">Report</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#pricing">Offer</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div class="intro-copy">
+          <div class="eyebrow">Plain offer</div>
+          <h1>Find which ecommerce apps to keep, replace, or rebuild.</h1>
+          <p class="lead">Scan a store, identify visible app spend, and get a practical plan: what to keep, what to replace, what to monitor, and what is worth quoting.</p>
+          <div class="plain-value">
+            <div><strong>For store owners</strong><span>See likely app waste without learning GitHub or procurement language.</span></div>
+            <div><strong>For agencies</strong><span>Turn a stack review into a scoped project, not a vague audit deck.</span></div>
+            <div><strong>For builders</strong><span>Spot replaceable app categories and repo-backed alternatives worth validating.</span></div>
+          </div>
+        </div>
+
+        <section class="panel audit-panel" id="audit" aria-label="Store audit form">
+          <div class="panel-title">
+            <div>
+              <h2>Run a quick audit</h2>
+              <p>Use estimates if you do not know the exact numbers yet.</p>
+            </div>
+            <span class="status-pill">No login</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="field full">
+              <label>Mode</label>
+              <div class="mode-toggle" role="group" aria-label="Audit mode">
+                <button class="active" type="button" data-mode="merchant">Merchant mode</button>
+                <button type="button" data-mode="agency">Agency mode</button>
+              </div>
+            </div>
+            <div class="field full">
+              <label for="storeUrl">Store URL</label>
+              <input id="storeUrl" value="https://example-store.com" autocomplete="url">
+            </div>
+            <div class="field">
+              <label for="platform">Platform</label>
+              <select id="platform">
+                <option>Shopify</option>
+                <option>WooCommerce</option>
+                <option>BigCommerce</option>
+                <option>Custom storefront</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="monthlyRevenue">Monthly revenue</label>
+              <input id="monthlyRevenue" type="number" min="0" step="500" value="85000">
+            </div>
+            <div class="field">
+              <label for="monthlyAppSpend">Monthly app spend</label>
+              <input id="monthlyAppSpend" type="number" min="0" step="25" value="740">
+            </div>
+            <div class="field">
+              <label for="teamType">Who owns implementation?</label>
+              <select id="teamType">
+                <option>Store operator</option>
+                <option>Agency</option>
+                <option>Developer on staff</option>
+                <option>Founder</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pipelineStatus">Pipeline status</label>
+              <select id="pipelineStatus">
+                <option>Scanned</option>
+                <option>Proposal sent</option>
+                <option>Replacement sprint</option>
+                <option>Won</option>
+                <option>Lost</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="mainPain">What hurts most?</label>
+              <select id="mainPain">
+                <option value="cost">Too many recurring app fees</option>
+                <option value="speed">Apps slow the storefront</option>
+                <option value="support">Manual support work</option>
+                <option value="data">Data is scattered across tools</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="storeHtml">Paste storefront HTML or script snippets</label>
+              <textarea id="storeHtml" placeholder="Paste page source, app embed snippets, or script URLs. The scanner will look for Klaviyo, Gorgias, Recharge, Rebuy, Yotpo, Judge.me, and other common ecommerce tools."></textarea>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn primary" type="button" id="runAudit">Calculate audit</button>
+            <button class="btn good" type="button" id="scanLive">Live URL scan</button>
+            <button class="btn good" type="button" id="scanHtml">Scan pasted HTML</button>
+            <button class="btn" type="button" id="loadSample">Load sample</button>
+            <button class="btn" type="button" id="clearApps">Clear apps</button>
+          </div>
+          <div class="detected-list" id="detectedList"></div>
+        </section>
+      </section>
+
+      <section class="summary-strip" aria-label="Audit summary">
+        <article class="metric">
+          <span>Estimated annual app spend</span>
+          <strong id="annualSpend">$8,880</strong>
+          <p>Current recurring software burden.</p>
+        </article>
+        <article class="metric">
+          <span>Likely savings range</span>
+          <strong id="savingsRange">$2.7k-$4.4k</strong>
+          <p>Conservative replacement target.</p>
+        </article>
+        <article class="metric">
+          <span>Best first move</span>
+          <strong id="bestMove">Swap</strong>
+          <p id="bestMoveNote">Lower-risk app replacements first.</p>
+        </article>
+        <article class="metric">
+          <span>Payback target</span>
+          <strong id="payback">30 days</strong>
+          <p>How fast the first action should prove value.</p>
+        </article>
+        <article class="metric">
+          <span>Spend benchmark</span>
+          <strong id="benchmarkLabel">0.9%</strong>
+          <p id="benchmarkNote">App spend as a share of monthly revenue.</p>
+        </article>
+      </section>
+
+      <section class="workspace">
+        <section class="panel stack-editor" aria-label="App inventory">
+          <div class="panel-title">
+            <div>
+              <h2>Current app stack</h2>
+              <p>Add the apps or app categories the store pays for today.</p>
+            </div>
+            <div class="button-row">
+              <button class="btn" type="button" id="addApp">Add app</button>
+              <button class="btn" type="button" id="saveAudit">Save audit</button>
+            </div>
+          </div>
+          <div class="app-list" id="appList"></div>
+        </section>
+
+        <div class="results">
+          <section class="panel result-panel">
+            <div class="panel-title">
+              <div>
+                <h2>Recommendation</h2>
+                <p>Simple recommendation first. Technical path second.</p>
+              </div>
+              <span class="tag good" id="confidenceTag">Good fit</span>
+            </div>
+            <div class="recommendation">
+              <h3 id="recommendationTitle">Start with app consolidation.</h3>
+              <p id="recommendationText">The stack has enough recurring spend to justify a focused review, but the first offer should be a low-friction replacement plan before a custom build.</p>
+            </div>
+            <div class="path-grid">
+              <div class="path best">
+                <strong>1. Quick replacement</strong>
+                <p>Find cheaper native or open alternatives for the highest-cost categories.</p>
+                <ul id="quickPath"></ul>
+              </div>
+              <div class="path">
+                <strong>2. Cleanup project</strong>
+                <p>Remove overlap, fix scripts, and document ownership.</p>
+                <ul id="cleanupPath"></ul>
+              </div>
+              <div class="path">
+                <strong>3. Custom build</strong>
+                <p>Only worth it when one category is expensive, stable, and specific.</p>
+                <ul id="buildPath"></ul>
+              </div>
+            </div>
+            <div class="benchmark-card">
+              <strong id="benchmarkTitle">Spend is inside the review zone.</strong>
+              <div class="benchmark-bar" id="benchmarkBar" style="--ratio:.45"><i></i></div>
+              <p id="benchmarkCopy">Use the benchmark to decide whether this is a light cleanup or a commercial replacement sprint.</p>
+            </div>
+          </section>
+
+          <section class="panel result-panel">
+            <div class="panel-title">
+              <div>
+                <h2>App decisions</h2>
+                <p>Each row gets a practical next action.</p>
+              </div>
+              <button class="btn" type="button" id="copyTable">Copy table</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>App</th>
+                    <th>Monthly</th>
+                    <th>Category</th>
+                    <th>Decision</th>
+                    <th>Why</th>
+                    <th>Alternative</th>
+                  </tr>
+                </thead>
+                <tbody id="decisionRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="two-col">
+        <section class="panel result-panel">
+          <div class="panel-title">
+            <div>
+              <h2>Replacement shortlist</h2>
+              <p>Cheaper app, native platform, open-source, or custom path.</p>
+            </div>
+          </div>
+          <div class="alt-list" id="alternativeList"></div>
+        </section>
+
+        <section class="panel result-panel">
+          <div class="panel-title">
+            <div>
+              <h2>Monitoring notes</h2>
+              <p>Save and re-scan stores to see app changes over time.</p>
+            </div>
+            <button class="btn" type="button" id="rescanSaved">Compare to saved</button>
+          </div>
+          <div class="monitor-list" id="monitorList"></div>
+        </section>
+      </section>
+
+      <section class="two-col" id="plan">
+        <section class="panel result-panel">
+          <div class="panel-title">
+            <div>
+              <h2>7-day action plan</h2>
+              <p>What to do before selling a large rebuild.</p>
+            </div>
+            <button class="btn" type="button" id="copyPlan">Copy plan</button>
+          </div>
+          <ol class="checklist" id="actionPlan"></ol>
+        </section>
+
+        <section class="panel result-panel" id="report">
+          <div class="panel-title">
+            <div>
+              <h2>Client-ready summary</h2>
+              <p>Plain language for an owner or operator.</p>
+            </div>
+            <div class="button-row">
+              <button class="btn" type="button" id="copyReport">Copy</button>
+              <button class="btn" type="button" id="downloadJson">Export</button>
+            </div>
+          </div>
+          <div class="copy-box" id="reportText"></div>
+        </section>
+      </section>
+
+      <section class="two-col" id="pipeline">
+        <section class="panel result-panel">
+          <div class="panel-title">
+            <div>
+              <h2>Saved audits</h2>
+              <p>Keep prior store scans in this browser and reload them later.</p>
+            </div>
+            <button class="btn" type="button" id="clearHistory">Clear history</button>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </section>
+
+        <section class="panel result-panel">
+          <div class="panel-title">
+            <div>
+              <h2>Client proposal</h2>
+              <p>A direct offer you can send after the audit.</p>
+            </div>
+            <div class="button-row">
+              <button class="btn" type="button" id="copyProposal">Copy</button>
+              <button class="btn" type="button" id="downloadProposal">Export</button>
+            </div>
+          </div>
+          <div class="copy-box" id="proposalText"></div>
+        </section>
+      </section>
+
+      <section class="pricing" id="pricing">
+        <section class="panel">
+          <div class="eyebrow">Clear value proposition</div>
+          <h2 style="margin-top:14px;font-size:clamp(30px,4vw,48px);line-height:1.05;">A stack audit that turns app spend into a decision.</h2>
+          <p class="lead" style="font-size:18px;margin-top:14px;">The paid product should not promise magic discovery. It should promise a faster, cleaner answer: what to keep, what to replace, and what is worth building.</p>
+        </section>
+        <section class="panel">
+          <span class="tag good">Suggested offer</span>
+          <div class="price">$149</div>
+          <p class="lead" style="font-size:17px;">One store audit, app spend map, replacement shortlist, and 7-day implementation plan.</p>
+          <ul class="feature-list">
+            <li>Storefront app inventory and monthly spend estimate</li>
+            <li>Keep / replace / rebuild decisions for each major app</li>
+            <li>Open-source and lower-cost alternative shortlist</li>
+            <li>Owner-friendly report plus agency implementation scope</li>
+          </ul>
+        </section>
+      </section>
+
+      <p class="footer-note">V11 removes the hype layer: one store, one stack, one practical savings plan.</p>
+    </main>
+  </div>
+
+  <script>
+    const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+    const qs = (selector) => document.querySelector(selector);
+
+    let apps = [
+      { name: "Klaviyo", cost: 180, category: "Email/SMS" },
+      { name: "Rebuy", cost: 249, category: "Upsell" },
+      { name: "Gorgias", cost: 120, category: "Support" },
+      { name: "Judge.me", cost: 15, category: "Reviews" },
+      { name: "Loyalty app", cost: 176, category: "Loyalty" }
+    ];
+    let detectedApps = [];
+    let currentMode = "merchant";
+
+    const categoryRules = {
+      "Email/SMS": { threshold: 150, native: "Shopify Email or platform automations", open: "listmonk or Mautic", cheaper: "MailerLite / Omnisend lower tier", replacement: "Compare listmonk, Mautic, or a lower-tier email tool before rebuilding." },
+      "Upsell": { threshold: 120, native: "Shopify Bundles and Functions", open: "Theme-level offer block", cheaper: "Essentialwolf / Selleasy", replacement: "Test native bundles, Shopify Functions, or a smaller upsell app first." },
+      "Support": { threshold: 100, native: "Shopify Inbox plus macros", open: "Chatwoot", cheaper: "HelpScout / Crisp", replacement: "Reduce tickets with better macros and help content before replacing the helpdesk." },
+      "Reviews": { threshold: 40, native: "Shopify Product Reviews alternatives", open: "Static review import plus theme section", cheaper: "Judge.me", replacement: "Keep if review volume is high; otherwise move to a lighter review tool." },
+      "Loyalty": { threshold: 100, native: "Shopify customer accounts and discounts", open: "Custom points ledger only if usage is high", cheaper: "Smile lower tier", replacement: "Check whether points are actually used before paying for loyalty complexity." },
+      "Analytics": { threshold: 80, native: "Shopify reports plus GA4", open: "Plausible / Umami", cheaper: "Fathom / Simple Analytics", replacement: "Use cleaner analytics only if it changes a weekly decision." },
+      "Search": { threshold: 120, native: "Shopify Search & Discovery", open: "Meilisearch for custom storefronts", cheaper: "Searchanise", replacement: "Measure search revenue before buying or rebuilding discovery tools." },
+      "Subscriptions": { threshold: 160, native: "Shopify Subscriptions", open: "Custom subscription ledger only for technical teams", cheaper: "Seal Subscriptions", replacement: "Keep if subscription revenue is core; otherwise avoid custom billing logic." },
+      "Personalization": { threshold: 140, native: "Shopify customer segments", open: "Theme rules and Liquid personalization", cheaper: "Nosto lower tier", replacement: "Keep only if uplift is measured; otherwise start with rules-based personalization." },
+      "Payments": { threshold: 120, native: "Shopify Payments / Shop Pay", open: "Do not rebuild payment logic first", cheaper: "Platform-native checkout options", replacement: "Avoid custom payment work unless fees or approval rates justify it." },
+      "Shipping": { threshold: 100, native: "Shopify Shipping", open: "Internal fulfillment rules", cheaper: "Shippo / Pirate Ship", replacement: "Review label volume and support burden before switching shipping tools." },
+      "Other": { threshold: 75, native: "Platform-native feature", open: "Small internal workflow", cheaper: "Lower-tier replacement", replacement: "Name the job this app does and remove it if no owner uses it weekly." }
+    };
+
+    const appSignatures = [
+      { name: "Klaviyo", category: "Email/SMS", cost: 180, patterns: ["klaviyo", "static.klaviyo.com", "_learnq"] },
+      { name: "Gorgias", category: "Support", cost: 120, patterns: ["gorgias", "gorgias.chat", "config.gorgias"] },
+      { name: "Recharge", category: "Subscriptions", cost: 299, patterns: ["recharge", "rechargepayments", "subscriptions.recharge"] },
+      { name: "Rebuy", category: "Upsell", cost: 249, patterns: ["rebuy", "rebuyengine", "rebuyengine.com"] },
+      { name: "Yotpo", category: "Reviews", cost: 149, patterns: ["yotpo", "staticw2.yotpo.com", "yotpo-widget"] },
+      { name: "Judge.me", category: "Reviews", cost: 15, patterns: ["judge.me", "judgeme", "cdn.judge.me"] },
+      { name: "LoyaltyLion", category: "Loyalty", cost: 157, patterns: ["loyaltylion", "loyaltylion.net"] },
+      { name: "Smile.io", category: "Loyalty", cost: 49, patterns: ["smile.io", "smile-ui", "smile-shopify"] },
+      { name: "Okendo", category: "Reviews", cost: 99, patterns: ["okendo", "okendo.io"] },
+      { name: "Attentive", category: "Email/SMS", cost: 300, patterns: ["attentive", "attn.tv", "attentivemobile"] },
+      { name: "Postscript", category: "Email/SMS", cost: 250, patterns: ["postscript", "postscript.io"] },
+      { name: "Algolia", category: "Search", cost: 120, patterns: ["algolia", "algolia.net", "algoliasearch"] },
+      { name: "Searchanise", category: "Search", cost: 39, patterns: ["searchanise", "searchserverapi"] },
+      { name: "Triple Whale", category: "Analytics", cost: 129, patterns: ["triplewhale", "triple whale"] },
+      { name: "Hotjar", category: "Analytics", cost: 80, patterns: ["hotjar", "hjid", "hotjar.com"] },
+      { name: "Nosto", category: "Personalization", cost: 180, patterns: ["nosto", "nosto.com", "nostojs"] },
+      { name: "Dynamic Yield", category: "Personalization", cost: 300, patterns: ["dynamicyield", "dynamic yield", "dy-api"] },
+      { name: "Bold Subscriptions", category: "Subscriptions", cost: 199, patterns: ["boldsubscriptions", "boldcommerce", "bold-subscriptions"] },
+      { name: "Seal Subscriptions", category: "Subscriptions", cost: 49, patterns: ["sealsubscriptions", "seal-subscriptions"] },
+      { name: "AfterShip", category: "Shipping", cost: 89, patterns: ["aftership", "aftership.com"] },
+      { name: "ShipBob", category: "Shipping", cost: 150, patterns: ["shipbob", "shipbob.com"] },
+      { name: "Route", category: "Shipping", cost: 120, patterns: ["route.com", "routeapp", "route-widget"] },
+      { name: "Shopify Inbox", category: "Support", cost: 0, patterns: ["shopifyinbox", "shopify inbox"] },
+      { name: "Tidio", category: "Support", cost: 39, patterns: ["tidio", "tidio.co"] },
+      { name: "Crisp", category: "Support", cost: 95, patterns: ["crisp.chat", "crisp-client"] },
+      { name: "PayPal", category: "Payments", cost: 80, patterns: ["paypal", "paypalobjects"] },
+      { name: "Shop Pay", category: "Payments", cost: 0, patterns: ["shop.app", "shop-pay", "shopify_pay"] },
+      { name: "Google Analytics", category: "Analytics", cost: 0, patterns: ["google-analytics", "gtag(", "google tag manager", "googletagmanager"] }
+    ];
+
+    const storageKey = "githubscout-commerce-v12-audits";
+    const scanApi = "http://127.0.0.1:8767/api/scan";
+
+    function numberValue(id) {
+      return Math.max(0, Number(qs(id).value || 0));
+    }
+
+    function clean(value) {
+      return String(value || "").trim();
+    }
+
+    function addAppRow(app = { name: "", cost: 0, category: "Other" }) {
+      apps.push(app);
+      render();
+    }
+
+    function removeApp(index) {
+      apps.splice(index, 1);
+      render();
+    }
+
+    function updateApp(index, key, value) {
+      apps[index][key] = key === "cost" ? Math.max(0, Number(value || 0)) : value;
+      calculate();
+    }
+
+    function auditState() {
+      return {
+        id: Date.now().toString(36),
+        storeUrl: qs("#storeUrl").value,
+        platform: qs("#platform").value,
+        monthlyRevenue: numberValue("#monthlyRevenue"),
+        monthlyAppSpend: numberValue("#monthlyAppSpend"),
+        teamType: qs("#teamType").value,
+        pipelineStatus: qs("#pipelineStatus").value,
+        mode: currentMode,
+        mainPain: qs("#mainPain").value,
+        storeHtml: qs("#storeHtml").value,
+        apps,
+        detectedApps,
+        savedAt: new Date().toISOString()
+      };
+    }
+
+    function applyAuditState(state) {
+      qs("#storeUrl").value = state.storeUrl || "";
+      qs("#platform").value = state.platform || "Shopify";
+      qs("#monthlyRevenue").value = state.monthlyRevenue || 0;
+      qs("#monthlyAppSpend").value = state.monthlyAppSpend || 0;
+      qs("#teamType").value = state.teamType || "Store operator";
+      qs("#pipelineStatus").value = state.pipelineStatus || "Scanned";
+      currentMode = state.mode || "merchant";
+      updateModeButtons();
+      qs("#mainPain").value = state.mainPain || "cost";
+      qs("#storeHtml").value = state.storeHtml || "";
+      apps = Array.isArray(state.apps) ? state.apps : [];
+      detectedApps = Array.isArray(state.detectedApps) ? state.detectedApps : [];
+      render();
+    }
+
+    function readHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function writeHistory(items) {
+      localStorage.setItem(storageKey, JSON.stringify(items.slice(0, 12)));
+      renderHistory();
+    }
+
+    function saveAudit() {
+      const state = auditState();
+      state.previousAppNames = readHistory().find(item => item.storeUrl === state.storeUrl)?.apps?.map(app => app.name) || [];
+      const history = readHistory().filter(item => item.storeUrl !== state.storeUrl);
+      writeHistory([state, ...history]);
+    }
+
+    function loadAudit(id) {
+      const item = readHistory().find(entry => entry.id === id);
+      if (item) applyAuditState(item);
+    }
+
+    function deleteAudit(id) {
+      writeHistory(readHistory().filter(item => item.id !== id));
+    }
+
+    function renderHistory() {
+      const history = readHistory();
+      qs("#historyList").innerHTML = history.length ? history.map(item => {
+        const date = new Date(item.savedAt);
+        const label = Number.isNaN(date.getTime()) ? "Saved audit" : date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+        const appCount = Array.isArray(item.apps) ? item.apps.length : 0;
+        return `<div class="history-item">
+          <div>
+            <strong>${clean(item.storeUrl) || "Untitled store"}</strong>
+            <span>${label} · ${item.platform || "Unknown platform"} · ${appCount} apps · ${item.pipelineStatus || "Scanned"}</span>
+          </div>
+          <div class="mini-actions">
+            <button type="button" onclick="loadAudit('${item.id}')">Load</button>
+            <button type="button" onclick="deleteAudit('${item.id}')">Delete</button>
+          </div>
+        </div>`;
+      }).join("") : `<div class="history-item"><div><strong>No saved audits yet</strong><span>Run an audit, then save it here.</span></div></div>`;
+    }
+
+    function detectFromText(text, source = "Pasted HTML") {
+      const haystack = text.toLowerCase();
+      detectedApps = appSignatures
+        .map(signature => ({
+          ...signature,
+          matched: signature.patterns.filter(pattern => haystack.includes(pattern.toLowerCase())),
+          source
+        }))
+        .filter(signature => signature.matched.length)
+        .map(signature => ({
+          ...signature,
+          confidence: Math.min(98, 58 + signature.matched.length * 14)
+        }));
+
+      const existing = new Set(apps.map(app => clean(app.name).toLowerCase()));
+      detectedApps.forEach(signature => {
+        if (!existing.has(signature.name.toLowerCase())) {
+          apps.push({ name: signature.name, cost: signature.cost, category: signature.category, evidence: signature.matched.join(", ") });
+        }
+      });
+      render();
+    }
+
+    function scanPastedHtml() {
+      detectFromText(qs("#storeHtml").value, "Pasted HTML");
+    }
+
+    async function scanLiveStore() {
+      const url = clean(qs("#storeUrl").value);
+      qs("#detectedList").innerHTML = `<div class="detected-item"><strong>Scanning live URL...</strong><span>Fetching storefront HTML through the local scan API.</span></div>`;
+      try {
+        const response = await fetch(`${scanApi}?url=${encodeURIComponent(url)}`);
+        const payload = await response.json();
+        if (!payload.ok) throw new Error(payload.error || "Scan failed");
+        qs("#storeHtml").value = payload.html.slice(0, 12000);
+        detectFromText(payload.html, `Live URL scan (${payload.status}, ${payload.bytes} bytes)`);
+      } catch (error) {
+        qs("#detectedList").innerHTML = `<div class="detected-item"><strong>Live scan unavailable</strong><span>${error.message}. Paste page source or script snippets, then use Scan pasted HTML.</span></div>`;
+      }
+    }
+
+    function renderDetected() {
+      qs("#detectedList").innerHTML = detectedApps.length ? detectedApps.map(app => `
+        <div class="detected-item">
+          <strong>${app.name} <span class="tag good">${app.confidence}% confidence</span></strong>
+          <span>${app.category} · ${app.source || "Detected"} · matched ${app.matched.join(", ")} · estimated ${money.format(app.cost)}/mo</span>
+        </div>
+      `).join("") : `<div class="detected-item"><strong>No app signatures scanned yet</strong><span>Paste storefront HTML or script URLs, then scan.</span></div>`;
+    }
+
+    function updateModeButtons() {
+      document.querySelectorAll("[data-mode]").forEach(button => {
+        button.classList.toggle("active", button.dataset.mode === currentMode);
+      });
+    }
+
+    function appDecision(app) {
+      const rule = categoryRules[app.category] || categoryRules.Other;
+      if (app.cost >= rule.threshold * 1.8) {
+        return { label: "Replace now", tag: "stop", why: rule.replacement };
+      }
+      if (app.cost >= rule.threshold) {
+        return { label: "Review", tag: "warn", why: rule.replacement };
+      }
+      return { label: "Keep for now", tag: "good", why: "Cost is not the biggest issue unless usage is low or scripts hurt performance." };
+    }
+
+    function alternativeFor(app) {
+      const rule = categoryRules[app.category] || categoryRules.Other;
+      if (app.cost >= rule.threshold * 1.8) return `${rule.cheaper}; evaluate ${rule.open}`;
+      if (app.cost >= rule.threshold) return `${rule.native}; compare ${rule.cheaper}`;
+      return rule.native;
+    }
+
+    function benchmarkFor(monthlySpend, monthlyRevenue) {
+      const ratio = monthlyRevenue ? monthlySpend / monthlyRevenue : 0;
+      if (ratio >= .018) return { label: `${(ratio * 100).toFixed(1)}%`, title: "Spend is high enough for a replacement sprint.", note: "Above 1.8% of monthly revenue: challenge expensive categories and pitch a concrete sprint.", ratio };
+      if (ratio >= .008) return { label: `${(ratio * 100).toFixed(1)}%`, title: "Spend is inside the review zone.", note: "Between 0.8% and 1.8%: audit overlap, usage, and cheaper native options.", ratio };
+      return { label: `${(ratio * 100).toFixed(1)}%`, title: "Spend is light; keep the audit focused.", note: "Below 0.8%: focus on obvious waste, speed, or support friction before a paid rebuild.", ratio };
+    }
+
+    function calculate() {
+      const monthlySpend = Math.max(numberValue("#monthlyAppSpend"), apps.reduce((sum, app) => sum + Number(app.cost || 0), 0));
+      const annualSpend = monthlySpend * 12;
+      const monthlyRevenue = numberValue("#monthlyRevenue");
+      const pain = qs("#mainPain").value;
+      const decisions = apps.map(appDecision);
+      const replaceCount = decisions.filter((decision) => decision.label === "Replace now").length;
+      const reviewCount = decisions.filter((decision) => decision.label === "Review").length;
+      const savingsLow = Math.round(annualSpend * (replaceCount ? .28 : .18));
+      const savingsHigh = Math.round(annualSpend * (replaceCount ? .48 : .34));
+      const spendRatio = monthlyRevenue ? monthlySpend / monthlyRevenue : 0;
+      const benchmark = benchmarkFor(monthlySpend, monthlyRevenue);
+      const bestMove = replaceCount >= 2 ? "Replace" : reviewCount >= 2 ? "Review" : pain === "speed" ? "Cleanup" : "Keep";
+
+      qs("#annualSpend").textContent = money.format(annualSpend);
+      qs("#savingsRange").textContent = `${money.format(savingsLow)}-${money.format(savingsHigh)}`;
+      qs("#bestMove").textContent = bestMove;
+      qs("#bestMoveNote").textContent = bestMove === "Replace" ? "Several apps are expensive enough to challenge." : bestMove === "Cleanup" ? "Performance and scripts are the likely first win." : "Audit before making heavy changes.";
+      qs("#payback").textContent = annualSpend > 12000 ? "14 days" : annualSpend > 6000 ? "30 days" : "45 days";
+      qs("#benchmarkLabel").textContent = benchmark.label;
+      qs("#benchmarkNote").textContent = benchmark.note;
+      qs("#benchmarkTitle").textContent = benchmark.title;
+      qs("#benchmarkCopy").textContent = currentMode === "agency" ? `${benchmark.note} Turn this into a scoped audit, replacement sprint, or monitored pipeline stage.` : `${benchmark.note} Keep the explanation owner-friendly and avoid technical rebuild language first.`;
+      qs("#benchmarkBar").style.setProperty("--ratio", Math.min(1, benchmark.ratio / .025).toFixed(2));
+      qs("#confidenceTag").textContent = spendRatio > .012 || annualSpend > 8000 ? "Strong fit" : "Light audit";
+      qs("#confidenceTag").className = spendRatio > .012 || annualSpend > 8000 ? "tag good" : "tag warn";
+
+      qs("#recommendationTitle").textContent = recommendationTitle(bestMove, annualSpend);
+      qs("#recommendationText").textContent = recommendationText(bestMove, annualSpend, savingsLow, savingsHigh);
+      qs("#decisionRows").innerHTML = apps.map((app, index) => {
+        const decision = decisions[index];
+        return `<tr>
+          <td><strong>${clean(app.name) || "Unnamed app"}</strong></td>
+          <td>${money.format(Number(app.cost || 0))}</td>
+          <td>${app.category}</td>
+          <td><span class="tag ${decision.tag}">${decision.label}</span></td>
+          <td>${decision.why}</td>
+          <td>${alternativeFor(app)}</td>
+        </tr>`;
+      }).join("");
+
+      renderLists(bestMove, annualSpend, savingsLow, savingsHigh);
+      renderAlternatives();
+      renderMonitoring();
+      renderReport({ monthlySpend, annualSpend, savingsLow, savingsHigh, bestMove, decisions });
+      renderProposal({ monthlySpend, annualSpend, savingsLow, savingsHigh, bestMove, decisions, replaceCount, reviewCount, benchmark });
+    }
+
+    function renderAlternatives() {
+      const rows = apps
+        .map(app => ({ app, decision: appDecision(app), alternative: alternativeFor(app) }))
+        .sort((a, b) => Number(b.app.cost || 0) - Number(a.app.cost || 0))
+        .slice(0, 8);
+      qs("#alternativeList").innerHTML = rows.length ? rows.map(row => `
+        <div class="alt-item">
+          <strong>${row.app.name || "Unnamed app"} <span class="tag ${row.decision.tag}">${row.decision.label}</span></strong>
+          <span>${money.format(Number(row.app.cost || 0))}/mo · ${row.app.category} · ${row.alternative}</span>
+        </div>
+      `).join("") : `<div class="alt-item"><strong>No apps to recommend yet</strong><span>Add or detect apps first.</span></div>`;
+    }
+
+    function renderMonitoring() {
+      const saved = readHistory().find(item => item.storeUrl === qs("#storeUrl").value);
+      const current = apps.map(app => clean(app.name)).filter(Boolean);
+      const prior = saved?.apps?.map(app => clean(app.name)).filter(Boolean) || [];
+      const added = current.filter(name => !prior.includes(name));
+      const removed = prior.filter(name => !current.includes(name));
+      const status = qs("#pipelineStatus").value;
+      const notes = [
+        `<div class="monitor-item"><strong>Pipeline stage: ${status}</strong><span>${status === "Proposal sent" ? "Follow up with the proposal and replacement sprint scope." : status === "Replacement sprint" ? "Track confirmed savings and implementation blockers." : "Save this audit, then re-scan when the store changes."}</span></div>`,
+        `<div class="monitor-item"><strong>${added.length} apps added since saved audit</strong><span>${added.length ? added.join(", ") : "No new apps detected compared with saved history."}</span></div>`,
+        `<div class="monitor-item"><strong>${removed.length} apps removed since saved audit</strong><span>${removed.length ? removed.join(", ") : "No removed apps detected compared with saved history."}</span></div>`
+      ];
+      qs("#monitorList").innerHTML = notes.join("");
+    }
+
+    function recommendationTitle(bestMove, annualSpend) {
+      if (bestMove === "Replace") return "Start with the expensive recurring apps.";
+      if (bestMove === "Cleanup") return "Start with storefront cleanup, then app spend.";
+      if (annualSpend > 9000) return "Run a paid stack audit before rebuilding.";
+      return "Keep the audit lightweight and remove obvious overlap.";
+    }
+
+    function recommendationText(bestMove, annualSpend, low, high) {
+      if (bestMove === "Replace") {
+        return `This store has enough app spend to justify a replacement sprint. The practical target is ${money.format(low)} to ${money.format(high)} in annual savings without touching core checkout logic first.`;
+      }
+      if (bestMove === "Cleanup") {
+        return "The first useful outcome is a cleaner storefront: remove duplicate scripts, measure load impact, and only replace apps that still create cost or workflow pain after cleanup.";
+      }
+      return `The app spend is not automatically a rebuild case. Package this as a short audit and use ${money.format(low)} to ${money.format(high)} as the savings range to validate.`;
+    }
+
+    function listHtml(items) {
+      return items.map(item => `<li>${item}</li>`).join("");
+    }
+
+    function renderLists(bestMove, annualSpend, low, high) {
+      qs("#quickPath").innerHTML = listHtml([
+        "Rank apps by monthly cost and weekly usage.",
+        "Replace the highest-cost low-usage category first.",
+        `Use ${money.format(low)} as the conservative annual proof target.`
+      ]);
+      qs("#cleanupPath").innerHTML = listHtml([
+        "Remove duplicate scripts and unused app embeds.",
+        "Document who owns each app and what decision it supports.",
+        "Keep any app that clearly drives revenue or support savings."
+      ]);
+      qs("#buildPath").innerHTML = listHtml([
+        annualSpend > 12000 ? "Consider custom work only for stable workflows above $250/mo." : "Avoid custom work until recurring spend is materially higher.",
+        "Look for repo-backed alternatives after the quick replacement list is clear.",
+        "Scope a build only when the payback case is visible in one category."
+      ]);
+      qs("#actionPlan").innerHTML = listHtml([
+        "Confirm the current monthly cost for each listed app.",
+        "Mark every app as revenue, support, compliance, or convenience.",
+        "Cancel or downgrade one low-usage app.",
+        "Test one lower-cost replacement for the largest category.",
+        "Remove duplicate scripts or unused embeds.",
+        "Send the owner a one-page keep / replace / rebuild table.",
+        bestMove === "Replace" ? "Offer a replacement sprint." : "Offer a lightweight cleanup audit."
+      ]);
+    }
+
+    function renderReport(result) {
+      const store = clean(qs("#storeUrl").value) || "the store";
+      const platform = qs("#platform").value;
+      const appNames = apps.map(app => clean(app.name)).filter(Boolean).join(", ") || "the current apps";
+      const modeLine = currentMode === "agency"
+        ? "Agency read: this is a scoped pipeline opportunity. Lead with the app decisions, savings range, and 7-day sprint."
+        : "Merchant read: this is a plain cost and workflow review. Lead with keep, replace, and cleanup decisions.";
+      qs("#reportText").textContent = `Commerce stack audit for ${store}
+
+Platform: ${platform}
+Current app stack reviewed: ${appNames}
+Estimated annual app spend: ${money.format(result.annualSpend)}
+Likely savings range: ${money.format(result.savingsLow)} to ${money.format(result.savingsHigh)}
+Recommended first move: ${result.bestMove}
+Mode: ${currentMode}
+
+Plain read:
+Do not sell a rebuild first. Start with the paid apps that are expensive, low-usage, duplicated, or slowing the storefront. Keep apps that clearly drive revenue or reduce support work. Only scope custom work when one category has a visible payback case.
+
+${modeLine}
+
+Next step:
+Run a 7-day replacement and cleanup sprint, then decide whether a repo-backed or custom implementation is worth quoting.`;
+    }
+
+    function renderProposal(result) {
+      const store = clean(qs("#storeUrl").value) || "your store";
+      const platform = qs("#platform").value;
+      const owner = qs("#teamType").value;
+      const status = qs("#pipelineStatus").value;
+      const highCostApps = apps
+        .map((app) => ({ app, decision: appDecision(app) }))
+        .filter(row => row.decision.label !== "Keep for now")
+        .map(row => `${row.app.name} (${money.format(row.app.cost)}/mo, ${row.decision.label.toLowerCase()})`);
+      const focus = highCostApps.length ? highCostApps.join(", ") : "the paid apps with unclear usage";
+      const sprintPrice = result.annualSpend > 12000 ? "$1,500" : result.annualSpend > 6000 ? "$950" : "$500";
+      qs("#proposalText").textContent = `Proposal: Commerce app spend audit and replacement sprint
+
+Store: ${store}
+Platform: ${platform}
+Implementation owner: ${owner}
+Pipeline stage: ${status}
+
+Why this is worth doing:
+Your current app stack appears to cost about ${money.format(result.annualSpend)} per year. A conservative first-pass savings target is ${money.format(result.savingsLow)} to ${money.format(result.savingsHigh)} per year.
+Benchmark: ${result.benchmark.label} of monthly revenue. ${result.benchmark.note}
+
+Focus apps:
+${focus}
+
+Recommended engagement:
+${currentMode === "agency" ? `Run a 7-day audit and replacement sprint for ${sprintPrice}.` : `Start with a 7-day audit. If the savings case is clear, the implementation sprint is ${sprintPrice}.`}
+
+Deliverables:
+1. Confirm the real monthly cost and owner for each app.
+2. Mark every app as keep, replace, cleanup, or rebuild.
+3. Identify lower-cost native, open-source, or simpler alternatives.
+4. Remove one obvious source of waste or duplication.
+5. Deliver a one-page implementation plan with expected savings and next steps.
+
+What we will not do first:
+We will not pitch a custom rebuild until the quick replacement path is clear. Custom work only makes sense when one category has stable requirements and visible payback.`;
+    }
+
+    function renderAppEditor() {
+      qs("#appList").innerHTML = apps.map((app, index) => `
+        <div class="app-row">
+          <input aria-label="App name" value="${clean(app.name)}" oninput="updateApp(${index}, 'name', this.value)">
+          <input aria-label="Monthly app cost" type="number" min="0" step="5" value="${Number(app.cost || 0)}" oninput="updateApp(${index}, 'cost', this.value)">
+          <select aria-label="App category" onchange="updateApp(${index}, 'category', this.value)">
+            ${Object.keys(categoryRules).map(category => `<option ${category === app.category ? "selected" : ""}>${category}</option>`).join("")}
+          </select>
+          <button class="icon-btn" type="button" aria-label="Remove app" onclick="removeApp(${index})">x</button>
+        </div>
+      `).join("");
+    }
+
+    function render() {
+      renderAppEditor();
+      renderDetected();
+      renderHistory();
+      calculate();
+    }
+
+    function loadSample() {
+      qs("#storeUrl").value = "https://bright-bottle-demo.com";
+      qs("#platform").value = "Shopify";
+      qs("#monthlyRevenue").value = 128000;
+      qs("#monthlyAppSpend").value = 1165;
+      qs("#teamType").value = "Agency";
+      qs("#pipelineStatus").value = "Proposal sent";
+      currentMode = "agency";
+      updateModeButtons();
+      qs("#mainPain").value = "cost";
+      qs("#storeHtml").value = `https://static.klaviyo.com/onsite/js/klaviyo.js
+https://sdk.rebuyengine.com/js/rebuy.js
+https://config.gorgias.chat/bundle-loader.js
+https://staticw2.yotpo.com/widget.js
+https://cdn.rechargepayments.com/assets/js/widget.js`;
+      detectedApps = [];
+      apps = [
+        { name: "Klaviyo", cost: 280, category: "Email/SMS" },
+        { name: "Recharge", cost: 299, category: "Subscriptions" },
+        { name: "Rebuy", cost: 249, category: "Upsell" },
+        { name: "Gorgias", cost: 180, category: "Support" },
+        { name: "LoyaltyLion", cost: 157, category: "Loyalty" }
+      ];
+      render();
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const area = document.createElement("textarea");
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+    }
+
+    function tableText() {
+      return apps.map((app) => {
+        const decision = appDecision(app);
+        return `${app.name}\t${money.format(app.cost)}\t${app.category}\t${decision.label}\t${decision.why}`;
+      }).join("\n");
+    }
+
+    function exportJson() {
+      const payload = {
+        storeUrl: qs("#storeUrl").value,
+        platform: qs("#platform").value,
+        monthlyRevenue: numberValue("#monthlyRevenue"),
+        monthlyAppSpend: numberValue("#monthlyAppSpend"),
+        teamType: qs("#teamType").value,
+        pipelineStatus: qs("#pipelineStatus").value,
+        mode: currentMode,
+        mainPain: qs("#mainPain").value,
+        apps,
+        report: qs("#reportText").textContent,
+        proposal: qs("#proposalText").textContent,
+        detectedApps,
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "githubscout-commerce-audit.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    qs("#runAudit").addEventListener("click", calculate);
+    qs("#scanLive").addEventListener("click", scanLiveStore);
+    qs("#scanHtml").addEventListener("click", scanPastedHtml);
+    qs("#loadSample").addEventListener("click", loadSample);
+    qs("#clearApps").addEventListener("click", () => { apps = []; render(); });
+    qs("#addApp").addEventListener("click", () => addAppRow());
+    qs("#saveAudit").addEventListener("click", saveAudit);
+    qs("#clearHistory").addEventListener("click", () => writeHistory([]));
+    qs("#rescanSaved").addEventListener("click", renderMonitoring);
+    qs("#copyTable").addEventListener("click", () => copyText(tableText()));
+    qs("#copyPlan").addEventListener("click", () => copyText(qs("#actionPlan").innerText));
+    qs("#copyReport").addEventListener("click", () => copyText(qs("#reportText").textContent));
+    qs("#copyProposal").addEventListener("click", () => copyText(qs("#proposalText").textContent));
+    qs("#downloadProposal").addEventListener("click", () => {
+      const blob = new Blob([qs("#proposalText").textContent], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "githubscout-commerce-proposal.txt";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    });
+    qs("#downloadJson").addEventListener("click", exportJson);
+    document.addEventListener("input", (event) => {
+      if (event.target.closest(".audit-panel")) calculate();
+    });
+    document.addEventListener("change", (event) => {
+      if (event.target.closest(".audit-panel")) calculate();
+    });
+    document.querySelectorAll("[data-mode]").forEach(button => {
+      button.addEventListener("click", () => {
+        currentMode = button.dataset.mode;
+        updateModeButtons();
+        calculate();
+      });
+    });
+    render();
+  </script>
+</body>
+</html>

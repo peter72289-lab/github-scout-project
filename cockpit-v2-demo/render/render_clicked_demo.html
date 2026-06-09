@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHubScout Cockpit V2 Clicked Demo Render</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: #08090c;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+    }
+
+    .stage {
+      position: relative;
+      width: 1440px;
+      height: 900px;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.03) 0%, rgba(0,0,0,.04) 50%, rgba(0,0,0,.58) 100%),
+        linear-gradient(90deg, rgba(0,0,0,.24) 0%, rgba(0,0,0,0) 36%);
+      pointer-events: none;
+    }
+
+    .focus {
+      position: absolute;
+      border: 4px solid rgba(255, 122, 26, .95);
+      box-shadow: 0 0 34px rgba(255, 122, 26, .38);
+      background: rgba(255, 122, 26, .05);
+    }
+
+    .tab-label {
+      position: absolute;
+      top: 32px;
+      left: 46px;
+      color: #ff9a3d;
+      font: 800 22px "SF Mono", "SFMono-Regular", ui-monospace, monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      background: rgba(8, 9, 12, .82);
+      border: 1px solid rgba(255, 122, 26, .38);
+    }
+
+    .caption {
+      position: absolute;
+      left: 46px;
+      right: 46px;
+      bottom: 72px;
+      color: #fff;
+      font-size: 34px;
+      line-height: 1.22;
+      font-weight: 760;
+      letter-spacing: 0;
+      padding: 22px 28px;
+      background: rgba(8, 9, 12, .88);
+      border: 1px solid rgba(255, 122, 26, .48);
+      box-shadow: 0 18px 48px rgba(0,0,0,.36);
+    }
+
+    .progress {
+      position: absolute;
+      left: 46px;
+      right: 46px;
+      bottom: 34px;
+      height: 6px;
+      background: rgba(255,255,255,.13);
+    }
+
+    .bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #ff7a1a, #ffc15d);
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <div class="shade"></div>
+    <div class="focus" id="focus"></div>
+    <div class="tab-label" id="tabLabel"></div>
+    <div class="caption" id="caption"></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </main>
+
+  <script>
+    const segments = [
+      {
+        start: 0,
+        end: 7.5,
+        image: "../screens-clicked/01-command-center.png",
+        label: "Command center",
+        box: [292, 274, 1096, 425],
+        text: "Start in Command center: the cockpit summarizes scope, coverage, queue depth, and what to act on today."
+      },
+      {
+        start: 7.5,
+        end: 15,
+        image: "../screens-clicked/02-domain-pools.png",
+        label: "Domain pools",
+        box: [292, 274, 1096, 614],
+        text: "Domain pools organize the market: active pools, displayed opportunities, raw signal, freshness, and confidence."
+      },
+      {
+        start: 15,
+        end: 22.5,
+        image: "../screens-clicked/03-opportunity-explorer.png",
+        label: "Opportunity explorer",
+        box: [292, 200, 1096, 688],
+        text: "Opportunity explorer turns raw source activity into scored opportunities operators can search and compare."
+      },
+      {
+        start: 22.5,
+        end: 30,
+        image: "../screens-clicked/04-top-actions.png",
+        label: "Top actions",
+        box: [292, 248, 1096, 640],
+        text: "Top actions is the standup view: the five moves worth shipping now, not a giant backlog to babysit."
+      },
+      {
+        start: 30,
+        end: 37.5,
+        image: "../screens-clicked/05-deep-dives.png",
+        label: "Deep dives",
+        box: [292, 248, 1096, 640],
+        text: "Deep dives validate the strongest bets with richer evidence, caveats, and next-step recommendations."
+      },
+      {
+        start: 37.5,
+        end: 45,
+        image: "../screens-clicked/06-funnel.png",
+        label: "Funnel",
+        box: [292, 248, 1096, 640],
+        text: "The funnel shows the pipeline from raw buffer to enriched signal to published opportunities and action."
+      },
+      {
+        start: 45,
+        end: 52.5,
+        image: "../screens-clicked/07-sources.png",
+        label: "Sources",
+        box: [292, 248, 1096, 640],
+        text: "Sources shows coverage across the open-intelligence stack, so operators can see where signal is coming from."
+      },
+      {
+        start: 52.5,
+        end: 60,
+        image: "../screens-clicked/08-methodology.png",
+        label: "Methodology",
+        box: [292, 262, 1024, 480],
+        text: "Methodology closes the loop: V2 explains source coverage, two scout modes, and the scoring system with no black box."
+      }
+    ];
+
+    function setDemoTime(t) {
+      const seg = segments.find((item) => t >= item.start && t < item.end) || segments[segments.length - 1];
+      document.getElementById("stage").style.backgroundImage = `url("${seg.image}")`;
+      document.getElementById("tabLabel").textContent = `GitHubScout Cockpit V2 - ${seg.label}`;
+      document.getElementById("caption").textContent = seg.text;
+      const [x, y, w, h] = seg.box;
+      const focus = document.getElementById("focus");
+      focus.style.left = `${x}px`;
+      focus.style.top = `${y}px`;
+      focus.style.width = `${w}px`;
+      focus.style.height = `${h}px`;
+      document.getElementById("bar").style.width = `${Math.min(100, (t / 60) * 100)}%`;
+    }
+
+    setDemoTime(Number(new URLSearchParams(location.search).get("t") || 0));
+    window.setDemoTime = setDemoTime;
+  </script>
+</body>
+</html>
+

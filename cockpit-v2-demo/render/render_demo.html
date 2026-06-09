@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHubScout Cockpit V2 Demo Render</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: #08090c;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+    }
+
+    .stage {
+      position: relative;
+      width: 1440px;
+      height: 900px;
+      background: url("../screens/01-command-center.png") center / cover no-repeat;
+    }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.48) 100%);
+      pointer-events: none;
+    }
+
+    .highlight {
+      position: absolute;
+      border: 4px solid rgba(255, 122, 26, .95);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.16), 0 0 28px rgba(255, 122, 26, .42);
+      background: rgba(255, 122, 26, .08);
+      transition: all .2s ease;
+    }
+
+    .caption {
+      position: absolute;
+      left: 46px;
+      right: 46px;
+      bottom: 72px;
+      max-width: 1180px;
+      color: #fff;
+      font-size: 34px;
+      line-height: 1.22;
+      font-weight: 720;
+      letter-spacing: 0;
+      padding: 22px 28px;
+      background: rgba(8, 9, 12, .86);
+      border: 1px solid rgba(255, 122, 26, .48);
+      box-shadow: 0 18px 48px rgba(0,0,0,.36);
+    }
+
+    .eyebrow {
+      position: absolute;
+      top: 28px;
+      left: 46px;
+      color: #ff9a3d;
+      font: 700 22px "SF Mono", "SFMono-Regular", ui-monospace, monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      background: rgba(8, 9, 12, .78);
+      border: 1px solid rgba(255, 122, 26, .34);
+    }
+
+    .progress {
+      position: absolute;
+      left: 46px;
+      right: 46px;
+      bottom: 34px;
+      height: 6px;
+      background: rgba(255,255,255,.12);
+    }
+
+    .bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #ff7a1a, #ffc15d);
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <div class="shade"></div>
+    <div class="highlight" id="highlight"></div>
+    <div class="eyebrow">60 second demo - GitHubScout Cockpit V2</div>
+    <div class="caption" id="caption"></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </main>
+
+  <script>
+    const segments = [
+      { start: 0, end: 5, box: [292, 142, 1096, 327], text: "GitHubScout Cockpit V2: opportunity intelligence command center." },
+      { start: 5, end: 11, box: [20, 178, 240, 36], text: "Command center: run scope, coverage, queue depth, and the action standup in one screen." },
+      { start: 11, end: 17, box: [20, 216, 240, 36], text: "Domain pools: organize niches, markets, and search pools before scouting." },
+      { start: 17, end: 23, box: [20, 254, 240, 36], text: "Opportunity explorer: scan published opportunities and raw signals for what is rising." },
+      { start: 23, end: 30, box: [20, 292, 240, 36], text: "Top actions: the cockpit narrows the run into the moves worth shipping today." },
+      { start: 30, end: 37, box: [20, 330, 240, 36], text: "Deep dives: validate the strongest opportunities with richer evidence this week." },
+      { start: 37, end: 43, box: [20, 368, 240, 36], text: "Funnel: watch raw ideas become enriched opportunities, then recommended actions." },
+      { start: 43, end: 49, box: [20, 406, 240, 36], text: "Sources: monitor coverage across the open intelligence source stack." },
+      { start: 49, end: 55, box: [20, 444, 240, 36], text: "Methodology: V2 scoring makes confidence, coverage, and source quality transparent." },
+      { start: 55, end: 60, box: [292, 563, 1096, 136], text: "Find it before your competitors do: one cockpit from signal to action." }
+    ];
+
+    function setDemoTime(t) {
+      const seg = segments.find((item) => t >= item.start && t < item.end) || segments[segments.length - 1];
+      const [x, y, w, h] = seg.box;
+      const highlight = document.getElementById("highlight");
+      highlight.style.left = `${x}px`;
+      highlight.style.top = `${y}px`;
+      highlight.style.width = `${w}px`;
+      highlight.style.height = `${h}px`;
+      document.getElementById("caption").textContent = seg.text;
+      document.getElementById("bar").style.width = `${Math.min(100, (t / 60) * 100)}%`;
+    }
+
+    setDemoTime(Number(new URLSearchParams(location.search).get("t") || 0));
+    window.setDemoTime = setDemoTime;
+  </script>
+</body>
+</html>
+

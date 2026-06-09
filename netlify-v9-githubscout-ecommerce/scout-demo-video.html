@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scout Demo</title>
+  <style>
+    :root {
+      --black: #080e16;
+      --deep: #0f1c2c;
+      --surface: #162840;
+      --border: #2a4560;
+      --amber: #f5b030;
+      --white: #f6f2ed;
+      --body: #d4e6f4;
+      --muted: #a6c4dc;
+      --green: #50d8a0;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: var(--black);
+      color: var(--white);
+      font-family: Barlow, Arial, sans-serif;
+    }
+
+    .demo {
+      width: min(920px, 100%);
+      min-height: 520px;
+      padding: 28px;
+      background:
+        linear-gradient(135deg, rgba(245, 176, 48, .12), transparent 42%),
+        var(--deep);
+      border: 1px solid var(--border);
+    }
+
+    .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: "DM Mono", ui-monospace, SFMono-Regular, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pulse {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 9px rgba(80, 216, 160, .12);
+    }
+
+    .screen {
+      display: grid;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .query, .result {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 18px;
+    }
+
+    .query {
+      color: var(--body);
+      font-size: 20px;
+      line-height: 1.5;
+    }
+
+    .result {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: start;
+    }
+
+    h1, p { margin: 0; }
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--amber);
+      font-size: clamp(28px, 5vw, 54px);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: var(--body);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    .score {
+      min-width: 112px;
+      text-align: center;
+      color: var(--green);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 48px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 700px) {
+      .demo { min-height: 420px; padding: 20px; }
+      .result { grid-template-columns: 1fr; }
+      .score { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="demo" aria-label="Scout product demo">
+    <div class="bar"><span>Live intelligence scan</span><span class="pulse"></span></div>
+    <section class="screen">
+      <div class="query">Find high-intent ecommerce operators looking for Shopify conversion tools this week.</div>
+      <div class="result">
+        <div>
+          <h1>Signal Found</h1>
+          <p>Scout ranks source credibility, commercial intent, and timing so teams can act on relevant opportunities before the market turns noisy.</p>
+        </div>
+        <div class="score">94</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+

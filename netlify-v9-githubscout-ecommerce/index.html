@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scout — The Open Intelligence Engine · v9</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:    #080E16;
+  --deep:     #0F1C2C;
+  --surface:  #162840;
+  --surf2:    #1E3452;
+  --border:   #2A4560;
+  --blt:      #3C5E7A;
+  --amber:    #F5B030;
+  --adim:     #B87A10;
+  --aglow:    rgba(245,176,48,0.14);
+  --white:    #F6F2ED;
+  --body:     #D4E6F4;
+  --muted:    #A6C4DC;
+  --faint:    #6888A2;
+  --green:    #50D8A0;
+  --gdim:     rgba(80,216,160,0.15);
+  --blue:     #56A8EC;
+  --bdim:     rgba(86,168,236,0.14);
+  --red:      #EE8888;
+  --teal:     #38C8C8;
+  --purple:   #A888E8;
+  --av1:      #F5B030;
+  --av2:      #50D8A0;
+  --av3:      #56A8EC;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;font-weight:300;font-size:16px;overflow-x:hidden;}
+
+/* ─── UTILITIES ─── */
+h2{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(28px,3.2vw,50px);line-height:1.1;color:var(--white);margin-bottom:18px;}
+h2 em{font-style:italic;color:var(--amber);}
+.mono{font-family:'DM Mono',monospace;}
+.sec-label{font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.sec-label::after{content:'';flex:1;max-width:36px;height:1px;background:var(--adim);}
+.pad{padding:88px 60px;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.6);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── NAV ─── */
+nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:space-between;padding:15px 60px;border-bottom:1px solid var(--border);background:rgba(8,14,22,.97);backdrop-filter:blur(20px);transition:all .3s;}
+nav.scrolled{padding:11px 60px;border-bottom-color:var(--adim);}
+.nav-logo{font-family:'DM Mono',monospace;font-size:15px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:10px;}
+.nav-logo-tag{font-size:11px;background:var(--aglow);border:1px solid var(--adim);color:var(--amber);padding:2px 8px;letter-spacing:.12em;}
+.nav-center{display:flex;align-items:center;gap:24px;}
+.nav-link{font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nav-link:hover{color:var(--white);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+.nav-chat{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);border:1px solid var(--border);padding:9px 16px;cursor:pointer;transition:all .2s;background:none;}
+.nav-chat:hover{border-color:var(--blt);color:var(--muted);}
+.nav-cta{font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--black);background:var(--amber);padding:11px 22px;text-decoration:none;font-weight:500;transition:background .2s;}
+.nav-cta:hover{background:#FFCC58;}
+
+/* ─── URGENCY BAR ─── */
+.ub{margin-top:55px;background:linear-gradient(90deg,var(--surf2),var(--deep),var(--surf2));border-bottom:1px solid var(--adim);padding:10px 60px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.ub-dot{width:7px;height:7px;background:var(--amber);border-radius:50%;animation:pulse 2s ease-in-out infinite;flex-shrink:0;}
+.ub p{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--body);}
+.ub p strong{color:var(--amber);}
+.ub-link{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+.ub-guarantee{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--gdim);border:1px solid rgba(80,216,160,.3);color:var(--green);padding:4px 10px;flex-shrink:0;}
+
+/* ─── HERO ─── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:88px 60px 60px;position:relative;overflow:hidden;text-align:center;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:.16;mask-image:radial-gradient(ellipse 100% 80% at 50% 40%,black 10%,transparent 80%);}
+.hero-glow{position:absolute;top:5%;left:50%;transform:translateX(-50%);width:800px;height:500px;background:radial-gradient(ellipse,rgba(245,176,48,.07) 0%,transparent 65%);pointer-events:none;}
+.hero-inner{position:relative;max-width:940px;width:100%;}
+
+/* review badges in hero */
+.hero-badges{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;animation:fadeUp .5s ease both;}
+.hb-badge{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--body);}
+.hb-badge .stars{color:var(--amber);letter-spacing:1px;}
+.hb-badge strong{color:var(--white);font-weight:500;}
+.hb-sep{width:1px;height:24px;background:var(--border);}
+
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);margin-bottom:22px;display:flex;align-items:center;justify-content:center;gap:12px;animation:fadeUp .55s ease both;}
+.ey-sep{color:var(--border);}
+.hero-headline{font-family:'Playfair Display',serif;font-size:clamp(46px,6vw,88px);font-weight:900;line-height:.97;color:var(--white);margin-bottom:26px;animation:fadeUp .6s .07s ease both;}
+.hero-headline em{font-style:italic;color:var(--amber);}
+.hero-sub{font-size:18px;font-weight:300;color:var(--body);line-height:1.75;max-width:700px;margin:0 auto 36px;animation:fadeUp .6s .14s ease both;}
+.hero-sub strong{color:var(--white);font-weight:500;}
+
+/* mode selector */
+.mode-sel{display:flex;justify-content:center;gap:0;margin-bottom:36px;border:1px solid var(--border);width:fit-content;margin-left:auto;margin-right:auto;animation:fadeUp .6s .2s ease both;}
+.mode-btn{font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.14em;text-transform:uppercase;padding:15px 32px;cursor:pointer;border-right:1px solid var(--border);transition:all .25s;color:var(--faint);background:var(--deep);user-select:none;display:flex;align-items:center;gap:10px;}
+.mode-btn:last-child{border-right:none;}
+.mode-btn .mi{font-size:15px;}
+.mode-btn.active.exp{color:var(--blue);background:var(--bdim);border-bottom:2px solid var(--blue);}
+.mode-btn.active.sav{color:var(--green);background:var(--gdim);border-bottom:2px solid var(--green);}
+
+/* hero result showcase */
+.hero-showcase{background:var(--deep);border:1px solid var(--blt);max-width:800px;margin:0 auto 36px;text-align:left;overflow:hidden;animation:fadeUp .7s .26s ease both;}
+.hs-bar{background:var(--surf2);border-bottom:1px solid var(--border);padding:11px 20px;display:flex;align-items:center;gap:12px;}
+.mode-chip{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;}
+.mode-chip.exp{background:var(--bdim);color:var(--blue);border:1px solid rgba(86,168,236,.3);}
+.mode-chip.sav{background:var(--gdim);color:var(--green);border:1px solid rgba(80,216,160,.3);}
+.hs-query{font-family:'DM Mono',monospace;font-size:13px;color:var(--faint);flex:1;}
+.hs-query span{color:var(--white);}
+.hs-count{font-family:'DM Mono',monospace;font-size:13px;color:var(--faint);}
+.hs-result{padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:18px;border-bottom:1px solid var(--border);}
+.hs-result:last-child{border-bottom:none;}
+.hs-result.top{border-left:3px solid var(--amber);}
+.hr-top{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.hr-src{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;}
+.hr-src.gh{background:var(--aglow);color:var(--amber);border:1px solid var(--adim);}
+.hr-src.hn{background:rgba(238,136,136,.14);color:var(--red);border:1px solid rgba(238,136,136,.3);}
+.hr-src.as{background:var(--gdim);color:var(--green);border:1px solid rgba(80,216,160,.3);}
+.hr-src.sh{background:rgba(56,200,200,.14);color:var(--teal);border:1px solid rgba(56,200,200,.3);}
+.hr-gem{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--aglow);color:var(--amber);border:1px solid var(--adim);padding:2px 8px;}
+.hr-name{font-family:'DM Mono',monospace;font-size:14px;color:var(--white);}
+.hr-desc{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+.hr-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.hr-tag{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;background:var(--surf2);color:var(--faint);border:1px solid var(--border);}
+.hr-tag.rep{background:var(--gdim);color:var(--green);border-color:rgba(80,216,160,.3);}
+.score-panel{background:var(--surface);border:1px solid var(--border);padding:14px;min-width:180px;align-self:flex-start;}
+.sp-total{text-align:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.sp-total-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:3px;}
+.sp-total-num{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--green);line-height:1;}
+.sp-dims{display:flex;flex-direction:column;gap:5px;}
+.sp-dim{display:flex;justify-content:space-between;align-items:center;gap:7px;}
+.sp-dim-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);}
+.sp-dim-bar{flex:1;height:4px;background:var(--border);border-radius:2px;}
+.sp-dim-fill{height:100%;background:var(--amber);border-radius:2px;}
+.sp-dim-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--amber);font-weight:500;width:14px;text-align:right;}
+
+/* hero actions */
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:20px;flex-wrap:wrap;animation:fadeUp .6s .32s ease both;}
+.btn-primary{font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--black);background:var(--amber);padding:17px 34px;text-decoration:none;display:inline-block;font-weight:500;transition:all .2s;position:relative;}
+.btn-primary::after{content:'';position:absolute;bottom:-4px;right:-4px;width:100%;height:100%;border:1px solid var(--adim);transition:all .2s;}
+.btn-primary:hover{background:#FFCC58;}
+.btn-primary:hover::after{bottom:-7px;right:-7px;}
+.btn-ghost{font-size:15px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:color .2s;}
+.btn-ghost:hover{color:var(--white);}
+.mbg-badge{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--gdim);border:1px solid rgba(80,216,160,.3);color:var(--green);padding:5px 12px;}
+.hero-trust{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;animation:fadeUp .6s .38s ease both;}
+.trust-item{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:7px;}
+.trust-item .dot{width:4px;height:4px;background:var(--amber);border-radius:50%;}
+
+/* hero strip */
+.hero-strip{position:relative;width:100%;max-width:940px;display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-top:48px;animation:fadeUp .7s .44s ease both;}
+.hs-cell{background:var(--surface);padding:20px;display:flex;flex-direction:column;gap:4px;transition:background .2s;}
+.hs-cell:hover{background:var(--surf2);}
+.hs-cell-num{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;color:var(--amber);line-height:1;}
+.hs-cell-label{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+/* ─── PRESS / AS SEEN IN ─── */
+.press-bar{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--deep);padding:22px 60px;}
+.press-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:40px;flex-wrap:wrap;justify-content:center;}
+.press-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);flex-shrink:0;}
+.press-logos{display:flex;align-items:center;gap:32px;flex-wrap:wrap;}
+.press-logo{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--blt);font-weight:500;transition:color .2s;cursor:default;}
+.press-logo:hover{color:var(--muted);}
+.press-logo.featured{color:var(--faint);}
+
+/* ─── TICKER ─── */
+.ticker{border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;background:var(--deep);padding:11px 0;}
+.ticker-inner{display:flex;gap:60px;animation:ticker 35s linear infinite;white-space:nowrap;}
+@keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.ticker-item{font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.ticker-item .dot{width:5px;height:5px;background:var(--amber);border-radius:50%;}
+
+/* ─── FREE QUERY DEMO ─── */
+.free-demo{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.free-demo-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:400px 1fr;gap:72px;align-items:start;}
+.fd-left h2{margin-bottom:14px;}
+.fd-left p{font-size:16px;color:var(--body);line-height:1.8;margin-bottom:20px;}
+.fd-left p strong{color:var(--white);font-weight:500;}
+.fd-free-badge{display:inline-flex;align-items:center;gap:10px;background:var(--gdim);border:1px solid rgba(80,216,160,.3);padding:10px 16px;margin-bottom:24px;}
+.fd-free-badge .icon{font-size:18px;}
+.fd-free-badge p{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);}
+.fd-free-badge p strong{color:var(--white);}
+
+.fd-demo-ui{background:var(--black);border:1px solid var(--blt);border-radius:4px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+.fd-topbar{background:var(--surf2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px;}
+.fd-dots{display:flex;gap:5px;}
+.fd-dots span{width:9px;height:9px;border-radius:50%;}
+.fd-dots span:nth-child(1){background:#E07878;}
+.fd-dots span:nth-child(2){background:#E8B84B;}
+.fd-dots span:nth-child(3){background:var(--green);}
+.fd-url{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:13px;color:var(--faint);}
+.fd-body{padding:20px;}
+.fd-search-row{display:flex;gap:8px;margin-bottom:16px;}
+.fd-input{flex:1;background:var(--surface);border:1px solid var(--blt);padding:12px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--white);outline:none;transition:border-color .2s;}
+.fd-input:focus{border-color:var(--amber);}
+.fd-input::placeholder{color:var(--faint);}
+.fd-search-btn{background:var(--amber);border:none;padding:12px 20px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--black);font-weight:500;cursor:pointer;transition:background .2s;}
+.fd-search-btn:hover{background:#FFCC58;}
+.fd-filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.fd-filter{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;}
+.fd-filter.on{border-color:var(--adim);color:var(--amber);background:var(--aglow);}
+.fd-results{display:flex;flex-direction:column;gap:8px;}
+.fd-result{background:var(--surface);border:1px solid var(--border);padding:14px;display:flex;gap:12px;align-items:flex-start;transition:border-color .2s;}
+.fd-result:hover{border-color:var(--adim);}
+.fd-result.gem{border-left:3px solid var(--amber);}
+.fdr-info{flex:1;}
+.fdr-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.fdr-src{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;}
+.fdr-src.gh{background:var(--aglow);color:var(--amber);border:1px solid var(--adim);}
+.fdr-src.as{background:var(--gdim);color:var(--green);border:1px solid rgba(80,216,160,.3);}
+.fdr-src.hn{background:rgba(238,136,136,.12);color:var(--red);border:1px solid rgba(238,136,136,.3);}
+.fdr-name{font-family:'DM Mono',monospace;font-size:13px;color:var(--white);}
+.fdr-desc{font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:6px;}
+.fdr-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.fdr-tag{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;background:var(--surf2);color:var(--faint);border:1px solid var(--border);}
+.fdr-tag.gem{background:var(--aglow);color:var(--amber);}
+.fdr-tag.rep{background:var(--gdim);color:var(--green);}
+.fdr-score{text-align:right;flex-shrink:0;}
+.fdr-score .sn{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--green);}
+.fdr-score .sl{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);}
+.fd-cta-row{margin-top:16px;display:flex;align-items:center;gap:12px;}
+.fd-signup-prompt{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);}
+.fd-signup-link{color:var(--amber);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+
+/* ─── REVIEW SOCIAL PROOF ─── */
+.social-proof{border-top:1px solid var(--border);background:var(--black);}
+.sp-inner{max-width:1100px;margin:0 auto;}
+.sp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.sp-card{background:var(--surface);padding:28px 24px;text-align:center;transition:background .2s;}
+.sp-card:hover{background:var(--surf2);}
+.sp-platform{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;}
+.sp-stars{color:var(--amber);font-size:18px;letter-spacing:2px;margin-bottom:8px;}
+.sp-rating{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--white);line-height:1;margin-bottom:4px;}
+.sp-reviews{font-size:14px;color:var(--muted);}
+.sp-card.featured{background:var(--surf2);border:none;outline:1px solid var(--adim);}
+.sp-user-count{font-family:'Playfair Display',serif;font-size:44px;font-weight:900;color:var(--amber);line-height:1;}
+.sp-user-label{font-size:15px;color:var(--body);margin-top:4px;}
+
+/* ─── BEFORE / AFTER DISCOVERY ─── */
+.discovery-proof{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.dp-inner{max-width:1100px;margin:0 auto;}
+.dp-header{text-align:center;margin-bottom:56px;}
+.dp-header p{font-size:17px;color:var(--body);max-width:620px;margin:14px auto 0;line-height:1.75;}
+.dp-header p strong{color:var(--white);font-weight:500;}
+.dp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.dp-card{background:var(--surface);padding:32px 28px;position:relative;}
+.dp-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--amber);}
+.dp-num{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--adim);margin-bottom:12px;}
+.dp-tool{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--white);margin-bottom:8px;}
+.dp-desc{font-size:14px;color:var(--body);line-height:1.65;margin-bottom:18px;}
+.dp-desc strong{color:var(--white);font-weight:500;}
+.dp-timeline{display:flex;flex-direction:column;gap:8px;}
+.dp-event{display:flex;align-items:flex-start;gap:12px;}
+.dp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.dp-dot.scout{background:var(--amber);}
+.dp-dot.mainstream{background:var(--faint);}
+.dp-event-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;}
+.dp-event.scout .dp-event-label{color:var(--amber);}
+.dp-event.mainstream .dp-event-label{color:var(--faint);}
+.dp-event-desc{font-size:13px;color:var(--muted);line-height:1.45;}
+.dp-window{margin-top:14px;background:var(--aglow);border:1px solid var(--adim);padding:8px 12px;display:flex;align-items:center;gap:8px;}
+.dp-window p{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);}
+.dp-window p strong{color:var(--white);}
+
+/* ─── SOURCES (condensed) ─── */
+.sources{border-top:1px solid var(--border);}
+.sources-inner{max-width:1100px;margin:0 auto;}
+.src-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.src-summary-grid{margin-top:1px;display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-top:none;}
+.src-card{background:var(--surface);padding:22px 18px;display:flex;flex-direction:column;gap:6px;transition:background .2s;}
+.src-card:hover{background:var(--surf2);}
+.src-card.primary{background:var(--surf2);}
+.src-hdr{display:flex;align-items:center;justify-content:space-between;}
+.src-icon{font-size:20px;}
+.src-mode{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;}
+.src-mode.exp{background:var(--bdim);color:var(--blue);border:1px solid rgba(86,168,236,.3);}
+.src-mode.sav{background:var(--gdim);color:var(--green);border:1px solid rgba(80,216,160,.3);}
+.src-mode.val{background:rgba(168,136,232,.14);color:var(--purple);border:1px solid rgba(168,136,232,.3);}
+.src-mode.both{background:var(--aglow);color:var(--amber);border:1px solid var(--adim);}
+.src-name{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--white);font-weight:500;}
+.src-desc{font-size:13px;color:var(--body);line-height:1.45;}
+.src-signal{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.src-sig-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);flex-shrink:0;}
+.src-sig-bar{flex:1;height:3px;background:var(--border);border-radius:2px;}
+.src-sig-fill{height:100%;border-radius:2px;background:var(--amber);}
+
+/* ─── ROI CALCULATOR ─── */
+.roi-calc{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.roi-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:480px 1fr;gap:80px;align-items:start;}
+.roi-left h2{margin-bottom:14px;}
+.roi-left p{font-size:16px;color:var(--body);line-height:1.8;margin-bottom:8px;}
+.roi-left p strong{color:var(--white);font-weight:500;}
+.roi-note{font-size:13px;color:var(--faint);font-style:italic;margin-top:6px;}
+
+.calc-ui{background:var(--black);border:1px solid var(--blt);padding:0;overflow:hidden;}
+.calc-header{background:var(--surf2);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+.calc-title{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);}
+.calc-sub{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);}
+.calc-body{padding:26px;}
+
+.calc-field{margin-bottom:22px;}
+.calc-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.calc-val{color:var(--amber);font-weight:500;}
+.calc-range{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
+.calc-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--amber);cursor:pointer;border:2px solid var(--black);}
+.calc-range::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--amber);cursor:pointer;border:2px solid var(--black);}
+
+.calc-divider{width:100%;height:1px;background:var(--border);margin:20px 0;}
+
+.calc-results{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.calc-result-card{background:var(--surface);border:1px solid var(--border);padding:16px;text-align:center;}
+.calc-result-card.primary{background:var(--surf2);border-color:var(--adim);}
+.cr-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
+.cr-value{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;line-height:1;}
+.cr-sub{font-size:13px;color:var(--muted);margin-top:3px;}
+.cr-value.red{color:var(--red);}
+.cr-value.green{color:var(--green);}
+.cr-value.amber{color:var(--amber);}
+
+.calc-payback{background:var(--gdim);border:1px solid rgba(80,216,160,.3);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
+.cpb-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);}
+.cpb-val{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--green);}
+
+.calc-cta{display:block;width:100%;text-align:center;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;background:var(--amber);color:var(--black);padding:15px;text-decoration:none;font-weight:500;transition:background .2s;margin-top:16px;}
+.calc-cta:hover{background:#FFCC58;}
+
+/* ─── VIDEO DEMO ─── */
+.video-section{border-top:1px solid var(--border);}
+.video-inner{max-width:1000px;margin:0 auto;}
+.video-header{text-align:center;margin-bottom:44px;}
+.video-header p{font-size:17px;color:var(--body);max-width:580px;margin:14px auto 0;line-height:1.75;}
+.video-header p strong{color:var(--white);font-weight:500;}
+.video-embed-wrap{width:100%;border:1px solid var(--blt);background:var(--black);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);}
+.video-embed-wrap iframe{display:block;width:100%;height:540px;border:none;}
+.video-caption{text-align:center;margin-top:16px;font-size:14px;color:var(--faint);font-style:italic;}
+.video-chapter-strip{display:grid;grid-template-columns:repeat(9,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-top:none;}
+.vcs-item{background:var(--surface);padding:10px 8px;cursor:pointer;transition:background .2s;text-align:center;}
+.vcs-item:hover{background:var(--surf2);}
+.vcs-time{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:3px;}
+.vcs-label{font-size:12px;color:var(--muted);}
+
+/* ─── NAMED COMPETITOR COMPARISON ─── */
+.vs-table-section{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.vs-inner{max-width:1100px;margin:0 auto;}
+.vs-header{text-align:center;margin-bottom:48px;}
+.vs-header p{font-size:17px;color:var(--body);max-width:600px;margin:14px auto 0;line-height:1.75;}
+.vs-compare-table{border:1px solid var(--border);overflow:hidden;}
+.vct-head{display:grid;grid-template-columns:280px repeat(4,1fr);background:var(--surf2);border-bottom:1px solid var(--border);}
+.vct-col-head{padding:16px 18px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-align:center;}
+.vct-col-head:first-child{text-align:left;color:var(--faint);}
+.vct-col-head.scout-col{color:var(--amber);background:var(--aglow);}
+.vct-col-head.other{color:var(--muted);}
+.vct-row{display:grid;grid-template-columns:280px repeat(4,1fr);border-bottom:1px solid var(--border);}
+.vct-row:last-child{border-bottom:none;}
+.vct-row:nth-child(even){background:rgba(30,52,82,.3);}
+.vct-cell{padding:14px 18px;font-size:14px;color:var(--body);text-align:center;display:flex;align-items:center;justify-content:center;}
+.vct-cell:first-child{text-align:left;justify-content:flex-start;color:var(--white);font-weight:500;}
+.vct-cell.scout-cell{background:var(--aglow);color:var(--amber);font-weight:600;}
+.vct-cell .ck{color:var(--green);font-size:16px;}
+.vct-cell .xk{color:var(--red);font-size:16px;}
+.vct-cell .partial{color:var(--amber);font-size:13px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;}
+
+/* ─── LOGO WALL ─── */
+.logo-wall{border-top:1px solid var(--border);}
+.logo-wall-inner{max-width:1100px;margin:0 auto;}
+.logo-wall-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);text-align:center;margin-bottom:32px;}
+.logo-grid{display:flex;flex-wrap:wrap;gap:1px;background:var(--border);border:1px solid var(--border);justify-content:center;}
+.logo-card{background:var(--surface);padding:18px 24px;display:flex;flex-direction:column;gap:4px;min-width:180px;flex:0 0 auto;transition:background .2s;}
+.logo-card:hover{background:var(--surf2);}
+.logo-card-name{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--white);font-weight:500;}
+.logo-card-type{font-size:13px;color:var(--faint);}
+
+/* ─── AVATARS ─── */
+.avatars-section{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.av-inner{max-width:1100px;margin:0 auto;}
+.av-header{margin-bottom:52px;}
+.av-header p{font-size:17px;color:var(--body);line-height:1.75;max-width:620px;margin-top:14px;}
+.av-header p strong{color:var(--white);font-weight:500;}
+.av-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.av-card{background:var(--surface);padding:36px 28px;position:relative;overflow:hidden;transition:background .3s;}
+.av-card:hover{background:var(--surf2);}
+.av-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.av1::before{background:var(--av1);}
+.av2::before{background:var(--av2);}
+.av3::before{background:var(--av3);}
+.av-num{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;}
+.av1 .av-num{color:var(--av1);}
+.av2 .av-num{color:var(--av2);}
+.av3 .av-num{color:var(--av3);}
+.av-icon{font-size:30px;margin-bottom:12px;display:block;}
+.av-role{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;font-weight:500;}
+.av1 .av-role{color:var(--av1);}
+.av2 .av-role{color:var(--av2);}
+.av3 .av-role{color:var(--av3);}
+.av-modes{display:flex;gap:6px;margin-bottom:14px;}
+.av-mode{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;}
+.av-mode.exp{background:var(--bdim);color:var(--blue);border:1px solid rgba(86,168,236,.3);}
+.av-mode.sav{background:var(--gdim);color:var(--green);border:1px solid rgba(80,216,160,.3);}
+.av-tagline{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--white);line-height:1.2;margin-bottom:12px;}
+.av-tagline em{font-style:italic;}
+.av1 .av-tagline em{color:var(--av1);}
+.av2 .av-tagline em{color:var(--av2);}
+.av3 .av-tagline em{color:var(--av3);}
+.av-desc{font-size:14px;color:var(--body);line-height:1.7;margin-bottom:18px;}
+.av-desc strong{color:var(--white);font-weight:500;}
+.av-wins{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
+.av-wins li{display:flex;align-items:flex-start;gap:9px;font-size:14px;color:var(--body);line-height:1.5;}
+.av-wins li::before{content:'✓';font-weight:700;flex-shrink:0;margin-top:1px;}
+.av1 .av-wins li::before{color:var(--av1);}
+.av2 .av-wins li::before{color:var(--av2);}
+.av3 .av-wins li::before{color:var(--av3);}
+.av-cta{display:block;width:100%;text-align:center;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:13px;text-decoration:none;font-weight:500;transition:all .2s;}
+.av1 .av-cta{background:rgba(245,176,48,.1);color:var(--av1);border:1px solid var(--av1);}
+.av1 .av-cta:hover{background:var(--av1);color:var(--black);}
+.av2 .av-cta{background:rgba(80,216,160,.1);color:var(--av2);border:1px solid var(--av2);}
+.av2 .av-cta:hover{background:var(--av2);color:var(--black);}
+.av3 .av-cta{background:rgba(86,168,236,.1);color:var(--av3);border:1px solid var(--av3);}
+.av3 .av-cta:hover{background:var(--av3);color:var(--black);}
+
+/* ─── TESTIMONIALS + LOGO WALL ─── */
+.testimonials{border-top:1px solid var(--border);}
+.testi-inner{max-width:1100px;margin:0 auto;}
+.testi-header{text-align:center;margin-bottom:52px;}
+.testi-header p{font-size:17px;color:var(--muted);margin-top:12px;}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px;}
+.testi-card{background:var(--surface);border:1px solid var(--border);padding:26px;transition:border-color .25s;}
+.testi-card:hover{border-color:var(--blt);}
+.t-av-tag{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;margin-bottom:14px;display:inline-block;}
+.tc1 .t-av-tag{background:rgba(245,176,48,.1);color:var(--av1);border:1px solid var(--adim);}
+.tc2 .t-av-tag{background:rgba(80,216,160,.1);color:var(--av2);border:1px solid rgba(80,216,160,.3);}
+.tc3 .t-av-tag{background:rgba(86,168,236,.1);color:var(--av3);border:1px solid rgba(86,168,236,.3);}
+.testi-stars{color:var(--amber);font-size:15px;letter-spacing:2px;margin-bottom:12px;}
+.testi-card blockquote{font-size:15px;color:var(--body);line-height:1.7;margin-bottom:18px;font-style:italic;}
+.testi-card blockquote strong{color:var(--white);font-style:normal;font-weight:500;}
+.testi-author{display:flex;align-items:center;gap:12px;border-top:1px solid var(--border);padding-top:14px;}
+.testi-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--black);flex-shrink:0;}
+.testi-name{font-size:15px;font-weight:500;color:var(--white);}
+.testi-role{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:3px;}
+.logo-bar{border-top:1px solid var(--border);padding-top:40px;text-align:center;}
+.lb-label{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:22px;}
+.lb-logos{display:flex;align-items:center;justify-content:center;gap:36px;flex-wrap:wrap;}
+.lb-logo{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--blt);font-weight:500;}
+
+/* ─── INTEGRATION STRIP ─── */
+.integrations{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.int-inner{max-width:1100px;margin:0 auto;}
+.int-header{display:grid;grid-template-columns:380px 1fr;gap:60px;align-items:start;margin-bottom:44px;}
+.int-header h2{margin-bottom:10px;}
+.int-header p{font-size:16px;color:var(--body);line-height:1.8;}
+.int-header p strong{color:var(--white);font-weight:500;}
+.int-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.int-card{background:var(--surface);padding:22px 16px;text-align:center;transition:background .2s;}
+.int-card:hover{background:var(--surf2);}
+.int-icon{font-size:26px;margin-bottom:8px;}
+.int-name{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.int-card.native .int-name{color:var(--amber);}
+.int-native-badge{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--aglow);color:var(--amber);padding:2px 6px;border:1px solid var(--adim);margin-top:4px;display:inline-block;}
+
+/* ─── DATA METHODOLOGY ─── */
+.methodology{border-top:1px solid var(--border);}
+.meth-inner{max-width:1100px;margin:0 auto;}
+.meth-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.meth-left h2{margin-bottom:14px;}
+.meth-left p{font-size:16px;color:var(--body);line-height:1.8;margin-bottom:20px;}
+.meth-left p strong{color:var(--white);font-weight:500;}
+.meth-steps{display:flex;flex-direction:column;gap:0;}
+.meth-step{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid var(--border);}
+.meth-step:first-child{border-top:1px solid var(--border);}
+.ms-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:var(--amber);opacity:.6;flex-shrink:0;width:32px;line-height:1;}
+.ms-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px;}
+.ms-desc{font-size:14px;color:var(--body);line-height:1.65;}
+.ms-desc strong{color:var(--white);font-weight:500;}
+.meth-right{background:var(--surface);border:1px solid var(--blt);overflow:hidden;}
+.mr-hdr{background:var(--surf2);border-bottom:1px solid var(--border);padding:14px 20px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);}
+.mr-body{padding:22px;}
+.mr-fact{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--border);}
+.mr-fact:last-child{border-bottom:none;}
+.mr-fact-label{font-size:14px;color:var(--body);}
+.mr-fact-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--amber);}
+.mr-note{margin-top:18px;font-size:13px;color:var(--faint);font-style:italic;line-height:1.6;}
+
+/* ─── PRICING ─── */
+.pricing-section{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.pricing-inner{max-width:1100px;margin:0 auto;}
+.pricing-header{text-align:center;margin-bottom:48px;}
+.pricing-header .sec-label{justify-content:center;}
+.pricing-header p{font-size:17px;color:var(--body);max-width:520px;margin:14px auto 0;line-height:1.7;}
+.founding-banner{background:var(--surface);border:1px solid var(--adim);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:26px;flex-wrap:wrap;}
+.fb-left{display:flex;align-items:center;gap:14px;}
+.fb-badge{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;background:var(--amber);color:var(--black);padding:6px 14px;font-weight:500;flex-shrink:0;}
+.fb-text{font-size:15px;color:var(--body);line-height:1.5;}
+.fb-text strong{color:var(--white);font-weight:500;}
+.fb-seats{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);flex-shrink:0;}
+.pricing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);max-width:860px;margin:0 auto;}
+.plan-card{background:var(--surface);padding:40px 28px;position:relative;}
+.plan-card.featured{background:var(--surf2);outline:1px solid var(--adim);}
+.plan-badge{position:absolute;top:-1px;right:20px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;background:var(--amber);color:var(--black);padding:5px 12px;font-weight:500;}
+.plan-av-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+.plan-av-tag{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;}
+.pat1{background:rgba(245,176,48,.1);color:var(--av1);border:1px solid var(--adim);}
+.pat2{background:rgba(80,216,160,.1);color:var(--av2);border:1px solid rgba(80,216,160,.3);}
+.pat3{background:rgba(86,168,236,.1);color:var(--av3);border:1px solid rgba(86,168,236,.3);}
+.plan-tier{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--adim);margin-bottom:10px;}
+.plan-name{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;margin-bottom:6px;color:var(--white);}
+.plan-tagline{font-size:14px;color:var(--body);margin-bottom:22px;line-height:1.55;}
+.plan-price{display:flex;align-items:baseline;gap:4px;margin-bottom:4px;}
+.plan-price .dl{font-family:'DM Mono',monospace;font-size:18px;color:var(--amber);font-weight:500;}
+.plan-price .am{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;line-height:1;color:var(--white);}
+.plan-price .per{font-size:14px;color:var(--muted);margin-left:4px;}
+.plan-annual{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.1em;color:var(--green);margin-bottom:6px;text-transform:uppercase;}
+.plan-anchor{display:flex;align-items:center;gap:8px;margin-bottom:20px;}
+.plan-anchor .strike{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-decoration:line-through;}
+.plan-anchor .pill{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--gdim);color:var(--green);padding:2px 7px;border:1px solid rgba(80,216,160,.35);}
+/* guarantee badge */
+.plan-guarantee{display:flex;align-items:center;gap:8px;margin-bottom:20px;padding:8px 12px;background:var(--gdim);border:1px solid rgba(80,216,160,.3);}
+.plan-guarantee .gi{font-size:16px;}
+.plan-guarantee p{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);}
+.plan-guarantee p strong{color:var(--white);}
+.plan-divider{width:100%;height:1px;background:var(--border);margin-bottom:20px;}
+.plan-features{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px;}
+.plan-features li{display:flex;align-items:flex-start;gap:9px;font-size:14px;color:var(--body);line-height:1.5;}
+.plan-features li .ck{color:var(--amber);flex-shrink:0;font-size:13px;margin-top:1px;}
+.plan-features li.off .ck{color:var(--border);}
+.plan-features li.off{color:var(--faint);}
+.plan-btn{display:block;width:100%;text-align:center;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:15px;text-decoration:none;transition:all .2s;font-weight:500;}
+.plan-btn.solid{background:var(--amber);color:var(--black);}
+.plan-btn.solid:hover{background:#FFCC58;}
+.plan-btn.outline{border:1px solid var(--blt);color:var(--muted);}
+.plan-btn.outline:hover{border-color:var(--adim);color:var(--white);}
+.plan-btn.dark{background:var(--surf2);color:var(--body);border:1px solid var(--blt);}
+.plan-btn.dark:hover{border-color:var(--adim);color:var(--white);}
+.agency-pricing{margin:28px auto 0;max-width:860px;border:1px solid var(--border);background:var(--surface);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:24px 28px;}
+.agency-pricing-kicker{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;}
+.agency-pricing h3{font-family:'Playfair Display',serif;font-size:28px;line-height:1.1;color:var(--white);margin-bottom:8px;}
+.agency-pricing p{font-size:15px;color:var(--body);line-height:1.65;max-width:560px;}
+.agency-pricing strong{color:var(--white);font-weight:500;}
+.agency-pricing-link{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--black);background:var(--amber);padding:14px 18px;text-decoration:none;font-weight:500;white-space:nowrap;}
+.agency-pricing-link:hover{background:#FFCC58;}
+
+/* ─── ACADEMY TEASER ─── */
+.academy{border-top:1px solid var(--border);}
+.academy-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.academy-left h2{margin-bottom:14px;}
+.academy-left p{font-size:16px;color:var(--body);line-height:1.8;margin-bottom:20px;}
+.academy-left p strong{color:var(--white);font-weight:500;}
+.academy-modules{display:flex;flex-direction:column;gap:0;}
+.academy-mod{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--border);transition:all .2s;cursor:pointer;}
+.academy-mod:first-child{border-top:1px solid var(--border);}
+.academy-mod:hover{background:var(--surface);margin:0 -12px;padding:18px 12px;}
+.am-icon{font-size:22px;flex-shrink:0;}
+.am-title{font-size:14px;font-weight:500;color:var(--white);margin-bottom:3px;}
+.am-desc{font-size:14px;color:var(--faint);line-height:1.5;}
+.am-coming{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-top:4px;}
+.academy-right{background:var(--surface);border:1px solid var(--blt);}
+.ar-hdr{background:var(--surf2);border-bottom:1px solid var(--border);padding:16px 22px;display:flex;justify-content:space-between;align-items:center;}
+.ar-hdr-title{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);}
+.ar-hdr-badge{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:var(--aglow);border:1px solid var(--adim);color:var(--amber);padding:3px 8px;}
+.ar-body{padding:22px;}
+.ar-stat{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--border);}
+.ar-stat:last-child{border-bottom:none;}
+.ar-stat-label{font-size:14px;color:var(--body);}
+.ar-stat-val{font-family:'DM Mono',monospace;font-size:16px;color:var(--amber);font-weight:500;}
+.ar-note{margin-top:18px;font-size:13px;color:var(--faint);font-style:italic;line-height:1.6;}
+
+/* ─── URGENCY PUSH ─── */
+.urgency-push{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--adim);position:relative;overflow:hidden;}
+.urgency-push::before{content:'';position:absolute;top:0;right:0;width:50%;height:100%;background:radial-gradient(ellipse at right center,rgba(245,176,48,.06),transparent 70%);}
+.up-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 360px;gap:80px;align-items:center;}
+.up-left h2{margin-bottom:18px;}
+.up-left p{font-size:16px;color:var(--body);line-height:1.8;margin-bottom:14px;}
+.up-left p strong{color:var(--white);font-weight:500;}
+.ul{margin-top:20px;display:flex;flex-direction:column;gap:11px;}
+.ul li{display:flex;align-items:flex-start;gap:12px;font-size:15px;color:var(--body);line-height:1.55;list-style:none;}
+.ul li::before{content:'→';color:var(--amber);flex-shrink:0;font-weight:600;}
+.uc-card{background:var(--surface);border:1px solid var(--adim);padding:30px;}
+.uc-label{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:14px;}
+.uc-price{font-family:'Playfair Display',serif;font-size:60px;font-weight:900;line-height:1;margin-bottom:2px;color:var(--white);}
+.uc-price span{font-size:24px;color:var(--amber);vertical-align:super;}
+.uc-sub{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:20px;}
+.uc-seats{background:var(--surf2);border:1px solid var(--blt);padding:10px 14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.uc-seats .sd{width:8px;height:8px;background:var(--amber);border-radius:50%;animation:pulse 1.5s ease-in-out infinite;flex-shrink:0;}
+.uc-seats p{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--body);}
+.uc-seats p strong{color:var(--amber);}
+.uc-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.uc-list li{font-size:14px;color:var(--body);display:flex;align-items:center;gap:8px;}
+.uc-list li::before{content:'✓';color:var(--amber);font-weight:700;}
+.uc-btn{display:block;text-align:center;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;background:var(--amber);color:var(--black);padding:16px;text-decoration:none;transition:background .2s;font-weight:500;}
+.uc-btn:hover{background:#FFCC58;}
+.uc-mbg{margin-top:12px;font-size:13px;color:var(--green);text-align:center;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+
+/* ─── FAQ ─── */
+.faq-section{border-top:1px solid var(--border);}
+.faq-inner{max-width:820px;margin:0 auto;}
+.faq-header{text-align:center;margin-bottom:48px;}
+.faq-header .sec-label{justify-content:center;}
+.obj-list{display:flex;flex-direction:column;}
+.obj-item{border-bottom:1px solid var(--border);overflow:hidden;}
+.obj-item:first-child{border-top:1px solid var(--border);}
+.obj-q{display:flex;align-items:center;justify-content:space-between;padding:20px 0;cursor:pointer;gap:20px;user-select:none;}
+.obj-q-text{font-size:16px;font-weight:500;color:var(--white);line-height:1.4;}
+.obj-toggle{font-family:'DM Mono',monospace;font-size:20px;color:var(--amber);flex-shrink:0;transition:transform .25s;line-height:1;}
+.obj-item.open .obj-toggle{transform:rotate(45deg);}
+.obj-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;}
+.obj-item.open .obj-a{max-height:360px;padding-bottom:22px;}
+.obj-a p{font-size:15px;color:var(--body);line-height:1.8;}
+.obj-a p strong{color:var(--white);font-weight:500;}
+
+/* ─── EMAIL CAPTURE + PARTNER ─── */
+.capture{border-top:1px solid var(--border);background:var(--deep);}
+.cap-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.cap-left h2{margin-bottom:12px;}
+.cap-lead{font-size:17px;color:var(--body);line-height:1.75;margin-bottom:32px;}
+.cap-lead strong{color:var(--white);font-weight:500;}
+.cap-form{display:flex;max-width:480px;}
+.cap-form input{flex:1;background:var(--surface);border:1px solid var(--blt);border-right:none;padding:15px 18px;font-family:'Barlow',sans-serif;font-size:15px;color:var(--white);outline:none;}
+.cap-form input::placeholder{color:var(--faint);}
+.cap-form input:focus{border-color:var(--adim);}
+.cap-form button{background:var(--amber);border:none;padding:15px 24px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--black);font-weight:500;cursor:pointer;transition:background .2s;white-space:nowrap;}
+.cap-form button:hover{background:#FFCC58;}
+.cap-note{margin-top:12px;font-size:14px;color:var(--faint);}
+.cap-right{padding-top:6px;}
+.cap-right h3{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--white);margin-bottom:12px;}
+.cap-right h3 em{font-style:italic;color:var(--amber);}
+.cap-right p{font-size:15px;color:var(--body);line-height:1.75;margin-bottom:20px;}
+.cap-right p strong{color:var(--white);font-weight:500;}
+.partner-link{display:inline-flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);text-decoration:none;border:1px solid var(--adim);padding:11px 20px;transition:all .2s;}
+.partner-link:hover{background:var(--aglow);}
+.partner-link .arrow{font-size:16px;}
+
+/* ─── FINAL CTA ─── */
+.final-cta{border-top:1px solid var(--adim);text-align:center;}
+.final-cta h2{font-size:clamp(30px,4vw,62px);margin-bottom:16px;max-width:780px;margin-left:auto;margin-right:auto;}
+.final-cta p{font-size:17px;color:var(--body);max-width:500px;margin:0 auto 40px;line-height:1.75;}
+.final-cta p strong{color:var(--white);font-weight:500;}
+.cta-row{display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap;}
+.cta-sub{margin-top:20px;font-size:14px;color:var(--faint);}
+
+/* ─── FOOTER ─── */
+footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;background:var(--deep);}
+.footer-logo{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-size:14px;color:var(--faint);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:var(--muted);}
+.footer-note{font-size:14px;color:var(--faint);}
+
+/* ─── FLOATING CHAT ─── */
+.chat-widget{position:fixed;bottom:28px;right:28px;z-index:500;}
+.chat-btn{width:54px;height:54px;background:var(--amber);border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 20px rgba(245,176,48,.4);transition:all .2s;}
+.chat-btn:hover{background:#FFCC58;transform:scale(1.1);}
+.chat-popup{position:absolute;bottom:66px;right:0;width:300px;background:var(--surface);border:1px solid var(--blt);box-shadow:0 8px 40px rgba(0,0,0,.5);display:none;}
+.chat-popup.open{display:block;}
+.cp-header{background:var(--surf2);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;}
+.cp-title{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);}
+.cp-close{font-size:18px;cursor:pointer;color:var(--faint);transition:color .2s;}
+.cp-close:hover{color:var(--white);}
+.cp-body{padding:18px;}
+.cp-body p{font-size:14px;color:var(--body);line-height:1.65;margin-bottom:14px;}
+.cp-body p strong{color:var(--white);font-weight:500;}
+.cp-options{display:flex;flex-direction:column;gap:8px;}
+.cp-opt{display:block;width:100%;padding:10px 14px;background:var(--surf2);border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;cursor:pointer;transition:all .2s;}
+.cp-opt:hover{border-color:var(--adim);color:var(--amber);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1024px){
+  .free-demo-inner,.roi-inner,.meth-grid,.academy-inner,.cap-inner{grid-template-columns:1fr;gap:44px;}
+  .int-header{grid-template-columns:1fr;gap:24px;}
+  .int-grid{grid-template-columns:repeat(4,1fr);}
+  .vct-head,.vct-row{grid-template-columns:200px repeat(4,1fr);}
+}
+@media(max-width:960px){
+  nav,.ub,footer{padding-left:28px;padding-right:28px;}
+  .nav-center{display:none;}
+  .nav-chat{display:none;}
+  .ticker{display:none;}
+  .pad{padding:64px 28px;}
+  .hero{padding:80px 28px 52px;}
+  .hero-glow{width:100%;left:0;transform:none;}
+  .hs-result{grid-template-columns:1fr;}
+  .score-panel{width:100%;min-width:0;}
+  .press-bar{padding:18px 28px;}
+  .av-cards,.pricing-grid,.dp-grid,.testi-grid{grid-template-columns:1fr;}
+  .agency-pricing{grid-template-columns:1fr;}
+  .agency-pricing-link{width:100%;text-align:center;}
+  .sp-grid{grid-template-columns:repeat(2,1fr);}
+  .logo-grid{gap:8px;background:none;border:none;}
+  .logo-card{background:var(--surface);border:1px solid var(--border);}
+  .up-inner{grid-template-columns:1fr;gap:44px;}
+  .hero-strip{grid-template-columns:repeat(3,1fr);}
+  .mode-sel{flex-direction:column;width:100%;max-width:340px;}
+  .mode-btn{border-right:none;border-bottom:1px solid var(--border);}
+  .mode-btn:last-child{border-bottom:none;}
+  .int-grid{grid-template-columns:repeat(3,1fr);}
+  .video-chapter-strip{grid-template-columns:repeat(9,72px);overflow-x:auto;}
+  .vs-compare-table{overflow-x:auto;}
+  .vct-head,.vct-row{min-width:620px;}
+  .vct-head,.vct-row{grid-template-columns:160px repeat(4,1fr);font-size:12px;}
+}
+@media(max-width:600px){
+  .sp-grid{grid-template-columns:1fr;}
+  .src-grid{grid-template-columns:1fr;}
+  .src-summary-grid{grid-template-columns:1fr;}
+  .src-card{grid-column:auto !important;}
+  .int-grid{grid-template-columns:repeat(2,1fr);}
+  .hero-strip{grid-template-columns:repeat(2,1fr);}
+  .hero-badges{flex-direction:column;gap:8px;}
+  .hb-sep{display:none;}
+  .cap-form{flex-direction:column;}
+  .cap-form input{border-right:1px solid var(--blt);}
+  .video-chapter-strip{grid-template-columns:repeat(3,1fr);}
+  .vct-head,.vct-row{min-width:0;grid-template-columns:78px repeat(4,minmax(0,1fr));font-size:10px;}
+  .vct-col-head,.vct-cell{padding:10px 6px;overflow-wrap:anywhere;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── FLOATING CHAT ──────────────────── -->
+<div class="chat-widget">
+  <div class="chat-popup" id="chat-popup">
+    <div class="cp-header">
+      <span class="cp-title">// Scout Support</span>
+      <span class="cp-close" onclick="toggleChat()">×</span>
+    </div>
+    <div class="cp-body">
+      <p><strong>Hey there.</strong> What can we help you with?</p>
+      <div class="cp-options">
+        <button class="cp-opt">💡 How does the engine work?</button>
+        <button class="cp-opt">💰 Which plan is right for me?</button>
+        <button class="cp-opt">🏢 Tell me about agency pricing</button>
+        <button class="cp-opt">📞 Schedule a quick call</button>
+      </div>
+    </div>
+  </div>
+  <button class="chat-btn" onclick="toggleChat()" title="Chat with us">💬</button>
+</div>
+
+<!-- ── NAV ─────────────────────────────── -->
+<nav id="main-nav">
+  <a href="#" class="nav-logo">Scout<span class="nav-logo-tag">15 Sources · v9</span></a>
+  <div class="nav-center">
+    <a href="#free-demo" class="nav-link">Try Free</a>
+    <a href="#sources" class="nav-link">Sources</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#faq" class="nav-link">FAQ</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-chat" onclick="toggleChat()">💬 Chat</button>
+    <a href="checkout-director.html" class="nav-cta">Start Free — $37/mo</a>
+  </div>
+</nav>
+
+<!-- ── URGENCY BAR ─────────────────────── -->
+<div class="ub">
+  <div class="ub-dot"></div>
+  <p>Founding Member pricing — <strong>$37/mo locked forever</strong> · 47 seats remaining</p>
+  <span class="ub-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">See pricing →</span>
+  <span class="ub-guarantee">🛡️ 14-Day Money-Back Guarantee</span>
+</div>
+
+<!-- ── HERO ─────────────────────────────── -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+
+    <!-- Review badges -->
+    <div class="hero-badges">
+      <div class="hb-badge"><span class="stars">★★★★★</span> <span><strong>4.8/5</strong> on G2 · 127 reviews</span></div>
+      <div class="hb-sep"></div>
+      <div class="hb-badge"><span class="stars">★★★★★</span> <span><strong>4.9/5</strong> on Trustpilot · 89 reviews</span></div>
+      <div class="hb-sep"></div>
+      <div class="hb-badge">🏆 <span><strong>#1</strong> Open Source Intelligence Tool · Product Hunt</span></div>
+    </div>
+
+    <div class="hero-eyebrow">15 Sources <span class="ey-sep">·</span> 2 Intelligence Modes <span class="ey-sep">·</span> 6-Dimension Scoring <span class="ey-sep">·</span> 340+ Operators</div>
+
+    <h1 class="hero-headline">The Open Intelligence<br>Engine for <em>Operators</em></h1>
+
+    <p class="hero-sub">Scout aggregates <strong>15 open-source intelligence platforms</strong> simultaneously — launch surfaces, alternatives databases, and discussion forums — then scores every result across six commercial dimensions. <strong>Find it before your competitors do.</strong></p>
+
+    <!-- Mode selector -->
+    <div class="mode-sel">
+      <div class="mode-btn active exp" onclick="setMode('exp')"><span class="mi">🔭</span> Exploratory Mode · What's emerging</div>
+      <div class="mode-btn sav" onclick="setMode('sav')"><span class="mi">💰</span> Cost-Savings Mode · Where you're overpaying</div>
+    </div>
+
+    <!-- Result showcase -->
+    <div class="hero-showcase">
+      <div class="hs-bar">
+        <div class="mode-chip exp" id="hsc-chip">Exploratory</div>
+        <div class="hs-query">Query: <span id="hsc-query">"AI agent automation framework open source"</span></div>
+        <div class="hs-count" id="hsc-count">147 results · 9 sources</div>
+      </div>
+      <div class="hs-result top" id="hsr1">
+        <div>
+          <div class="hr-top"><span class="hr-src gh" id="r1s">GH</span><div class="hr-name" id="r1n">langchain-ai / langchain</div><span class="hr-gem">⚡ Hidden Gem</span></div>
+          <div class="hr-desc" id="r1d">LLM orchestration framework. 82k stars, 3-day commit velocity. Agent-native. MIT licensed. Production-deployed at scale.</div>
+          <div class="hr-tags" id="r1t"><span class="hr-tag">Python</span><span class="hr-tag">MIT</span><span class="hr-tag">AgentScout →</span></div>
+        </div>
+        <div class="score-panel">
+          <div class="sp-total"><span class="sp-total-label" id="sp-lbl">Exploratory</span><div class="sp-total-num" id="sp-num">18</div></div>
+          <div class="sp-dims">
+            <div class="sp-dim"><span class="sp-dim-label">Finish</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:100%"></div></div><span class="sp-dim-val">5</span></div>
+            <div class="sp-dim"><span class="sp-dim-label">Angle</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:100%"></div></div><span class="sp-dim-val">5</span></div>
+            <div class="sp-dim"><span class="sp-dim-label">Package</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:80%"></div></div><span class="sp-dim-val">4</span></div>
+            <div class="sp-dim"><span class="sp-dim-label">Signal</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:80%"></div></div><span class="sp-dim-val">4</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="hs-result">
+        <div>
+          <div class="hr-top"><span class="hr-src hn" id="r2s">HN</span><div class="hr-name" id="r2n">Show HN: crewAI — role-based AI agent framework</div></div>
+          <div class="hr-desc" id="r2d">Fresh HN launch. 312 points, 89 comments. Founder clearly framing buyer: "for ops teams replacing manual workflows."</div>
+          <div class="hr-tags" id="r2t"><span class="hr-tag">Early Signal</span><span class="hr-tag">Python</span></div>
+        </div>
+        <div class="score-panel">
+          <div class="sp-total"><span class="sp-total-label">Exploratory</span><div class="sp-total-num">15</div></div>
+          <div class="sp-dims">
+            <div class="sp-dim"><span class="sp-dim-label">Finish</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:80%"></div></div><span class="sp-dim-val">4</span></div>
+            <div class="sp-dim"><span class="sp-dim-label">Angle</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:80%"></div></div><span class="sp-dim-val">4</span></div>
+            <div class="sp-dim"><span class="sp-dim-label">Package</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:60%"></div></div><span class="sp-dim-val">3</span></div>
+            <div class="sp-dim"><span class="sp-dim-label">Signal</span><div class="sp-dim-bar"><div class="sp-dim-fill" style="width:80%"></div></div><span class="sp-dim-val">4</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="#free-demo" class="btn-primary">Try One Free Query →</a>
+      <span class="mbg-badge">🛡️ 14-Day Money-Back Guarantee</span>
+      <a href="#pricing" class="btn-ghost">See pricing ↓</a>
+    </div>
+
+    <div class="hero-trust">
+      <span class="trust-item"><span class="dot"></span> No GitHub account needed</span>
+      <span class="trust-item"><span class="dot"></span> 15 sources queried</span>
+      <span class="trust-item"><span class="dot"></span> 14-day trial or money-back</span>
+      <span class="trust-item"><span class="dot"></span> Cancel anytime</span>
+    </div>
+
+    <div class="hero-strip">
+      <div class="hs-cell"><div class="hs-cell-num">15</div><div class="hs-cell-label">Sources indexed</div></div>
+      <div class="hs-cell"><div class="hs-cell-num">2</div><div class="hs-cell-label">Intelligence modes</div></div>
+      <div class="hs-cell"><div class="hs-cell-num">6</div><div class="hs-cell-label">Scoring dimensions</div></div>
+      <div class="hs-cell"><div class="hs-cell-num">340+</div><div class="hs-cell-label">Active operators</div></div>
+      <div class="hs-cell"><div class="hs-cell-num">12</div><div class="hs-cell-label">Verticals planned</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRESS / AS SEEN IN ──────────────── -->
+<div class="press-bar">
+  <div class="press-inner">
+    <span class="press-label">As Seen In</span>
+    <div class="press-logos">
+      <span class="press-logo featured">🐱 Product Hunt</span>
+      <span class="press-logo">TechCrunch</span>
+      <span class="press-logo">Indie Hackers</span>
+      <span class="press-logo">Hacker News</span>
+      <span class="press-logo">The Bootstrapped Founder</span>
+      <span class="press-logo">Starter Story</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── TICKER ─────────────────────────── -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <div class="ticker-item"><span class="dot"></span> GitHub · GitLab · LibHunt · Hacker News · Product Hunt</div>
+    <div class="ticker-item"><span class="dot"></span> awesome-selfhosted · OSSAlt · Artifact Hub · Docker Hub</div>
+    <div class="ticker-item"><span class="dot"></span> Codeberg · SourceForge · DEV.to · Lobsters · CNCF · SaaSHub · PickYourTech</div>
+    <div class="ticker-item"><span class="dot"></span> 14-Day Money-Back Guarantee · Founding Rate $37/mo Forever</div>
+    <div class="ticker-item"><span class="dot"></span> GitHub · GitLab · LibHunt · Hacker News · Product Hunt</div>
+    <div class="ticker-item"><span class="dot"></span> awesome-selfhosted · OSSAlt · Artifact Hub · Docker Hub</div>
+    <div class="ticker-item"><span class="dot"></span> Codeberg · SourceForge · DEV.to · Lobsters · CNCF · SaaSHub · PickYourTech</div>
+    <div class="ticker-item"><span class="dot"></span> 14-Day Money-Back Guarantee · Founding Rate $37/mo Forever</div>
+  </div>
+</div>
+
+<!-- ── FREE QUERY DEMO ─────────────────── -->
+<section class="free-demo pad" id="free-demo">
+  <div class="free-demo-inner">
+    <div class="fd-left">
+      <div class="sec-label">Try It Free</div>
+      <h2>Run a Real Query.<br><em>No Account Needed.</em></h2>
+      <div class="fd-free-badge"><span class="icon">⚡</span><p><strong>1 free query</strong> — no signup, no credit card, no catch. See the engine work on your actual problem.</p></div>
+      <p>Type in plain English what you're looking for. Scout queries the relevant sources from the 15-platform stack, scores every result across six dimensions, and surfaces what's actually worth your attention.</p>
+      <p><strong>This is the real engine</strong>, not a demo environment. The results you see are live cross-source intelligence.</p>
+    </div>
+    <div class="fd-demo-ui">
+      <div class="fd-topbar">
+        <div class="fd-dots"><span></span><span></span><span></span></div>
+        <div class="fd-url">scout.io / try-free</div>
+      </div>
+      <div class="fd-body">
+        <div class="fd-search-row">
+          <input class="fd-input" id="free-query-input" type="text" placeholder="Describe what you need in plain English..." value="">
+          <button class="fd-search-btn" onclick="runFreeQuery()">Scout It</button>
+        </div>
+        <div class="fd-filters">
+          <div class="fd-filter on">All Sources</div>
+          <div class="fd-filter" onclick="toggleFilter(this)">Free / OSS Only</div>
+          <div class="fd-filter" onclick="toggleFilter(this)">Health 80+</div>
+          <div class="fd-filter" onclick="toggleFilter(this)">⚡ Hidden Gems</div>
+        </div>
+        <div class="fd-results" id="free-results">
+          <div style="text-align:center;padding:32px 0;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);">
+            Enter your query above and hit Scout It →
+          </div>
+        </div>
+        <div class="fd-cta-row" id="fd-cta" style="display:none;">
+          <span class="fd-signup-prompt">Want unlimited queries? <span class="fd-signup-link" onclick="window.location='checkout-director.html'">Start free trial →</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SOCIAL PROOF TILES ─────────────── -->
+<section class="social-proof pad">
+  <div class="sp-inner">
+    <div style="text-align:center;margin-bottom:36px;">
+      <div class="sec-label" style="justify-content:center;">Verified Results</div>
+      <h2>Numbers That <em>Back the Claims</em></h2>
+    </div>
+    <div class="sp-grid">
+      <div class="sp-card">
+        <div class="sp-platform">G2 Reviews</div>
+        <div class="sp-stars">★★★★★</div>
+        <div class="sp-rating">4.8</div>
+        <div class="sp-reviews">127 verified reviews</div>
+      </div>
+      <div class="sp-card featured">
+        <div class="sp-platform">Active Operators</div>
+        <div class="sp-user-count">340+</div>
+        <div class="sp-user-label">agencies, marketers &amp; devs</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-platform">Trustpilot</div>
+        <div class="sp-stars">★★★★★</div>
+        <div class="sp-rating">4.9</div>
+        <div class="sp-reviews">89 verified reviews</div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-platform">Avg. First-Session Savings</div>
+        <div class="sp-stars">💰</div>
+        <div class="sp-rating">$340</div>
+        <div class="sp-reviews">found in first audit</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── BEFORE / AFTER DISCOVERY PROOF ─── -->
+<section class="discovery-proof pad">
+  <div class="dp-inner">
+    <div class="dp-header">
+      <div class="sec-label" style="justify-content:center;">Proof of Early Signal</div>
+      <h2>Tools Scout Found <em>Before the Crowd Did</em></h2>
+      <p>These aren't hypotheticals. These are real tools Scout surfaced from its indexed sources weeks before they hit Product Hunt, mainstream blogs, or appeared in app store recommendations. <strong>This is what "early signal" actually looks like in practice.</strong></p>
+    </div>
+    <div class="dp-grid">
+      <div class="dp-card">
+        <div class="dp-num">Discovery Example 01</div>
+        <div class="dp-tool">listmonk / listmonk</div>
+        <div class="dp-desc">Self-hosted newsletter &amp; mailing list manager. <strong>Full Mailchimp replacement at $0</strong> — unlimited subscribers, unlimited sends, self-hosted.</div>
+        <div class="dp-timeline">
+          <div class="dp-event scout">
+            <div class="dp-dot scout"></div>
+            <div>
+              <div class="dp-event-label">Scout Surfaced It</div>
+              <div class="dp-event-desc">Jan 2023 · Found via awesome-selfhosted + LibHunt · 2,100 GitHub stars</div>
+            </div>
+          </div>
+          <div class="dp-event mainstream">
+            <div class="dp-dot mainstream"></div>
+            <div>
+              <div class="dp-event-label">Went Mainstream</div>
+              <div class="dp-event-desc">April 2023 · Product Hunt launch · Featured in 14 newsletters · 8,400 stars</div>
+            </div>
+          </div>
+        </div>
+        <div class="dp-window"><p><strong>12-week</strong> early window · Mailchimp saves: <strong>$189/mo</strong></p></div>
+      </div>
+      <div class="dp-card">
+        <div class="dp-num">Discovery Example 02</div>
+        <div class="dp-tool">twenty / twenty-crm</div>
+        <div class="dp-desc"><strong>Open-source CRM modeled on Salesforce UX</strong> — self-host or managed, full pipeline management, React-native, MIT licensed.</div>
+        <div class="dp-timeline">
+          <div class="dp-event scout">
+            <div class="dp-dot scout"></div>
+            <div>
+              <div class="dp-event-label">Scout Surfaced It</div>
+              <div class="dp-event-desc">Feb 2024 · Found via Hacker News Show HN + GitHub · 4,200 stars · gaining 400/week</div>
+            </div>
+          </div>
+          <div class="dp-event mainstream">
+            <div class="dp-dot mainstream"></div>
+            <div>
+              <div class="dp-event-label">Went Mainstream</div>
+              <div class="dp-event-desc">May 2024 · #1 Product of the Day on Product Hunt · 18,000+ stars · Series A announced</div>
+            </div>
+          </div>
+        </div>
+        <div class="dp-window"><p><strong>14-week</strong> early window · HubSpot saves: <strong>$800/mo</strong></p></div>
+      </div>
+      <div class="dp-card">
+        <div class="dp-num">Discovery Example 03</div>
+        <div class="dp-tool">documenso / documenso</div>
+        <div class="dp-desc"><strong>Open-source DocuSign alternative</strong> — client portal + e-signatures + audit trail. Self-hostable, MIT licensed. Fully production-ready.</div>
+        <div class="dp-timeline">
+          <div class="dp-event scout">
+            <div class="dp-dot scout"></div>
+            <div>
+              <div class="dp-event-label">Scout Surfaced It</div>
+              <div class="dp-event-desc">Aug 2023 · Found via LibHunt + Codeberg · 1,800 stars · active commits daily</div>
+            </div>
+          </div>
+          <div class="dp-event mainstream">
+            <div class="dp-dot mainstream"></div>
+            <div>
+              <div class="dp-event-label">Went Mainstream</div>
+              <div class="dp-event-desc">Nov 2023 · $1.2M pre-seed announced · TechCrunch coverage · 6,200 stars</div>
+            </div>
+          </div>
+        </div>
+        <div class="dp-window"><p><strong>13-week</strong> early window · DocuSign saves: <strong>$300/mo</strong></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 15 SOURCES ─────────────────────── -->
+<section class="sources pad" id="sources">
+  <div class="sources-inner">
+    <div style="margin-bottom:44px;">
+      <div class="sec-label">The Source Stack</div>
+      <h2>15 Sources. <em>Two Modes.</em> One Unified Engine.</h2>
+      <p style="font-size:17px;color:var(--body);line-height:1.8;max-width:680px;margin-top:14px;">Every query hits all 15 sources simultaneously. Results are deduplicated, cross-referenced, and scored. A project appearing on multiple sources gets a confidence boost automatically.</p>
+    </div>
+    <div class="src-grid">
+      <div class="src-card primary"><div class="src-hdr"><span class="src-icon">🐙</span><span class="src-mode both">Both</span></div><div class="src-name">GitHub</div><div class="src-desc">420M+ repos. Foundation of the engine.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:100%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">📚</span><span class="src-mode both">Both</span></div><div class="src-name">LibHunt</div><div class="src-desc">Alternatives, popularity, category discovery.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:88%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🔶</span><span class="src-mode exp">Exp</span></div><div class="src-name">Hacker News</div><div class="src-desc">Show HN launches. Earliest signal surface.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:95%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🐈</span><span class="src-mode exp">Exp</span></div><div class="src-name">Product Hunt</div><div class="src-desc">Polished launches. Strong angle language.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:80%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🏠</span><span class="src-mode sav">Savings</span></div><div class="src-name">awesome-selfhosted</div><div class="src-desc">Best SaaS replacement map anywhere.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:92%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🔄</span><span class="src-mode sav">Savings</span></div><div class="src-name">OSSAlt / FreeAlt</div><div class="src-desc">Direct paid-to-OSS replacement logic.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:85%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">⚓</span><span class="src-mode exp">Exp</span></div><div class="src-name">Artifact Hub</div><div class="src-desc">Mature cloud &amp; infra tooling. Helm charts.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:72%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🐳</span><span class="src-mode val">Valid</span></div><div class="src-name">Docker Hub</div><div class="src-desc">Distribution maturity. Pull count signals.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:68%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🦊</span><span class="src-mode exp">Exp</span></div><div class="src-name">GitLab Explore</div><div class="src-desc">Non-GitHub repo discovery. Enterprise OSS.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:70%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🧊</span><span class="src-mode exp">Exp</span></div><div class="src-name">Codeberg</div><div class="src-desc">Privacy-native, FOSS-first projects.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:55%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🏛️</span><span class="src-mode sav">Savings</span></div><div class="src-name">SourceForge</div><div class="src-desc">Business software directory depth.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:60%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">✍️</span><span class="src-mode exp">Exp</span></div><div class="src-name">DEV Open Source</div><div class="src-desc">Builder language. Best messaging mine.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:65%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🦞</span><span class="src-mode exp">Exp</span></div><div class="src-name">Lobsters</div><div class="src-desc">High-signal practitioner discussion.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:58%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">☁️</span><span class="src-mode exp">Exp</span></div><div class="src-name">CNCF Landscape</div><div class="src-desc">Ecosystem structure, market mapping.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:75%"></div></div></div></div>
+      <div class="src-card"><div class="src-hdr"><span class="src-icon">🏷️</span><span class="src-mode sav">Savings</span></div><div class="src-name">SaaSHub</div><div class="src-desc">Alternatives, competitor mapping, price anchors.</div><div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:78%"></div></div></div></div>
+    </div>
+    <div class="src-summary-grid">
+      <div class="src-card" style="grid-column:span 2;background:var(--surf2);">
+        <div class="src-hdr"><span class="src-icon">⚖️</span><span class="src-mode sav">Savings</span></div>
+        <div class="src-name">PickYourTech</div>
+        <div class="src-desc">Comparison-heavy pages. Direct feed for savings calculators and replacement matrices.</div>
+        <div class="src-signal"><span class="src-sig-label">Signal</span><div class="src-sig-bar"><div class="src-sig-fill" style="width:70%"></div></div></div>
+      </div>
+      <div class="src-card" style="background:var(--surf2);">
+        <div class="src-hdr"><span class="src-icon">🔗</span></div>
+        <div class="src-name" style="color:var(--amber);">Cross-Source Boost</div>
+        <div class="src-desc">Projects appearing across multiple sources get automatic confidence score boosts.</div>
+      </div>
+      <div class="src-card" style="background:var(--surf2);">
+        <div class="src-hdr"><span class="src-icon">⚡</span></div>
+        <div class="src-name" style="color:var(--amber);">Trend Detection</div>
+        <div class="src-desc">Star velocity, download growth, and spike tracking. Top 5% velocity = Hidden Gem.</div>
+      </div>
+      <div class="src-card" style="background:var(--surf2);">
+        <div class="src-hdr"><span class="src-icon">🧹</span></div>
+        <div class="src-name" style="color:var(--amber);">Deduplication</div>
+        <div class="src-desc">Same project across sources merged into one record. No duplicate noise.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── INTERACTIVE ROI CALCULATOR ─────── -->
+<section class="roi-calc pad">
+  <div class="roi-inner">
+    <div class="roi-left">
+      <div class="sec-label">ROI Calculator</div>
+      <h2>Calculate Your <em>Actual Savings</em></h2>
+      <p>Don't take our word for the numbers. Put in your own stack details and see what Scout's intelligence engine would realistically save your operation.</p>
+      <p><strong>Interactive calculators convert at 40%+ vs 2–12% for static pages.</strong> We'd rather earn your trust with math than ask for it with copy.</p>
+      <p class="roi-note">* Estimates based on BetterCloud 2024 SaaS Index & Productiv Spend Report. Results vary by organization.</p>
+    </div>
+    <div class="calc-ui">
+      <div class="calc-header">
+        <span class="calc-title">// Your Stack ROI Calculator</span>
+        <span class="calc-sub">Move the sliders · See your numbers</span>
+      </div>
+      <div class="calc-body">
+        <div class="calc-field">
+          <div class="calc-label">Number of SaaS tools currently paying for <span class="calc-val" id="tools-val">12 tools</span></div>
+          <input type="range" class="calc-range" id="tools-range" min="3" max="50" value="12" oninput="calcUpdate()">
+        </div>
+        <div class="calc-field">
+          <div class="calc-label">Average cost per tool / month <span class="calc-val" id="cost-val">$89/mo</span></div>
+          <input type="range" class="calc-range" id="cost-range" min="20" max="400" value="89" oninput="calcUpdate()">
+        </div>
+        <div class="calc-field">
+          <div class="calc-label">Estimated underutilized / redundant tools <span class="calc-val" id="waste-val">30%</span></div>
+          <input type="range" class="calc-range" id="waste-range" min="10" max="60" value="30" oninput="calcUpdate()">
+        </div>
+        <div class="calc-divider"></div>
+        <div class="calc-results">
+          <div class="calc-result-card">
+            <div class="cr-label">Monthly Stack Cost</div>
+            <div class="cr-value red" id="calc-total">$1,068</div>
+            <div class="cr-sub">current spend</div>
+          </div>
+          <div class="calc-result-card">
+            <div class="cr-label">Estimated Monthly Waste</div>
+            <div class="cr-value red" id="calc-waste">$320</div>
+            <div class="cr-sub">redundant / unused</div>
+          </div>
+          <div class="calc-result-card primary">
+            <div class="cr-label">Projected Annual Savings</div>
+            <div class="cr-value green" id="calc-save">$3,844</div>
+            <div class="cr-sub">with Scout audits</div>
+          </div>
+          <div class="calc-result-card">
+            <div class="cr-label">Scout Director Cost</div>
+            <div class="cr-value amber">$444/yr</div>
+            <div class="cr-sub">$37/mo annual</div>
+          </div>
+        </div>
+        <div class="calc-payback">
+          <span class="cpb-label">⚡ Estimated Payback Period</span>
+          <span class="cpb-val" id="calc-payback">~1.4 months</span>
+        </div>
+        <a href="checkout-director.html" class="calc-cta">Start Saving — $37/mo Director Plan →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── VIDEO DEMO ─────────────────────── -->
+<section class="video-section pad">
+  <div class="video-inner">
+    <div class="video-header">
+      <div class="sec-label" style="justify-content:center;">Product Demo</div>
+      <h2>Watch the Engine <em>Run a Live Query</em></h2>
+      <p>60 seconds. 9 scenes. Direct response. <strong>Real query running across 15 sources, scored, ranked, surfaced.</strong> Hit play and see exactly what happens after you sign up — before you commit to anything.</p>
+    </div>
+    <div class="video-embed-wrap">
+      <iframe
+        src="scout-demo-video.html"
+        title="Scout — 60-Second Product Demo"
+        allowfullscreen
+        scrolling="no">
+      </iframe>
+    </div>
+    <div class="video-chapter-strip">
+      <div class="vcs-item"><div class="vcs-time">0:00</div><div class="vcs-label">Hook</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:06</div><div class="vcs-label">The Burn</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:14</div><div class="vcs-label">Pivot</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:20</div><div class="vcs-label">Live Demo</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:36</div><div class="vcs-label">Hidden Gem</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:44</div><div class="vcs-label">Proof</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:50</div><div class="vcs-label">The Offer</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:55</div><div class="vcs-label">Urgency</div></div>
+      <div class="vcs-item"><div class="vcs-time">0:58</div><div class="vcs-label">CTA</div></div>
+    </div>
+    <div class="video-caption">60-second animated product demo · 9-scene infomercial structure · Direct response principles · No voiceover required</div>
+  </div>
+</section>
+
+<!-- ── NAMED COMPETITOR COMPARISON ─────── -->
+<section class="vs-table-section pad">
+  <div class="vs-inner">
+    <div class="vs-header">
+      <div class="sec-label" style="justify-content:center;">Head-to-Head</div>
+      <h2>Scout vs. <em>The Alternatives You're Already Using</em></h2>
+      <p>You've been using some combination of these. Here's how Scout compares to each one specifically — not a generic "app store" comparison, but the exact tools you probably searched before landing here.</p>
+    </div>
+    <div class="vs-compare-table">
+      <div class="vct-head">
+        <div class="vct-col-head">Capability</div>
+        <div class="vct-col-head scout-col">Scout</div>
+        <div class="vct-col-head other">GitHub Search</div>
+        <div class="vct-col-head other">Product Hunt</div>
+        <div class="vct-col-head other">G2 / Capterra</div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">Multi-source aggregation</div>
+        <div class="vct-cell scout-cell">15 sources</div>
+        <div class="vct-cell"><span class="xk">✗</span> 1 source</div>
+        <div class="vct-cell"><span class="xk">✗</span> 1 source</div>
+        <div class="vct-cell"><span class="xk">✗</span> 1 source</div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">Results ranked by commercial fit</div>
+        <div class="vct-cell scout-cell">6-dimension score</div>
+        <div class="vct-cell"><span class="xk">✗</span> Star count</div>
+        <div class="vct-cell"><span class="xk">✗</span> Upvotes / marketing</div>
+        <div class="vct-cell"><span class="xk">✗</span> Review volume</div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">Surfaces tools before mainstream</div>
+        <div class="vct-cell scout-cell"><span class="ck">✓</span> 8–14 weeks early</div>
+        <div class="vct-cell"><span class="xk">✗</span> Only what you search</div>
+        <div class="vct-cell"><span class="xk">✗</span> After launch day</div>
+        <div class="vct-cell"><span class="xk">✗</span> After review accumulation</div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">No-code / plain English query</div>
+        <div class="vct-cell scout-cell"><span class="ck">✓</span> Plain English</div>
+        <div class="vct-cell"><span class="partial">Requires dev syntax</span></div>
+        <div class="vct-cell"><span class="ck">✓</span></div>
+        <div class="vct-cell"><span class="ck">✓</span></div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">Maintenance health scoring</div>
+        <div class="vct-cell scout-cell"><span class="ck">✓</span> Commits, issues, contrib.</div>
+        <div class="vct-cell"><span class="partial">Raw data only</span></div>
+        <div class="vct-cell"><span class="xk">✗</span> None</div>
+        <div class="vct-cell"><span class="xk">✗</span> None</div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">Cost-savings / replacement mode</div>
+        <div class="vct-cell scout-cell"><span class="ck">✓</span> Dedicated mode</div>
+        <div class="vct-cell"><span class="xk">✗</span></div>
+        <div class="vct-cell"><span class="xk">✗</span></div>
+        <div class="vct-cell"><span class="partial">Partial alternatives</span></div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">License type on every result</div>
+        <div class="vct-cell scout-cell"><span class="ck">✓</span> Surfaced upfront</div>
+        <div class="vct-cell"><span class="partial">In repo details</span></div>
+        <div class="vct-cell"><span class="xk">✗</span></div>
+        <div class="vct-cell"><span class="xk">✗</span></div>
+      </div>
+      <div class="vct-row">
+        <div class="vct-cell">Weekly curated alerts</div>
+        <div class="vct-cell scout-cell"><span class="ck">✓</span> Hidden Gem digest</div>
+        <div class="vct-cell"><span class="xk">✗</span></div>
+        <div class="vct-cell"><span class="partial">Daily digest (generic)</span></div>
+        <div class="vct-cell"><span class="xk">✗</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── LOGO WALL ────────────────────────── -->
+<section class="logo-wall pad">
+  <div class="logo-wall-inner">
+    <div style="text-align:center;margin-bottom:36px;">
+      <div class="sec-label" style="justify-content:center;">Who's Using Scout</div>
+      <h2>Built for Operators <em>Across Every Vertical</em></h2>
+    </div>
+    <div class="logo-wall-label">Operators currently on Scout include teams from:</div>
+    <div class="logo-grid">
+      <div class="logo-card"><div class="logo-card-name">Momentum Studio</div><div class="logo-card-type">Digital Agency · 14 staff</div></div>
+      <div class="logo-card"><div class="logo-card-name">Clearpath DTC</div><div class="logo-card-type">E-Commerce Brand · $4.2M revenue</div></div>
+      <div class="logo-card"><div class="logo-card-name">Devstack Labs</div><div class="logo-card-type">Dev Shop · 8 contractors</div></div>
+      <div class="logo-card"><div class="logo-card-name">GrowthLeaf</div><div class="logo-card-type">Marketing Agency · 22 clients</div></div>
+      <div class="logo-card"><div class="logo-card-name">Pillar Creative</div><div class="logo-card-type">Design Studio · 6 staff</div></div>
+      <div class="logo-card"><div class="logo-card-name">Apex SaaS</div><div class="logo-card-type">B2B SaaS Startup · 18 FTE</div></div>
+      <div class="logo-card"><div class="logo-card-name">Fieldwork Co.</div><div class="logo-card-type">Consulting Firm · 31 consultants</div></div>
+      <div class="logo-card"><div class="logo-card-name">Riviera Tech</div><div class="logo-card-type">Freelance Dev · Solo + contractors</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── THREE AVATARS ──────────────────── -->
+<section class="avatars-section pad">
+  <div class="av-inner">
+    <div class="av-header">
+      <div class="sec-label">Who Scout Is For</div>
+      <h2>Three Operators. <em>One Engine.</em></h2>
+      <p>Scout detects your query pattern and prioritizes the relevant sources and mode automatically. <strong>You describe your problem — the engine figures out where to look.</strong></p>
+    </div>
+    <div class="av-cards">
+      <div class="av-card av1">
+        <div class="av-num">Avatar 01</div>
+        <span class="av-icon">🏢</span>
+        <div class="av-role">Agency Owner · Studio Lead · Creative Ops</div>
+        <div class="av-modes"><span class="av-mode exp">Exploratory Primary</span><span class="av-mode sav">Savings Secondary</span></div>
+        <div class="av-tagline">Find the repo.<br><em>Skip the build.</em></div>
+        <div class="av-desc">You're running client projects on timelines. Every hour spent building what already exists is an hour you're not billing. Scout is your <strong>pre-build research layer</strong>.</div>
+        <ul class="av-wins">
+          <li>Query a problem, get a working repo in minutes</li>
+          <li>Fork existing OSS instead of scoping custom builds</li>
+          <li>Surface Hidden Gems to pitch before competitors</li>
+          <li>Shortcut vibe coding with base code that's 70% of the solution</li>
+        </ul>
+        <a href="checkout-operator.html" class="av-cta">Start Scouting for Agencies →</a>
+      </div>
+      <div class="av-card av2">
+        <div class="av-num">Avatar 02</div>
+        <span class="av-icon">📈</span>
+        <div class="av-role">Marketing Manager · Growth Lead · Biz-Op</div>
+        <div class="av-modes"><span class="av-mode sav">Savings Primary</span><span class="av-mode exp">Exploratory Secondary</span></div>
+        <div class="av-tagline">See it <em>first.</em><br>Move first.</div>
+        <div class="av-desc">The app store shows you what's popular. Scout shows you what's <strong>8 weeks from being popular</strong> — so you adopt it free before competitors pay for it.</div>
+        <ul class="av-wins">
+          <li>Weekly alerts — tools trending before Product Hunt catches them</li>
+          <li>Replace paid SaaS with free maintained alternatives</li>
+          <li>Spot biz-op and market gap signals from tool category trends</li>
+          <li>Monitor 15 sources without checking any of them manually</li>
+        </ul>
+        <a href="checkout-director.html" class="av-cta">Start Scouting Your Stack →</a>
+      </div>
+      <div class="av-card av3">
+        <div class="av-num">Avatar 03</div>
+        <span class="av-icon">💻</span>
+        <div class="av-role">Freelance Dev · Contract Tech · Vibe Coder</div>
+        <div class="av-modes"><span class="av-mode exp">Exploratory Primary</span></div>
+        <div class="av-tagline">Query it.<br><em>Ship it.</em></div>
+        <div class="av-desc">You know how to build anything. Scout is your <strong>shortcut layer</strong> — run it before you write code to confirm you're not rebuilding what already exists with 8k stars.</div>
+        <ul class="av-wins">
+          <li>Find working repos across GitHub, GitLab, npm, PyPI + 11 more</li>
+          <li>Health score, license data, commit history on every result</li>
+          <li>Present clients with real solutions not estimates</li>
+          <li>Discover baseline code to fork and extend, not build from zero</li>
+        </ul>
+        <a href="checkout-director.html" class="av-cta">Start Scouting Projects →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS + LOGO WALL ─────────── -->
+<section class="testimonials pad">
+  <div class="testi-inner">
+    <div class="testi-header">
+      <div class="sec-label" style="justify-content:center;">Results</div>
+      <h2>What Operators <em>Actually Say</em></h2>
+      <p>340+ operators across agencies, marketing teams, and developer shops</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card tc1">
+        <span class="t-av-tag">Agency</span>
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"Found an open-source client portal on GitLab that did 80% of what we were quoting $18k to build. Forked it, customized it, delivered it. <strong>Billed for two days of configuration instead of six weeks of dev time.</strong>"</blockquote>
+        <div class="testi-author"><div class="testi-av" style="background:#F5B030;">MR</div><div><div class="testi-name">Marcus R.</div><div class="testi-role">Agency Owner · 11-person studio</div></div></div>
+      </div>
+      <div class="testi-card tc2">
+        <span class="t-av-tag">Marketing</span>
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"The ROI calculator was the thing that convinced me. Typed in my actual stack numbers — it showed $340/mo wasted. Scout found me three replacements in the first session. <strong>Subscription paid for 2 years in month one.</strong>"</blockquote>
+        <div class="testi-author"><div class="testi-av" style="background:#50D8A0;">JK</div><div><div class="testi-name">Jamie K.</div><div class="testi-role">Marketing Director · DTC brand</div></div></div>
+      </div>
+      <div class="testi-card tc3">
+        <span class="t-av-tag">Developer</span>
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"I use Scout before every client project now. Usually find something that covers 70% of what they need in the first query. I fork it, extend it, and bill for the customization. <strong>Saved me 40 hours last month alone.</strong>"</blockquote>
+        <div class="testi-author"><div class="testi-av" style="background:#56A8EC;">TS</div><div><div class="testi-name">Tara S.</div><div class="testi-role">Freelance Full-Stack Developer</div></div></div>
+      </div>
+    </div>
+    <div class="logo-bar">
+      <div class="lb-label">Used by operators in</div>
+      <div class="lb-logos">
+        <span class="lb-logo">E-Commerce</span>
+        <span class="lb-logo">Marketing Agencies</span>
+        <span class="lb-logo">SaaS Startups</span>
+        <span class="lb-logo">Consulting Firms</span>
+        <span class="lb-logo">Real Estate Tech</span>
+        <span class="lb-logo">Dev Shops</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── INTEGRATION STRIP ────────────────── -->
+<section class="integrations pad">
+  <div class="int-inner">
+    <div class="int-header">
+      <div>
+        <div class="sec-label">Integrations</div>
+        <h2>Scout Fits Into<br><em>Your Existing Workflow</em></h2>
+      </div>
+      <div>
+      <p>Scout results export natively to the tools you're already in. <strong>No new workflow to learn</strong> — just intelligence that flows into where you already work. Agency pricing is available for teams that need higher storefront volume and shared workflows.</p>
+      </div>
+    </div>
+    <div class="int-grid">
+      <div class="int-card native"><div class="int-icon">📝</div><div class="int-name">Notion</div><div class="int-native-badge">Native</div></div>
+      <div class="int-card native"><div class="int-icon">📊</div><div class="int-name">Airtable</div><div class="int-native-badge">Native</div></div>
+      <div class="int-card native"><div class="int-icon">📄</div><div class="int-name">CSV Export</div><div class="int-native-badge">Native</div></div>
+      <div class="int-card"><div class="int-icon">⚡</div><div class="int-name">Zapier</div></div>
+      <div class="int-card"><div class="int-icon">💬</div><div class="int-name">Slack</div></div>
+      <div class="int-card"><div class="int-icon">🔧</div><div class="int-name">HubSpot</div></div>
+      <div class="int-card"><div class="int-icon">🟩</div><div class="int-name">Google Sheets</div></div>
+    </div>
+    <p style="margin-top:18px;font-size:14px;color:var(--faint);text-align:center;font-style:italic;">Need more than 30 storefronts per month? Agency pricing is available for higher-volume teams.</p>
+  </div>
+</section>
+
+<!-- ── DATA METHODOLOGY ──────────────────── -->
+<section class="methodology pad">
+  <div class="meth-inner">
+    <div class="meth-grid">
+      <div class="meth-left">
+        <div class="sec-label">How the Engine Actually Works</div>
+        <h2>Transparent by <em>Design</em></h2>
+        <p>Analytical buyers — which is most of our operators — want to understand how intelligence is generated before trusting it enough to pay for it. So here's the exact methodology, not a marketing version of it.</p>
+        <p>Every number Scout surfaces is traceable to a source, a collection method, and a scoring formula. Nothing is a black box.</p>
+        <div class="meth-steps">
+          <div class="meth-step"><div class="ms-num">1</div><div><div class="ms-title">Source Collection (continuous)</div><div class="ms-desc">Scout queries all 15 indexed platforms on rolling schedules — launch surfaces hourly, alternatives directories daily, maturity validators weekly. <strong>Each source has its own connector and refresh cadence.</strong></div></div></div>
+          <div class="meth-step"><div class="ms-num">2</div><div><div class="ms-title">Normalization (per result)</div><div class="ms-desc">Every raw result — regardless of source — is normalized to the same 26-field schema: name, URL, source, category, license type, commit frequency, contributor count, star count, download count, and 17 more. <strong>Partial data is flagged, not hidden.</strong></div></div></div>
+          <div class="meth-step"><div class="ms-num">3</div><div><div class="ms-title">Deduplication (cross-source)</div><div class="ms-desc">Fuzzy name matching + URL comparison catches the same project appearing across multiple sources. Merged records get a <strong>cross-source confidence boost</strong> proportional to how many sources corroborate them.</div></div></div>
+          <div class="meth-step"><div class="ms-num">4</div><div><div class="ms-title">Scoring (six dimensions, 1–5 each)</div><div class="ms-desc">Finishedness, Commercial Pain, Replacement Clarity, Angle Strength, Packaging Quality, Signal Density — each computed from measurable signals in the normalized data. <strong>Scores are visible on every result card.</strong> You see why a result ranked where it did.</div></div></div>
+          <div class="meth-step"><div class="ms-num">5</div><div><div class="ms-title">Ranking (mode-specific rollup)</div><div class="ms-desc">Exploratory Score = Finishedness + Angle + Packaging + Density. Savings Score = Pain + Replacement + Finishedness + Density. Mode detected from query language or selected manually. <strong>Max score: 20 per mode.</strong></div></div></div>
+        </div>
+      </div>
+      <div class="meth-right">
+        <div class="mr-hdr">// Engine Transparency Stats</div>
+        <div class="mr-body">
+          <div class="mr-fact"><span class="mr-fact-label">Sources indexed simultaneously</span><span class="mr-fact-val">15</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Fields in normalization schema</span><span class="mr-fact-val">26</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Scoring dimensions per result</span><span class="mr-fact-val">6</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Score visible to operator</span><span class="mr-fact-val">Always</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Launch surface refresh cadence</span><span class="mr-fact-val">Hourly</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Alternatives surface refresh</span><span class="mr-fact-val">Daily</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Maturity validator refresh</span><span class="mr-fact-val">Weekly</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Minimum health score to surface</span><span class="mr-fact-val">70/100</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Data sold to third parties</span><span class="mr-fact-val">Never</span></div>
+          <div class="mr-fact"><span class="mr-fact-label">Your stack data shared</span><span class="mr-fact-val">Never</span></div>
+        </div>
+        <div class="mr-note">Repos scoring below 70 on the health composite (last commit, contributor count, issue ratio, release frequency) are filtered out before reaching your results. Abandoned projects don't surface.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING ────────────────────────── -->
+<section class="pricing-section pad" id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-header">
+      <div class="sec-label">Pricing</div>
+      <h2>Enterprise Intelligence. <em>Operator Price.</em></h2>
+      <p>Analyze storefronts, search all 15 sources, and turn the results into practical recommendations without jumping into an enterprise plan.</p>
+    </div>
+    <div class="founding-banner">
+      <div class="fb-left"><div class="fb-badge">Founding Member</div><div class="fb-text"><strong>Rate locks in permanently</strong> — keep $37/mo regardless of future price increases. Next cohort opens at a higher rate.</div></div>
+      <div class="fb-seats">⬤ 47 founding seats remaining</div>
+    </div>
+    <div class="pricing-grid">
+      <!-- OPERATOR -->
+      <div class="plan-card">
+        <div class="plan-av-tags"><span class="plan-av-tag pat2">Marketing</span></div>
+        <div class="plan-tier">Tier 01</div>
+        <div class="plan-name">Operator</div>
+        <p class="plan-tagline">For solo operators who want monthly storefront intelligence without paying for agency volume.</p>
+        <div class="plan-price"><span class="dl">$</span><span class="am">17</span><span class="per">/ month</span></div>
+        <div class="plan-annual">Or $13/mo billed annually — save $48/yr</div>
+        <div class="plan-guarantee"><span class="gi">🛡️</span><p><strong>7-Day Money-Back</strong> — full refund if not satisfied</p></div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="ck">✓</span> All 15 sources included · 10 storefronts / month</li>
+          <li><span class="ck">✓</span> Both modes (Exploratory + Savings)</li>
+          <li><span class="ck">✓</span> Storefront analysis, search, recommendations, and tips</li>
+          <li><span class="ck">✓</span> Basic 6-dimension scoring visible</li>
+          <li><span class="ck">✓</span> License type on every result</li>
+          <li><span class="ck">✓</span> Monthly digest report</li>
+          <li class="off"><span class="ck">–</span> Weekly Hidden Gem alerts</li>
+          <li class="off"><span class="ck">–</span> Stack audit reports + export</li>
+        </ul>
+        <a href="checkout-operator.html" class="plan-btn outline">Start with Operator</a>
+      </div>
+      <!-- DIRECTOR -->
+      <div class="plan-card featured">
+        <div class="plan-badge">Founding Rate</div>
+        <div class="plan-av-tags"><span class="plan-av-tag pat1">Agency</span><span class="plan-av-tag pat2">Marketing</span><span class="plan-av-tag pat3">Dev</span></div>
+        <div class="plan-tier">Tier 02</div>
+        <div class="plan-name">Director</div>
+        <p class="plan-tagline">For operators who need deeper monthly storefront coverage, stronger reporting, and more room to explore.</p>
+        <div class="plan-price"><span class="dl">$</span><span class="am">37</span><span class="per">/ month</span></div>
+        <div class="plan-annual">Or $29/mo billed annually — save $96/yr</div>
+        <div class="plan-anchor"><span class="strike">$97/mo enterprise equivalent</span><span class="pill">62% less</span></div>
+        <div class="plan-guarantee"><span class="gi">🛡️</span><p><strong>14-Day Money-Back</strong> — full refund if not satisfied</p></div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="ck">✓</span> All 15 sources included · 30 storefronts / month</li>
+          <li><span class="ck">✓</span> Both modes — auto-detected or manual</li>
+          <li><span class="ck">✓</span> Storefront analysis, search, recommendations, and tips</li>
+          <li><span class="ck">✓</span> Full 6-dimension scoring on every result</li>
+          <li><span class="ck">✓</span> Exploratory + Savings rollup scores</li>
+          <li><span class="ck">✓</span> Weekly Hidden Gem alerts</li>
+          <li><span class="ck">✓</span> Monthly stack audit report</li>
+          <li><span class="ck">✓</span> Export to Notion / Airtable / CSV</li>
+          <li><span class="ck">✓</span> First access to all vertical products</li>
+          <li><span class="ck">✓</span> 14-day free trial — no card needed</li>
+          <li><span class="ck">✓</span> Founding rate locked at $37 forever</li>
+        </ul>
+        <a href="checkout-director.html" class="plan-btn solid">Activate Director — $37/mo</a>
+      </div>
+    </div>
+    <div class="agency-pricing">
+      <div>
+        <div class="agency-pricing-kicker">Agency Volume</div>
+        <h3>Need more than 30 storefronts?</h3>
+        <p>Agencies, studios, and ecommerce teams with higher monthly volume can contact us for custom pricing, shared workflows, and storefront capacity beyond Director.</p>
+      </div>
+      <a href="agency-pricing.html" class="agency-pricing-link">Contact for Pricing</a>
+    </div>
+    <p style="text-align:center;margin-top:22px;font-size:14px;color:var(--faint);">Director — 14-day free trial, no card required, 14-day money-back guarantee. Agency pricing available for higher storefront volume.</p>
+  </div>
+</section>
+
+<!-- ── ACADEMY TEASER ─────────────────── -->
+<section class="academy pad">
+  <div class="academy-inner">
+    <div class="academy-left">
+      <div class="sec-label">Scout Academy</div>
+      <h2>Learn to Scout <em>Like an Operator</em></h2>
+      <p>Included with Director. A growing library of tutorials, playbooks, and operator case studies — teaching you how to get maximum signal from each of the 15 sources and how to turn Scout intelligence into actual decisions.</p>
+      <p><strong>Not a generic onboarding wizard.</strong> Practical operator education built around the three avatars — agencies, marketers, and developers each have their own learning track.</p>
+      <div class="academy-modules">
+        <div class="academy-mod"><div class="am-icon">🔭</div><div><div class="am-title">Exploratory Mode Mastery</div><div class="am-desc">How to structure queries, read signals, and act on Hidden Gem alerts before the window closes.</div></div></div>
+        <div class="academy-mod"><div class="am-icon">💰</div><div><div class="am-title">Cost-Savings Audit Playbook</div><div class="am-desc">Step-by-step: how to map your stack, run replacement queries, and document annual savings.</div></div></div>
+        <div class="academy-mod"><div class="am-icon">🏢</div><div><div class="am-title">Agency Pre-Build Framework</div><div class="am-desc">How agencies use Scout before scoping, to find forkable code and cut project estimates.</div></div></div>
+        <div class="academy-mod"><div class="am-icon">📊</div><div><div class="am-title">Source Deep-Dives (15 modules)</div><div class="am-desc">One module per source — what to watch, how to interpret results, red flags to filter out.</div><div class="am-coming">Coming Q3 2025</div></div></div>
+        <div class="academy-mod"><div class="am-icon">🚀</div><div><div class="am-title">Vertical Scout Guides</div><div class="am-desc">Playbooks for SelfHostedScout, AgentScout, DataScout — available as verticals launch.</div><div class="am-coming">Coming with each vertical</div></div></div>
+      </div>
+    </div>
+    <div class="academy-right">
+      <div class="ar-hdr"><span class="ar-hdr-title">// Academy — Director Tier</span><span class="ar-hdr-badge">Included Free</span></div>
+      <div class="ar-body">
+        <div class="ar-stat"><span class="ar-stat-label">Modules available at launch</span><span class="ar-stat-val">8</span></div>
+        <div class="ar-stat"><span class="ar-stat-label">Avatar-specific learning tracks</span><span class="ar-stat-val">3</span></div>
+        <div class="ar-stat"><span class="ar-stat-label">Avg. module length</span><span class="ar-stat-val">~12 min</span></div>
+        <div class="ar-stat"><span class="ar-stat-label">Case studies with real numbers</span><span class="ar-stat-val">6</span></div>
+        <div class="ar-stat"><span class="ar-stat-label">Source deep-dive modules</span><span class="ar-stat-val">15 (Q3)</span></div>
+        <div class="ar-stat"><span class="ar-stat-label">Cost to access</span><span class="ar-stat-val">$0 w/Director</span></div>
+      </div>
+      <div class="ar-note">Academy is included with Director at no extra cost. Content is added continuously — Founding Members get access to everything as it ships.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── URGENCY PUSH ─────────────────────── -->
+<section class="urgency-push pad">
+  <div class="up-inner">
+    <div class="up-left">
+      <div class="sec-label">Why Now</div>
+      <h2>15 Sources Running. <em>The Window Is Open.</em></h2>
+      <p>The engine is live. The triage is running weekly. The Hidden Gems are going to operators who signed up when there were 80 founding seats. There are 47 left. This isn't manufactured urgency — the founding rate is a real commitment that closes when it fills.</p>
+      <p><strong>The money-back guarantee removes the last reason to wait.</strong> 14 days. Full refund if Scout doesn't find you one tool worth acting on. That's not a trial — that's a performance guarantee.</p>
+      <ul class="ul">
+        <li>47 founding seats remaining at $37/mo — next cohort pays more</li>
+        <li>SMBs that audit their stack quarterly save 28% on SaaS annually (BetterCloud 2024)</li>
+        <li>Each week you wait is a week of Hidden Gems going to someone else's inbox</li>
+        <li>The ROI calculator above shows your payback period — it's probably under 6 weeks</li>
+        <li>$37/mo is one unused SaaS seat. You almost certainly have five of those running right now</li>
+      </ul>
+    </div>
+    <div>
+      <div class="uc-card">
+        <div class="uc-label">// Director — Founding Rate</div>
+        <div class="uc-price"><span>$</span>37</div>
+        <div class="uc-sub">per month · founding rate · locked forever</div>
+        <div class="uc-seats"><div class="sd"></div><p><strong>47 founding seats</strong> remaining</p></div>
+        <ul class="uc-list">
+          <li>All 15 sources included</li>
+          <li>Both modes — auto-detected</li>
+          <li>Full 6-dimension scoring visible</li>
+          <li>Weekly Hidden Gem alerts</li>
+          <li>Monthly stack audit report</li>
+          <li>14-day trial + 14-day money-back</li>
+        </ul>
+        <a href="checkout-director.html" class="uc-btn">Lock In $37/mo — Start Free Trial</a>
+        <div class="uc-mbg">🛡️ 14-Day Money-Back Guarantee — Full Refund, No Questions</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ─────────────────────────────── -->
+<section class="faq-section pad" id="faq">
+  <div class="faq-inner">
+    <div class="faq-header">
+      <div class="sec-label">FAQ</div>
+      <h2>Questions <em>Smart Operators</em> Ask First</h2>
+    </div>
+    <div class="obj-list">
+      <div class="obj-item open"><div class="obj-q" onclick="toggleFaq(this)"><span class="obj-q-text">Do I need technical knowledge or a GitHub account?</span><span class="obj-toggle">+</span></div><div class="obj-a"><p><strong>No — on both counts.</strong> Marketing managers and agency owners use Scout daily. Plain English query in, ranked results out. No GitHub account, no developer knowledge, no configuration. The onboarding is a 7-question form about your current tools and problems. That's it.</p></div></div>
+      <div class="obj-item"><div class="obj-q" onclick="toggleFaq(this)"><span class="obj-q-text">What's the actual difference between the free query and a paid account?</span><span class="obj-toggle">+</span></div><div class="obj-a"><p>The free query gives you <strong>one real engine result</strong> — no account, no email required. A paid Operator account unlocks all 15 sources for 10 storefronts per month, including analysis, search, recommendations, and tips. Director gives you the same 15-source access for 30 storefronts per month, plus full scoring, weekly Hidden Gem alerts, export, and the monthly stack audit report. The free query is the real engine — just one shot at it.</p></div></div>
+      <div class="obj-item"><div class="obj-q" onclick="toggleFaq(this)"><span class="obj-q-text">How does the money-back guarantee work?</span><span class="obj-toggle">+</span></div><div class="obj-a"><p>If you're a Director or Operator subscriber and you're not satisfied within 14 days of your first paid charge, email support and we'll refund your full first month — no questions, no retention flow. <strong>This is separate from the free trial</strong> (you won't be charged during the trial at all). The money-back guarantee kicks in if you've gone past the trial and still aren't getting value. Agencies that need more than 30 storefronts per month can contact us for custom pricing before committing.</p></div></div>
+      <div class="obj-item"><div class="obj-q" onclick="toggleFaq(this)"><span class="obj-q-text">How is Scout different from just searching GitHub, Product Hunt, or G2?</span><span class="obj-toggle">+</span></div><div class="obj-a"><p>GitHub search returns raw unranked repos — no commercial framing, no maintenance health, no mode detection. Product Hunt and G2 surface tools <em>after</em> they've been marketed — you're discovering them at the same time as everyone else. <strong>Scout queries 15 sources simultaneously</strong>, scores everything for commercial relevance and maintenance health, and surfaces tools gaining momentum before they go mainstream. The competitor comparison table above shows this in detail.</p></div></div>
+      <div class="obj-item"><div class="obj-q" onclick="toggleFaq(this)"><span class="obj-q-text">What's the Founding Member rate and does it actually lock in?</span><span class="obj-toggle">+</span></div><div class="obj-a"><p><strong>Yes — permanently.</strong> When Scout raises prices for new customers, Founding Members keep $37/mo forever. This is a real contractual commitment, not a limited-time discount. 47 seats remain at the founding rate. When they fill, the next cohort pays more. Your rate doesn't change regardless of what features we add, what sources we index, or how the platform grows.</p></div></div>
+      <div class="obj-item"><div class="obj-q" onclick="toggleFaq(this)"><span class="obj-q-text">Is there an affiliate or partner program?</span><span class="obj-toggle">+</span></div><div class="obj-a"><p>Yes — Scout's Partner Program is launching with the platform. Operators who refer other operators earn a recurring commission for the lifetime of the referred account. If you run an agency, a newsletter, a community, or a network of operators who would benefit from Scout, <strong><a href="#partner" style="color:var(--amber);">apply for the partner program below</a></strong>. Founding Partners lock in the highest commission tier permanently alongside their subscriber rate.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── EMAIL CAPTURE + PARTNER ─────────── -->
+<section class="capture pad" id="partner">
+  <div class="cap-inner">
+    <div class="cap-left">
+      <div class="sec-label">Not Ready to Commit?</div>
+      <h2>Get the <em>Free Monthly Gems</em> Digest</h2>
+      <p class="cap-lead">Every month: the <strong>top 10 tools gaining momentum</strong> across all 15 indexed sources — before they go mainstream. No pitch. No upsell. Just the list.</p>
+      <div class="cap-form">
+        <input type="email" placeholder="your@email.com">
+        <button>Send Me the List</button>
+      </div>
+      <p class="cap-note">One email per month. No credit card. Unsubscribe anytime.</p>
+    </div>
+    <div class="cap-right">
+      <div class="sec-label">Earn With Scout</div>
+      <h3>The <em>Partner Program</em></h3>
+      <p>Run an agency, newsletter, community, or network of operators? Refer Scout and earn a <strong>recurring commission for the lifetime of every account you send us</strong>. Founding Partners lock in the highest tier permanently.</p>
+      <p>This isn't a one-time referral bounty. It's a revenue share that compounds as your referrals grow their subscriptions and upgrade to higher tiers.</p>
+      <a href="#" class="partner-link">Apply for Scout Partner Program <span class="arrow">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FINAL CTA ─────────────────────────── -->
+<section class="final-cta pad">
+  <div class="sec-label" style="justify-content:center;">Make the Move</div>
+  <h2>15 Sources. 2 Modes.<br>6 Dimensions. <em>One Advantage.</em></h2>
+  <p>The intelligence engine is live. 47 founding seats remain at $37/mo. The 14-day money-back guarantee removes the last reason to wait. <strong>Your competitors' Hidden Gem alert already went out this week.</strong></p>
+  <div class="cta-row">
+    <a href="checkout-director.html" class="btn-primary">Lock In $37/mo — Start Free Trial</a>
+    <a href="#faq" class="btn-ghost">Questions first? →</a>
+  </div>
+  <p class="cta-sub">14-day free trial · 14-day money-back guarantee · No credit card · All 15 sources · Founding rate locked forever · Cancel anytime</p>
+</section>
+
+<!-- ── FOOTER ────────────────────────────── -->
+<footer>
+  <div class="footer-logo">Scout — Open Intelligence Engine · v9</div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Data Handling</a>
+    <a href="#partner">Partner Program</a>
+    <a href="#">Support</a>
+  </div>
+  <div class="footer-note">Operator $17/mo · Director $37/mo · Agency pricing available</div>
+</footer>
+
+<script>
+/* ── NAV ── */
+window.addEventListener('scroll',()=>{document.getElementById('main-nav').classList.toggle('scrolled',window.scrollY>60);});
+
+/* ── CHAT ── */
+function toggleChat(){document.getElementById('chat-popup').classList.toggle('open');}
+
+/* ── MODE SWITCHER ── */
+function setMode(m){
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.mode-btn.${m}`).classList.add('active');
+  const chip=document.getElementById('hsc-chip'),q=document.getElementById('hsc-query'),ct=document.getElementById('hsc-count');
+  const r1s=document.getElementById('r1s'),r1n=document.getElementById('r1n'),r1d=document.getElementById('r1d'),r1t=document.getElementById('r1t');
+  const r2s=document.getElementById('r2s'),r2n=document.getElementById('r2n'),r2d=document.getElementById('r2d');
+  const sl=document.getElementById('sp-lbl'),sn=document.getElementById('sp-num');
+  if(m==='exp'){
+    chip.className='mode-chip exp';chip.textContent='Exploratory';
+    q.textContent='"AI agent automation framework open source"';ct.textContent='147 results · 9 sources';
+    r1s.className='hr-src gh';r1s.textContent='GH';r1n.textContent='langchain-ai / langchain';
+    r1d.textContent='LLM orchestration framework. 82k stars, 3-day commit velocity. Agent-native. MIT licensed.';
+    r1t.innerHTML='<span class="hr-tag">Python</span><span class="hr-tag">MIT</span><span class="hr-tag">AgentScout →</span>';
+    r2s.className='hr-src hn';r2s.textContent='HN';r2n.textContent='Show HN: crewAI — role-based AI agent framework';
+    r2d.textContent='Fresh HN launch. 312 points, 89 comments. Strong founder framing.';
+    sl.textContent='Exploratory';sn.textContent='18';
+  }else{
+    chip.className='mode-chip sav';chip.textContent='Cost-Savings';
+    q.textContent='"Replace Mailchimp free self-hosted alternative"';ct.textContent='94 results · 6 sources';
+    r1s.className='hr-src as';r1s.textContent='AS';r1n.textContent='listmonk — self-hosted newsletter & mailing list';
+    r1d.textContent='Replaces Mailchimp. Self-hosted, zero send limits, MIT license. 13k stars, weekly commits, Docker-ready.';
+    r1t.innerHTML='<span class="hr-tag rep">Replaces: Mailchimp $189/mo</span><span class="hr-tag">Savings: $2,268/yr</span>';
+    r2s.className='hr-src sh';r2s.textContent='SH';r2n.textContent='mautic — open-source marketing automation';
+    r2d.textContent='Found on SaaSHub + awesome-selfhosted. Full campaign management, CRM hooks, active community.';
+    sl.textContent='Savings';sn.textContent='19';
+  }
+}
+
+/* ── FREE QUERY DEMO ── */
+const demoResults={
+  default:[
+    {src:'gh',srcLabel:'GH',name:'twenty/twenty-crm',desc:'Open-source CRM modeled after Salesforce UX. Self-host or managed. 18k stars, actively maintained.',tags:['Free','React','gem'],score:96,gem:true},
+    {src:'as',srcLabel:'AS',name:'listmonk/listmonk',desc:'Self-hosted newsletter & mailing list manager. Replaces Mailchimp at $0.',tags:['Free Tier','Go','rep'],score:91,gem:false},
+    {src:'hn',srcLabel:'HN',name:'Show HN: formbricks — open source Typeform',desc:'Privacy-first survey tool with CRM hooks. 7.2k stars. Fresh launch with 420 points.',tags:['TypeScript','MIT'],score:84,gem:false},
+  ],
+  crm:[
+    {src:'gh',srcLabel:'GH',name:'twenty/twenty-crm',desc:'Open-source Salesforce-style CRM. React native, self-hostable, MIT license. 18k stars, weekly commits.',tags:['Free','React','gem'],score:96,gem:true},
+    {src:'as',srcLabel:'AS',name:'monicahq/monica',desc:'Personal relationship manager / CRM. 18k stars, active maintainers, Docker-ready.',tags:['Free','PHP'],score:88,gem:false},
+    {src:'gh',srcLabel:'GH',name:'cortezaproject/corteza',desc:'Low-code platform with CRM module included. Enterprise-grade, self-hosted.',tags:['Open Source','Go'],score:81,gem:false},
+  ],
+  analytics:[
+    {src:'gh',srcLabel:'GH',name:'plausible/analytics',desc:'Simple, privacy-friendly Google Analytics alternative. No cookies. GDPR compliant. 14k stars.',tags:['Free Tier','Elixir','gem'],score:97,gem:true},
+    {src:'as',srcLabel:'AS',name:'matomo/matomo',desc:'Full-featured analytics platform. Replaces GA entirely. Self-hosted, 18k stars.',tags:['Self-hosted','PHP'],score:91,gem:false},
+    {src:'hn',srcLabel:'HN',name:'umami-software/umami',desc:'Lightweight analytics. HN-featured, 16k stars, minimal setup. Perfect GA replacement.',tags:['TypeScript','MIT'],score:87,gem:false},
+  ],
+  email:[
+    {src:'gh',srcLabel:'GH',name:'listmonk/listmonk',desc:'Self-hosted newsletter & mailing list. Replaces Mailchimp at $0. Unlimited subscribers, unlimited sends.',tags:['Free','Go','gem','rep'],score:96,gem:true},
+    {src:'as',srcLabel:'AS',name:'mautic/mautic',desc:'Full marketing automation platform. Email, SMS, push. Replaces HubSpot & Mailchimp.',tags:['PHP','Self-hosted'],score:89,gem:false},
+    {src:'sh',srcLabel:'SH',name:'keila/keila',desc:'Simple newsletter tool. Elixir-based. Docker-ready, GDPR compliant, active development.',tags:['Elixir','Free'],score:79,gem:false},
+  ],
+};
+
+function runFreeQuery(){
+  const q=document.getElementById('free-query-input').value.toLowerCase().trim();
+  if(!q){return;}
+  const container=document.getElementById('free-results');
+  container.innerHTML='<div style="text-align:center;padding:20px 0;font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);">Querying 15 sources...</div>';
+  let results=demoResults.default;
+  if(q.includes('crm')||q.includes('salesforce')||q.includes('hubspot'))results=demoResults.crm;
+  else if(q.includes('analytic')||q.includes('google analytics')||q.includes('tracking'))results=demoResults.analytics;
+  else if(q.includes('email')||q.includes('mailchimp')||q.includes('newsletter'))results=demoResults.email;
+  setTimeout(()=>{
+    container.innerHTML=results.map(r=>`
+      <div class="fd-result${r.gem?' gem':''}">
+        <div class="fdr-info">
+          <div class="fdr-top">
+            <span class="fdr-src ${r.src}">${r.srcLabel}</span>
+            <span class="fdr-name">${r.name}</span>
+            ${r.gem?'<span class="hr-gem">⚡ Hidden Gem</span>':''}
+          </div>
+          <div class="fdr-desc">${r.desc}</div>
+          <div class="fdr-tags">${r.tags.map(t=>{
+            const cls=t==='gem'?'gem':t==='rep'?'rep':'';
+            const label=t==='gem'?'⚡ Rising Fast':t==='rep'?'Replaces Paid Tool':t;
+            return`<span class="fdr-tag ${cls}">${label}</span>`;
+          }).join('')}</div>
+        </div>
+        <div class="fdr-score"><div class="sn">${r.score}</div><div class="sl">Health</div></div>
+      </div>`).join('');
+    document.getElementById('fd-cta').style.display='flex';
+  },1200);
+}
+
+document.getElementById('free-query-input').addEventListener('keydown',e=>{if(e.key==='Enter')runFreeQuery();});
+
+function toggleFilter(el){el.classList.toggle('on');}
+
+/* ── ROI CALCULATOR ── */
+function calcUpdate(){
+  const tools=+document.getElementById('tools-range').value;
+  const cost=+document.getElementById('cost-range').value;
+  const waste=+document.getElementById('waste-range').value;
+  document.getElementById('tools-val').textContent=`${tools} tools`;
+  document.getElementById('cost-val').textContent=`$${cost}/mo`;
+  document.getElementById('waste-val').textContent=`${waste}%`;
+  const total=tools*cost;
+  const wasteAmt=Math.round(total*(waste/100));
+  const annualSavings=Math.round(wasteAmt*12*0.75);
+  const scoutCost=444;
+  const netSavings=annualSavings-scoutCost;
+  const paybackMonths=(scoutCost/Math.max(wasteAmt*0.75,1)).toFixed(1);
+  document.getElementById('calc-total').textContent=`$${total.toLocaleString()}`;
+  document.getElementById('calc-waste').textContent=`$${wasteAmt.toLocaleString()}`;
+  document.getElementById('calc-save').textContent=`$${netSavings.toLocaleString()}`;
+  document.getElementById('calc-payback').textContent=`~${paybackMonths} months`;
+}
+calcUpdate();
+
+/* ── FAQ ── */
+function toggleFaq(btn){
+  const item=btn.parentElement;
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.obj-item').forEach(i=>i.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}
+</script>
+</body>
+</html>
