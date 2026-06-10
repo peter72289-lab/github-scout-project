@@ -168,7 +168,7 @@
         <p class="lead">Drop your storefront URL and ad spend range. Scout will use that context to prioritize app savings, better plugin options, conversion widgets, third-party embeds, and stack cleanup opportunities.</p>
         <p class="fine">Your first URL review is positioned as the front door into Operator. If the scan shows enough savings or conversion upside, the $17/month plan gives you 10 storefront analyses per month across all 15 sources.</p>
       </div>
-      <form name="operator-url-scan" method="POST" data-netlify="true" action="operator-thank-you.html">
+      <form id="operator-url-form" name="operator-url-scan" method="GET" action="operator-url-analysis.html">
         <input type="hidden" name="form-name" value="operator-url-scan">
         <div class="form-grid">
           <label>Email<input name="email" type="email" required placeholder="you@store.com"></label>
@@ -179,7 +179,7 @@
           <label>Biggest goal<select name="primary_goal" required><option value="">Select goal</option><option>Cut app costs</option><option>Improve conversion</option><option>Speed up storefront</option><option>Find better widgets</option><option>Clean up app stack</option></select></label>
         </div>
         <label>What should Scout look for first?<textarea name="notes" placeholder="Example: our paid traffic is expensive, conversion is flat, our app stack feels bloated, or we are unsure which widgets are worth testing."></textarea></label>
-        <button type="submit">Get My URL Analyzed</button>
+        <button type="submit">Run My URL Analyzer</button>
       </form>
     </div>
   </section>
@@ -188,5 +188,28 @@
     <span>GitHub Scout Operator - Shopify URL software savings funnel</span>
     <span><a href="index.html">V9 Home</a> · <a href="checkout-operator.html">Operator Checkout</a> · <a href="sample-shopify-url-analysis.html">Sample Report</a></span>
   </footer>
+  <script>
+    const operatorUrlForm = document.querySelector('#operator-url-form');
+    operatorUrlForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(operatorUrlForm);
+      const data = Object.fromEntries(formData.entries());
+      sessionStorage.setItem('operatorUrlScan', JSON.stringify(data));
+
+      fetch('/.netlify/functions/operator-url-scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams(formData).toString(),
+        keepalive: true
+      }).catch(() => {});
+
+      const query = new URLSearchParams({
+        store_url: data.store_url || '',
+        monthly_ad_spend: data.monthly_ad_spend || '',
+        primary_goal: data.primary_goal || ''
+      });
+      window.location.href = `operator-url-analysis.html?${query.toString()}`;
+    });
+  </script>
 </body>
 </html>

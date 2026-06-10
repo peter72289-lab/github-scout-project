@@ -20,7 +20,7 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a29d843165637bbd4ace783--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a29dbcdce55117a61d73230--githubscout-ecommerce-v9-20260609.netlify.app
 ```
 
 ## Redeploy Command
@@ -36,6 +36,8 @@ npx netlify deploy --prod --dir netlify-v9-githubscout-ecommerce --site 3f86b1e7
 - V9 homepage update with Shopify Scan links.
 - Cockpit demo video in the Product Demo section.
 - Operator Shopify savings landing page.
+- Functional Operator URL analyzer results page.
+- Operator URL scan Netlify Function endpoint.
 - Sample Shopify URL analysis page.
 - Operator URL scan Netlify Form.
 - Operator checkout intake Netlify Form.
