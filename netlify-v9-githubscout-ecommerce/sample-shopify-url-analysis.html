@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Shopify URL Analysis - GitHub Scout Operator</title>
+  <style>
+    :root{--black:#080e16;--deep:#0f1c2c;--surface:#162840;--surf2:#1e3452;--border:#2a4560;--blt:#3c5e7a;--amber:#f5b030;--white:#f6f2ed;--body:#d4e6f4;--muted:#a6c4dc;--faint:#6888a2;--green:#50d8a0;--blue:#56a8ec;--red:#ee8888}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--black);color:var(--white);font-family:Barlow,Avenir Next,Helvetica,Arial,sans-serif}
+    header{padding:56px 40px 32px;border-bottom:1px solid var(--border);background:radial-gradient(circle at 70% 15%,rgba(245,176,48,.14),transparent 34%),var(--deep)}
+    .wrap{max-width:1180px;margin:0 auto}
+    a.back{display:inline-block;margin-bottom:24px;color:var(--amber);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;font-size:13px;text-decoration:none}
+    .kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:var(--green);letter-spacing:.18em;text-transform:uppercase;font-size:13px;font-weight:800;margin-bottom:14px}
+    h1{font-family:Georgia,Times New Roman,serif;font-size:clamp(42px,6vw,86px);line-height:.96;margin:0 0 18px;text-transform:uppercase;max-width:900px}
+    h1 em{color:var(--amber);font-style:normal}
+    .lead{font-size:19px;line-height:1.7;color:var(--body);max-width:780px;margin:0}
+    main{padding:42px 40px 72px}
+    .topgrid{display:grid;grid-template-columns:1fr 360px;gap:24px;margin-bottom:24px}
+    .panel{background:var(--deep);border:1px solid var(--border);padding:24px}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:24px}
+    .metric{background:var(--surface);padding:20px;text-align:center}
+    .metric strong{display:block;font-family:Georgia,Times New Roman,serif;color:var(--amber);font-size:36px;line-height:1}
+    .metric span{display:block;margin-top:7px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px}
+    h2{font-family:Georgia,Times New Roman,serif;font-size:34px;line-height:1.05;margin:0 0 18px}
+    h3{margin:0 0 8px;font-size:20px}
+    p{color:var(--body);line-height:1.65;margin:0 0 14px}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{border:1px solid var(--border);padding:14px;text-align:left;vertical-align:top}
+    th{color:var(--amber);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:12px;background:var(--surf2)}
+    td{color:var(--body);background:rgba(22,40,64,.58)}
+    .tag{display:inline-block;color:var(--green);border:1px solid rgba(80,216,160,.35);background:rgba(80,216,160,.12);padding:4px 8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.08em;font-size:11px}
+    .actions{display:grid;gap:12px}
+    .action{border:1px solid var(--border);background:rgba(22,40,64,.68);padding:16px}
+    .action strong{display:block;color:var(--white);margin-bottom:5px}
+    .priority{color:var(--amber);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px}
+    .cta{display:inline-block;background:var(--amber);color:var(--black);text-decoration:none;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;font-weight:900;font-size:13px;padding:15px 18px;margin-top:12px}
+    @media(max-width:900px){header,main{padding-left:22px;padding-right:22px}.topgrid,.summary{grid-template-columns:1fr}table{font-size:14px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="operator-shopify-savings.html">Back to Operator funnel</a>
+      <div class="kicker">Sample Operator Report</div>
+      <h1>Shopify URL analysis for <em>better software choices.</em></h1>
+      <p class="lead">This is the kind of output ad traffic should expect: storefront-specific software recommendations, cost-saving swaps, and conversion tests instead of a vague app directory.</p>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <div class="summary">
+        <div class="metric"><strong>$164</strong><span>Potential monthly waste</span></div>
+        <div class="metric"><strong>6</strong><span>Swap candidates</span></div>
+        <div class="metric"><strong>4</strong><span>CRO tests</span></div>
+        <div class="metric"><strong>10</strong><span>Day action plan</span></div>
+      </div>
+      <div class="topgrid">
+        <section class="panel">
+          <h2>Detected storefront stack pattern</h2>
+          <p><strong>Example URL:</strong> clean-beauty-demo-store.com</p>
+          <p>The storefront appears to be using overlapping review, pop-up, email capture, and upsell functionality. The biggest opportunity is not adding more tools. It is consolidating the stack around fewer, higher-leverage plugins.</p>
+          <table>
+            <thead><tr><th>Category</th><th>Likely issue</th><th>Recommendation</th></tr></thead>
+            <tbody>
+              <tr><td>Reviews + UGC</td><td>Two widgets competing for proof surface.</td><td><span class="tag">Consolidate</span> Use one review platform with Q&A and media proof.</td></tr>
+              <tr><td>Popups + email</td><td>Multiple capture surfaces can hurt UX.</td><td><span class="tag">Simplify</span> One intent-based capture tool with list segmentation.</td></tr>
+              <tr><td>Bundles + upsells</td><td>Product page lacks a clear AOV lift module.</td><td><span class="tag">Test</span> Add bundle/quantity break widget to hero product templates.</td></tr>
+              <tr><td>Performance</td><td>Legacy promo scripts may be loading sitewide.</td><td><span class="tag">Audit</span> Remove inactive third-party scripts before installing more tools.</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <aside class="panel">
+          <h2>Operator verdict</h2>
+          <p>Do not install another “conversion” app until the duplicate proof/capture stack is cleaned up.</p>
+          <p>The best near-term move is to reduce monthly app spend while adding one focused AOV test.</p>
+          <a class="cta" href="operator-shopify-savings.html#capture">Submit my URL</a>
+        </aside>
+      </div>
+      <section class="panel">
+        <h2>10-day software action plan</h2>
+        <div class="actions">
+          <div class="action"><div class="priority">Day 1-2 · Keep / remove</div><strong>Inventory every app and script touching product, cart, checkout, email capture, review proof, and post-purchase flow.</strong><p>Remove inactive widgets and old promo embeds first. This is the cleanest savings win.</p></div>
+          <div class="action"><div class="priority">Day 3-4 · Swap</div><strong>Consolidate review proof into one widget with photo reviews, Q&A, and product-level placement.</strong><p>This reduces overlap and makes the proof surface easier to optimize.</p></div>
+          <div class="action"><div class="priority">Day 5-7 · Test</div><strong>Add one bundle or quantity-break test on the top-selling product template.</strong><p>Prioritize AOV lift before buying another broad CRO app.</p></div>
+          <div class="action"><div class="priority">Day 8-10 · Measure</div><strong>Track app spend, speed, add-to-cart rate, and checkout progression before the next subscription cycle.</strong><p>The goal is lower software cost plus a cleaner conversion surface.</p></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
