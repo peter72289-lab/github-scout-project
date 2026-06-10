@@ -20,7 +20,7 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a29d576a53221ee384c778b--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a29d843165637bbd4ace783--githubscout-ecommerce-v9-20260609.netlify.app
 ```
 
 ## Redeploy Command
@@ -39,7 +39,6 @@ npx netlify deploy --prod --dir netlify-v9-githubscout-ecommerce --site 3f86b1e7
 - Sample Shopify URL analysis page.
 - Operator URL scan Netlify Form.
 - Operator checkout intake Netlify Form.
-- Operator demo video asset.
 
 ## Verification After Deploy
 

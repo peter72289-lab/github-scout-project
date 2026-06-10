@@ -23,7 +23,6 @@ GitHub Scout is an ecommerce intelligence project for finding better software, p
 - `ads/v9-static-9x16/` - broad V9 Meta-style ad set.
 - `ads/operator-shopify-savings-9x16/` - Operator Shopify cost-savings ad set.
 - `cockpit-v2-demo/` - cockpit demo capture/render assets and finished MP4s.
-- `operator-demo-video/` - Operator-specific URL scan demo video assets.
 - `docs/` - campaign, checkout, and deployment operating notes.
 - `servers/` - prototype server-side scanner code.
 

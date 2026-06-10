@@ -7,4 +7,3 @@
 # Generated video frame caches; keep source renderers and finished MP4 exports.
 cockpit-v2-demo/render/frames/
 cockpit-v2-demo/render/clicked-frames/
-operator-demo-video/render/frames/
