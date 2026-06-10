@@ -195,6 +195,7 @@
       const formData = new FormData(operatorUrlForm);
       const data = Object.fromEntries(formData.entries());
       sessionStorage.setItem('operatorUrlScan', JSON.stringify(data));
+      formData.set('intent', 'lead');
 
       fetch('/.netlify/functions/operator-url-scan', {
         method: 'POST',
