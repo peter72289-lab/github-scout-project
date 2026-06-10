@@ -20,7 +20,7 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a29d17654540845f5a506aa--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a29d576a53221ee384c778b--githubscout-ecommerce-v9-20260609.netlify.app
 ```
 
 ## Redeploy Command
