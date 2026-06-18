@@ -36,6 +36,9 @@
     .metric p{font-size:14px;color:var(--muted);line-height:1.45;margin:9px 0 0}
     .status-strip{margin-top:22px;border:1px solid rgba(80,216,160,.35);background:rgba(80,216,160,.09);padding:16px 18px;color:var(--body);font-size:15px;line-height:1.55}
     .status-strip strong{color:var(--green)}
+    .tool-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .mini-btn{border:1px solid var(--blt);background:rgba(22,40,64,.88);color:var(--body);padding:11px 13px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:900;cursor:pointer}
+    .mini-btn.primary{background:var(--amber);border-color:var(--amber);color:var(--black)}
     .context-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
     .context-card{border:1px solid var(--border);background:var(--surface);padding:16px}
     .context-card span{display:block;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px;margin-bottom:7px}
@@ -108,6 +111,11 @@
         <div class="metric"><strong id="detectedCount">Scanning</strong><span>Public app signals</span><p>Detected from crawlable storefront HTML.</p></div>
       </div>
       <div class="status-strip" id="scanStatus"><strong>Scanning:</strong> fetching public storefront HTML and checking common Shopify app signatures.</div>
+      <div class="tool-row" aria-label="Report actions">
+        <button class="mini-btn primary" type="button" id="exportReport">Export Scan JSON</button>
+        <button class="mini-btn" type="button" id="copyShareLink">Copy Share Link</button>
+        <button class="mini-btn" type="button" id="printReport">Print Report</button>
+      </div>
       <div class="context-grid">
         <div class="context-card"><span>Submitted URL</span><strong id="submittedUrl">Not provided</strong></div>
         <div class="context-card"><span>Ad spend range</span><strong id="spendRange">Not provided</strong></div>
@@ -160,14 +168,14 @@
       <p class="lead">Operator gives you access to all 15 sources, 10 storefront analyses per month, search, recommendations, and tips. This quick analyzer is just the appetite-builder.</p>
       <div class="actions">
         <a class="btn primary" href="checkout-operator.html">Start Operator</a>
-        <a class="btn secondary" href="sample-shopify-url-analysis.html">View Sample Report</a>
+        <a class="btn secondary" href="operator-sample-reports.html">View Sample Reports</a>
       </div>
     </div>
   </section>
 
   <footer>
     <span>GitHub Scout Operator URL analysis</span>
-    <span><a href="operator-shopify-savings.html">Operator Funnel</a> · <a href="sample-shopify-url-analysis.html">Sample Report</a></span>
+    <span><a href="operator-shopify-savings.html">Operator Funnel</a> · <a href="operator-sample-reports.html">Sample Reports</a></span>
   </footer>
 
   <script>
@@ -181,6 +189,7 @@
       primary_goal: stored.primary_goal || params.get('primary_goal') || '',
       notes: stored.notes || ''
     };
+    let latestAnalysis = null;
 
     const money = new Intl.NumberFormat('en-US', {style:'currency', currency:'USD', maximumFractionDigits:0});
 
@@ -321,6 +330,7 @@
     }
 
     function renderAnalysis(analysis) {
+      latestAnalysis = analysis;
       const profile = spendProfile(scan.monthly_ad_spend);
       const summary = analysis.summary || {};
       setText('#savingsBand', summary.monthlySavings || profile.monthly);
@@ -339,6 +349,11 @@
       renderRecommendations(analysis.recommendations || buildRecommendations([], profile, scan.primary_goal));
       renderDetected(analysis.detectedApps || []);
       renderActionPlan(analysis.actionPlan || buildActionPlan(profile));
+      trackEvent('analysis_rendered', {
+        detectedCount: analysis.detectedApps?.length || 0,
+        crawlOk: Boolean(analysis.crawl?.ok),
+        score: summary.score || profile.score
+      });
     }
 
     function renderRecommendations(items) {
@@ -479,6 +494,71 @@
         renderAnalysis(fallbackAnalysis(`Live crawl could not finish: ${error.message}`));
       }
     }
+
+    function trackEvent(name, detail = {}) {
+      try {
+        const key = 'githubscout_operator_events';
+        const events = JSON.parse(localStorage.getItem(key) || '[]');
+        events.unshift({
+          name,
+          detail,
+          store_url: scan.store_url || null,
+          primary_goal: scan.primary_goal || null,
+          monthly_ad_spend: scan.monthly_ad_spend || null,
+          at: new Date().toISOString()
+        });
+        localStorage.setItem(key, JSON.stringify(events.slice(0, 80)));
+      } catch (error) {}
+    }
+
+    function downloadReport() {
+      const payload = {
+        scan,
+        analysis: latestAnalysis,
+        exported_at: new Date().toISOString(),
+        source: 'GitHub Scout Operator URL Analyzer'
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `github-scout-operator-scan-${domainFromUrl(scan.store_url).replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'store'}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      trackEvent('export_report_clicked', {detectedCount: latestAnalysis?.detectedApps?.length || 0});
+    }
+
+    async function copyShareLink() {
+      const query = new URLSearchParams({
+        store_url: scan.store_url || '',
+        monthly_ad_spend: scan.monthly_ad_spend || '',
+        primary_goal: scan.primary_goal || ''
+      });
+      const shareUrl = `${location.origin}${location.pathname}?${query.toString()}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        const button = document.querySelector('#copyShareLink');
+        if (button) {
+          button.textContent = 'Copied Link';
+          setTimeout(() => { button.textContent = 'Copy Share Link'; }, 1800);
+        }
+      } catch (error) {
+        prompt('Copy this share link:', shareUrl);
+      }
+      trackEvent('copy_share_link_clicked');
+    }
+
+    document.querySelector('#exportReport')?.addEventListener('click', downloadReport);
+    document.querySelector('#copyShareLink')?.addEventListener('click', copyShareLink);
+    document.querySelector('#printReport')?.addEventListener('click', () => {
+      trackEvent('print_report_clicked');
+      window.print();
+    });
+    document.querySelectorAll('a[href*="checkout-operator"]').forEach((link) => {
+      link.addEventListener('click', () => trackEvent('checkout_cta_clicked', {href: link.getAttribute('href')}));
+    });
 
     const domain = domainFromUrl(scan.store_url);
     const profile = spendProfile(scan.monthly_ad_spend);

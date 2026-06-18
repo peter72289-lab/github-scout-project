@@ -11,7 +11,11 @@ const categoryRules = {
   'Subscriptions': {threshold: 160, native: 'Shopify Subscriptions', cheaper: 'Seal Subscriptions', replacement: 'Keep if subscription revenue is core; otherwise avoid custom billing logic.'},
   'Personalization': {threshold: 140, native: 'Shopify customer segments', cheaper: 'Nosto lower tier', replacement: 'Keep only if uplift is measured; otherwise start with rules-based personalization.'},
   'Payments': {threshold: 120, native: 'Shopify Payments / Shop Pay', cheaper: 'Platform-native checkout options', replacement: 'Avoid custom payment work unless fees or approval rates justify it.'},
-  'Shipping': {threshold: 100, native: 'Shopify Shipping', cheaper: 'Shippo / Pirate Ship', replacement: 'Review label volume and support burden before switching shipping tools.'}
+  'Shipping': {threshold: 100, native: 'Shopify Shipping', cheaper: 'Shippo / Pirate Ship', replacement: 'Review label volume and support burden before switching shipping tools.'},
+  'Quiz': {threshold: 90, native: 'Theme-native quiz or guided selling section', cheaper: 'Octane lower tier / RevenueHunt', replacement: 'Keep quiz software only when it improves email quality, PDP routing, or product discovery.'},
+  'Referral': {threshold: 80, native: 'Shopify discount links and customer segments', cheaper: 'ReferralCandy lower tier / Social Snowball audit', replacement: 'Measure referred revenue before paying for affiliate or referral complexity.'},
+  'Testing': {threshold: 120, native: 'Theme-level split test plus analytics events', cheaper: 'Intelligems focused test / Convert lower tier', replacement: 'Run one revenue-backed test instead of paying for broad experimentation tooling.'},
+  'Forms': {threshold: 70, native: 'Shopify Forms', cheaper: 'Tally / Typeform lower tier', replacement: 'Consolidate quiz, survey, and lead capture surfaces before adding another form tool.'}
 };
 
 const appSignatures = [
@@ -42,7 +46,44 @@ const appSignatures = [
   {name: 'ShipBob', category: 'Shipping', cost: 150, patterns: ['shipbob', 'shipbob.com']},
   {name: 'Route', category: 'Shipping', cost: 120, patterns: ['route.com', 'routeapp', 'route-widget']},
   {name: 'PayPal', category: 'Payments', cost: 80, patterns: ['paypal', 'paypalobjects']},
-  {name: 'Shop Pay', category: 'Payments', cost: 0, patterns: ['shop.app', 'shop-pay', 'shopify_pay']}
+  {name: 'Shop Pay', category: 'Payments', cost: 0, patterns: ['shop.app', 'shop-pay', 'shopify_pay']},
+  {name: 'Shopify Forms', category: 'Forms', cost: 0, patterns: ['shopify-forms', 'shopify forms', 'shopify_form']},
+  {name: 'Privy', category: 'Email/SMS', cost: 70, patterns: ['privy.com', 'privy-', 'privySettings']},
+  {name: 'Omnisend', category: 'Email/SMS', cost: 120, patterns: ['omnisend', 'omnisnippet', 'omnisend.com']},
+  {name: 'Mailchimp', category: 'Email/SMS', cost: 90, patterns: ['mailchimp', 'chimpstatic', 'mcjs']},
+  {name: 'Justuno', category: 'Email/SMS', cost: 99, patterns: ['justuno', 'justuno.com']},
+  {name: 'OptiMonk', category: 'Email/SMS', cost: 79, patterns: ['optimonk', 'optimonk.com']},
+  {name: 'Loox', category: 'Reviews', cost: 35, patterns: ['loox', 'loox.io', 'loox-rating']},
+  {name: 'Stamped', category: 'Reviews', cost: 99, patterns: ['stamped.io', 'stamped-reviews', 'stamped-main']},
+  {name: 'Reviews.io', category: 'Reviews', cost: 89, patterns: ['reviews.io', 'widget.reviews.io']},
+  {name: 'Fera', category: 'Reviews', cost: 39, patterns: ['fera.ai', 'fera-product']},
+  {name: 'Junip', category: 'Reviews', cost: 74, patterns: ['junip', 'juniphq']},
+  {name: 'Stamped Loyalty', category: 'Loyalty', cost: 159, patterns: ['stamped-loyalty', 'stamped rewards']},
+  {name: 'Yotpo Loyalty', category: 'Loyalty', cost: 199, patterns: ['yotpo loyalty', 'swell_rewards', 'swellrewards']},
+  {name: 'Loop Subscriptions', category: 'Subscriptions', cost: 99, patterns: ['loop-subscriptions', 'loopsubscriptions']},
+  {name: 'Skio', category: 'Subscriptions', cost: 299, patterns: ['skio', 'skio.com', 'skio-subscription']},
+  {name: 'Appstle Subscriptions', category: 'Subscriptions', cost: 49, patterns: ['appstle', 'appstle-subscription']},
+  {name: 'Zipify OCU', category: 'Upsell', cost: 35, patterns: ['zipify', 'zipifyapps', 'oneclickupsell']},
+  {name: 'Bold Upsell', category: 'Upsell', cost: 89, patterns: ['bold-upsell', 'boldcommerce upsell']},
+  {name: 'Vitals', category: 'Upsell', cost: 30, patterns: ['vitals.co', 'vitals app', 'vitals-']},
+  {name: 'Searchspring', category: 'Search', cost: 399, patterns: ['searchspring', 'searchspring.net']},
+  {name: 'Klevu', category: 'Search', cost: 349, patterns: ['klevu', 'klevu.com']},
+  {name: 'Replo', category: 'Personalization', cost: 99, patterns: ['replo', 'replo.app']},
+  {name: 'Shogun', category: 'Personalization', cost: 149, patterns: ['getshogun', 'shogunpage']},
+  {name: 'GemPages', category: 'Personalization', cost: 59, patterns: ['gempages', 'gempage']},
+  {name: 'Octane AI', category: 'Quiz', cost: 200, patterns: ['octaneai', 'octane.ai']},
+  {name: 'RevenueHunt', category: 'Quiz', cost: 69, patterns: ['revenuehunt', 'product-recommendation-quiz']},
+  {name: 'Typeform', category: 'Forms', cost: 59, patterns: ['typeform', 'typeform.com']},
+  {name: 'Tally', category: 'Forms', cost: 29, patterns: ['tally.so', 'tally-embed']},
+  {name: 'ReferralCandy', category: 'Referral', cost: 59, patterns: ['referralcandy', 'referralcandy.com']},
+  {name: 'Social Snowball', category: 'Referral', cost: 99, patterns: ['socialsnowball', 'social-snowball']},
+  {name: 'UpPromote', category: 'Referral', cost: 89, patterns: ['uppromote', 'secomapp']},
+  {name: 'Intelligems', category: 'Testing', cost: 99, patterns: ['intelligems', 'intelligems.io']},
+  {name: 'Convert', category: 'Testing', cost: 199, patterns: ['convert.com', 'convertexperiments']},
+  {name: 'VWO', category: 'Testing', cost: 199, patterns: ['vwo.com', 'visualwebsiteoptimizer']},
+  {name: 'Lucky Orange', category: 'Analytics', cost: 80, patterns: ['luckyorange', 'lucky orange']},
+  {name: 'Microsoft Clarity', category: 'Analytics', cost: 0, patterns: ['clarity.ms', 'microsoft clarity']},
+  {name: 'PostHog', category: 'Analytics', cost: 0, patterns: ['posthog', 'posthog.com']}
 ];
 
 function spendProfile(range = '') {
@@ -127,6 +168,15 @@ function detectedLine(detectedApps, category, fallback) {
   return apps.length ? `Detected ${apps.map((app) => app.name).join(', ')} in public storefront HTML.` : fallback;
 }
 
+function evidenceDetail(detectedApps, category, fallback) {
+  const apps = categoryApps(detectedApps, category);
+  if (!apps.length) return fallback;
+  return apps
+    .slice(0, 3)
+    .map((app) => `${app.name}: matched ${app.matched.slice(0, 3).join(', ')}; benchmark ${money.format(app.cost)}/mo`)
+    .join(' | ');
+}
+
 function categorySavings(profile, detectedApps, category, minShare, maxShare) {
   const apps = categoryApps(detectedApps, category);
   const detectedMonthly = apps.reduce((sum, app) => sum + Number(app.cost || 0), 0);
@@ -143,7 +193,7 @@ function buildRecommendations(detectedApps, profile, goal) {
       title: 'Consolidate the proof surface',
       severity: categoryApps(detectedApps, 'Reviews').length > 1 ? 'High' : 'Medium',
       current: detectedLine(detectedApps, 'Reviews', 'No review-platform signature was visible in the initial crawl. Proof may be missing, bundled, or hidden behind a tag manager.'),
-      currentDetail: 'If reviews, Q&A, UGC, and product proof are split across multiple widgets, shoppers see noise while you pay for overlap.',
+      currentDetail: evidenceDetail(detectedApps, 'Reviews', 'If reviews, Q&A, UGC, and product proof are split across multiple widgets, shoppers see noise while you pay for overlap.'),
       recommend: 'Use one review platform that supports photo reviews, Q&A, product-level placement, and import/export control.',
       recommendDetail: 'The paid Operator scan compares review tools by cost, proof depth, speed impact, and whether the widget supports the products getting paid traffic.',
       monthly: categorySavings(profile, detectedApps, 'Reviews', .16, .22),
@@ -157,7 +207,7 @@ function buildRecommendations(detectedApps, profile, goal) {
       title: 'Replace blunt popups with intent capture',
       severity: categoryApps(detectedApps, 'Email/SMS').length ? 'High' : 'Medium',
       current: detectedLine(detectedApps, 'Email/SMS', 'No email/SMS platform signature was visible in the first crawl. Capture may be absent or injected through a tag manager.'),
-      currentDetail: 'Generic popups often collect low-intent emails while interrupting shoppers who came from expensive paid traffic.',
+      currentDetail: evidenceDetail(detectedApps, 'Email/SMS', 'Generic popups often collect low-intent emails while interrupting shoppers who came from expensive paid traffic.'),
       recommend: 'Use behavior-based capture that changes by traffic source, returning visitor state, cart value, and product category.',
       recommendDetail: 'Scout looks for leaner capture tools, lower-cost tiers, and open alternatives when the current platform is too heavy for the store stage.',
       monthly: categorySavings(profile, detectedApps, 'Email/SMS', .18, .28),
@@ -171,7 +221,7 @@ function buildRecommendations(detectedApps, profile, goal) {
       title: 'Test AOV lift before buying more traffic',
       severity: categoryApps(detectedApps, 'Upsell').length || goal === 'Improve conversion' ? 'High' : 'Medium',
       current: detectedLine(detectedApps, 'Upsell', 'No upsell or bundle signature was visible in the first crawl. The store may be missing an AOV lever on paid-traffic products.'),
-      currentDetail: 'Many stores pay for traffic before product pages have bundles, quantity breaks, post-purchase offers, or cart-level lift.',
+      currentDetail: evidenceDetail(detectedApps, 'Upsell', 'Many stores pay for traffic before product pages have bundles, quantity breaks, post-purchase offers, or cart-level lift.'),
       recommend: 'Start with one bundle, quantity break, or post-purchase offer on the products already receiving paid clicks.',
       recommendDetail: 'Operator compares native Shopify options, lighter widgets, and conversion-focused third-party tools before recommending another broad CRO app.',
       monthly: categorySavings(profile, detectedApps, 'Upsell', .22, .34),
@@ -199,7 +249,7 @@ function buildRecommendations(detectedApps, profile, goal) {
       title: 'Make every app prove revenue impact',
       severity: goal === 'Cut app costs' || categoryApps(detectedApps, 'Analytics').length > 1 ? 'High' : 'Medium',
       current: detectedLine(detectedApps, 'Analytics', 'No analytics signature was visible in the first crawl. Attribution may be missing, server-side, or tag-managed.'),
-      currentDetail: 'Without clean event tracking, the team cannot tell whether a paid app helps conversion or simply feels useful.',
+      currentDetail: evidenceDetail(detectedApps, 'Analytics', 'Without clean event tracking, the team cannot tell whether a paid app helps conversion or simply feels useful.'),
       recommend: 'Tie app decisions to app cost, site speed, conversion rate, add-to-cart rate, AOV, and checkout progression.',
       recommendDetail: 'Operator turns the scan into a monthly review cadence so software decisions happen before renewal, not after the invoice hits.',
       monthly: categorySavings(profile, detectedApps, 'Analytics', .12, .20),

@@ -20,7 +20,7 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a29de34515f00c76d62327f--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a346c646a5a1f3de4b3452c--githubscout-ecommerce-v9-20260609.netlify.app
 ```
 
 ## Redeploy Command
@@ -38,8 +38,10 @@ npx netlify deploy --prod --dir netlify-v9-githubscout-ecommerce --site 3f86b1e7
 - Operator Shopify savings landing page.
 - Robust Operator URL analyzer results page with compare-and-contrast recommendation blocks.
 - Operator URL scan Netlify Function endpoint with public storefront crawl/signature detection.
+- Operator sample report gallery.
+- Operator analyzer export/share/print actions and local event tracking.
 - Sample Shopify URL analysis page.
-- Operator URL scan Netlify Form.
+- Operator URL scan lead/function flow.
 - Operator checkout intake Netlify Form.
 
 ## Verification After Deploy
