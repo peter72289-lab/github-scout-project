@@ -1466,7 +1466,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           <li class="off"><span class="ck">–</span> Weekly Hidden Gem alerts</li>
           <li class="off"><span class="ck">–</span> Stack audit reports + export</li>
         </ul>
-        <a href="operator-shopify-savings.html" class="plan-btn outline">Analyze a Shopify URL</a>
+        <a href="checkout-operator.html" class="plan-btn outline" data-checkout-plan="operator">Start Operator - $17/mo</a>
       </div>
       <!-- DIRECTOR -->
       <div class="plan-card featured">
@@ -1493,7 +1493,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           <li><span class="ck">✓</span> 14-day free trial — no card needed</li>
           <li><span class="ck">✓</span> Founding rate locked at $37 forever</li>
         </ul>
-        <a href="checkout-director.html" class="plan-btn solid">Activate Director — $37/mo</a>
+        <a href="checkout-director.html" class="plan-btn solid" data-checkout-plan="director">Activate Director - $37/mo</a>
       </div>
     </div>
     <div class="agency-pricing">
@@ -1642,6 +1642,8 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
   <div class="footer-note">Operator $17/mo · Director $37/mo · Agency pricing available</div>
 </footer>
 
+<script src="assets/launch-config.js"></script>
+<script src="assets/launch-analytics.js"></script>
 <script>
 /* ── NAV ── */
 window.addEventListener('scroll',()=>{document.getElementById('main-nav').classList.toggle('scrolled',window.scrollY>60);});
@@ -1767,6 +1769,35 @@ function calcUpdate(){
   document.getElementById('calc-payback').textContent=`~${paybackMonths} months`;
 }
 calcUpdate();
+
+/* -- STRIPE BUY BOX HANDOFF -- */
+function decorateCheckoutUrl(rawUrl){
+  const link=new URL(rawUrl,window.location.href);
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(key=>{
+    const params=new URLSearchParams(window.location.search);
+    const value=params.get(key)||sessionStorage.getItem(key);
+    if(value)link.searchParams.set(key,value);
+  });
+  return link.toString();
+}
+
+function wireCheckoutLinks(){
+  const config=window.GITHUB_SCOUT_LAUNCH_CONFIG||{};
+  const planLinks={
+    operator:config.operatorCheckoutUrl,
+    director:config.directorCheckoutUrl
+  };
+  document.querySelectorAll('[data-checkout-plan]').forEach(link=>{
+    const plan=link.getAttribute('data-checkout-plan');
+    if(planLinks[plan]){
+      link.href=decorateCheckoutUrl(planLinks[plan]);
+      link.target='_blank';
+      link.rel='noopener';
+    }
+    link.addEventListener('click',()=>window.githubScoutTrack?.(`${plan}_buy_box_clicked`,{href:link.href}));
+  });
+}
+wireCheckoutLinks();
 
 /* ── FAQ ── */
 function toggleFaq(btn){

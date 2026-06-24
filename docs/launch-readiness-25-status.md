@@ -10,9 +10,9 @@
 6. Add GHL/Zapier/generic lead webhook support through `GHL_WEBHOOK_URL` or `LEAD_WEBHOOK_URL`.
 7. Preserve UTM fields from ad click through landing, analyzer, checkout, and agency forms.
 8. Add local launch event tracking and optional Meta Pixel bootstrap.
-9. Add Stripe Payment Link placeholders for Operator and Director in `assets/launch-config.js`.
-10. Make Operator checkout display the Stripe CTA automatically once its link is added.
-11. Make Director checkout display the Stripe CTA automatically once its link is added.
+9. Add live Stripe Payment Links for Operator and Director in `assets/launch-config.js`.
+10. Make Operator checkout display the live Stripe CTA automatically.
+11. Make Director checkout display the live Stripe CTA automatically.
 12. Keep backup Netlify lead forms in place while payment is being connected.
 13. Add spam honeypots to the static Netlify forms.
 14. Remove the old Command tier path from the active funnel by redirecting it to agency pricing.
@@ -30,11 +30,10 @@
 
 ## Needs Your Manual Account/Admin Action
 
-- Create Stripe Operator product and Payment Link.
-- Create Stripe Director product and Payment Link.
-- Configure Stripe success/cancel URLs.
+- Confirm Stripe Operator product and Payment Link settings in dashboard.
+- Confirm Stripe Director product and Payment Link settings in dashboard.
+- Confirm Stripe success/cancel URLs.
 - Turn on Stripe receipts, taxes if needed, and failed-payment recovery.
-- Paste the Stripe links into `netlify-v9-githubscout-ecommerce/assets/launch-config.js`, or send them to Codex to paste and redeploy.
 - Add the Meta Pixel ID to `assets/launch-config.js`, or send it to Codex to paste and redeploy.
 - Create the GoHighLevel/Zapier webhook and add it to Netlify as `GHL_WEBHOOK_URL` or `LEAD_WEBHOOK_URL`.
 - Connect custom domain/DNS in Netlify if you want a branded launch URL.

@@ -2,13 +2,22 @@
 
 ## Current State
 
-The V9 site has safe checkout-intake routes, but not real payment processing yet.
+The V9 site has safe checkout-intake routes and live Stripe Payment Links for recurring billing.
 
 - Operator route: `netlify-v9-githubscout-ecommerce/checkout-operator.html`
 - Director route: `netlify-v9-githubscout-ecommerce/checkout-director.html`
 - Agency route: `netlify-v9-githubscout-ecommerce/agency-pricing.html`
 
-Operator now captures high-intent leads through the Operator URL scan Netlify Function while the payment provider is being connected.
+Operator now captures high-intent leads through the Operator URL scan Netlify Function and can send qualified buyers to Stripe recurring checkout.
+
+## Live Stripe Links
+
+- Operator product: `github_scout_operator`
+- Operator price: `price_1TlvIVBht9XEKTLjQUEoYXEU`
+- Operator Payment Link: `https://buy.stripe.com/5kQ8wO0H268D5Hqh2zcQU00`
+- Director product: `github_scout_director`
+- Director price: `price_1TlvIWBht9XEKTLjnQ7iU1HM`
+- Director Payment Link: `https://buy.stripe.com/dRm28q61m2Wrd9SfYvcQU01`
 
 ## Recommended Payment Setup
 
@@ -54,12 +63,11 @@ LEAD_WEBHOOK_URL
 
 ## Pre-Launch Checklist
 
-- Create Operator subscription product.
-- Create Director subscription product.
-- Configure checkout success URL.
+- Confirm Stripe products and prices are in live mode.
+- Confirm checkout success URL.
 - Configure cancellation URL.
 - Add test purchase.
 - Confirm webhook or email notification path.
-- Paste Stripe links into `netlify-v9-githubscout-ecommerce/assets/launch-config.js`.
+- Confirm Stripe links are present in `netlify-v9-githubscout-ecommerce/assets/launch-config.js`.
 - Add `GHL_WEBHOOK_URL` to Netlify environment variables.
 - Keep the intake form as backup lead capture.
