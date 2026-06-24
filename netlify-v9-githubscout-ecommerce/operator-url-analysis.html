@@ -91,7 +91,7 @@
     <div class="navlinks">
       <a href="operator-shopify-savings.html#capture">Run Another URL</a>
       <a href="#recommendations">Recommendations</a>
-      <a href="checkout-operator.html" class="cta">Start Operator</a>
+      <a href="checkout-operator.html" class="cta" data-checkout-plan="operator">Start Operator</a>
     </div>
   </nav>
 
@@ -102,7 +102,7 @@
       <p class="lead" id="scanIntro">Scout is checking public storefront signals, likely app overlap, cost drag, and the quickest software moves worth investigating today.</p>
       <div class="actions">
         <a class="btn primary" href="#recommendations">See Compare And Contrast</a>
-        <a class="btn secondary" href="checkout-operator.html">Unlock 10 Monthly Storefronts</a>
+        <a class="btn secondary" href="checkout-operator.html" data-checkout-plan="operator">Unlock 10 Monthly Storefronts</a>
       </div>
       <div class="summary">
         <div class="metric"><strong id="savingsBand">$120-$420</strong><span>Monthly waste to inspect</span><p>Estimated recurring software drag worth challenging.</p></div>
@@ -153,7 +153,7 @@
         <h2>Do this before buying <em>another app.</em></h2>
         <p class="lead">The first win is usually not adding more tools. It is proving which installed tools deserve to stay, which should be replaced, and which conversion surface should be tested first.</p>
         <div class="actions">
-          <a class="btn primary" href="checkout-operator.html">Start Operator</a>
+          <a class="btn primary" href="checkout-operator.html" data-checkout-plan="operator">Start Operator</a>
           <a class="btn secondary" href="operator-shopify-savings.html#capture">Analyze Another URL</a>
         </div>
       </div>
@@ -167,7 +167,7 @@
       <h2>Run this for <em>10 storefronts a month.</em></h2>
       <p class="lead">Operator gives you access to all 15 sources, 10 storefront analyses per month, search, recommendations, and tips. This quick analyzer is just the appetite-builder.</p>
       <div class="actions">
-        <a class="btn primary" href="checkout-operator.html">Start Operator</a>
+        <a class="btn primary" href="checkout-operator.html" data-checkout-plan="operator">Start Operator</a>
         <a class="btn secondary" href="operator-sample-reports.html">View Sample Reports</a>
       </div>
     </div>
@@ -180,6 +180,7 @@
 
   <script src="assets/launch-config.js"></script>
   <script src="assets/launch-analytics.js"></script>
+  <script src="assets/launch-checkout.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     let stored = {};

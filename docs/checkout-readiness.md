@@ -9,6 +9,7 @@ The V9 site has safe checkout-intake routes and live Stripe Payment Links for re
 - Agency route: `netlify-v9-githubscout-ecommerce/agency-pricing.html`
 
 Operator now captures high-intent leads through the Operator URL scan Netlify Function and can send qualified buyers to Stripe recurring checkout.
+Operator and Director CTAs across the V9 funnel resolve directly to the matching Stripe recurring order forms.
 
 ## Live Stripe Links
 

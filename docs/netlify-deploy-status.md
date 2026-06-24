@@ -20,7 +20,7 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a3c1e756c9fe639a6bffc4d--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a3c1fbf6ce2c85348f3f28d--githubscout-ecommerce-v9-20260609.netlify.app
 ```
 
 ## Redeploy Command
@@ -43,6 +43,7 @@ npx netlify deploy --prod --dir . --functions netlify/functions --site 3f86b1e7-
 - Operator analyzer export/share/print actions and local event tracking.
 - Launch config for Stripe links and Meta Pixel ID.
 - Live Stripe Payment Links wired for Operator `$17/month` and Director `$37/month`.
+- Operator and Director CTAs across the homepage, URL analysis page, and Operator savings page resolve directly to their corresponding Stripe order forms.
 - UTM capture, webhook-ready lead handoff, rate limiting, scanner hardening, and production security headers.
 - Forced Command checkout redirect to agency pricing.
 - Extensionless launch routes, robots, sitemap, security.txt, branded 404, and health endpoint.

@@ -744,7 +744,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
   </div>
   <div class="nav-right">
     <button class="nav-chat" onclick="toggleChat()">💬 Chat</button>
-    <a href="checkout-director.html" class="nav-cta">Start Free — $37/mo</a>
+    <a href="checkout-director.html" class="nav-cta" data-checkout-plan="director">Start Free - $37/mo</a>
   </div>
 </nav>
 
@@ -909,7 +909,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           </div>
         </div>
         <div class="fd-cta-row" id="fd-cta" style="display:none;">
-          <span class="fd-signup-prompt">Want unlimited queries? <span class="fd-signup-link" onclick="window.location='checkout-director.html'">Start free trial →</span></span>
+          <span class="fd-signup-prompt">Want unlimited queries? <a class="fd-signup-link" href="checkout-director.html" data-checkout-plan="director">Start free trial →</a></span>
         </div>
       </div>
     </div>
@@ -1136,7 +1136,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           <span class="cpb-label">⚡ Estimated Payback Period</span>
           <span class="cpb-val" id="calc-payback">~1.4 months</span>
         </div>
-        <a href="checkout-director.html" class="calc-cta">Start Saving — $37/mo Director Plan →</a>
+        <a href="checkout-director.html" class="calc-cta" data-checkout-plan="director">Start Saving - $37/mo Director Plan →</a>
       </div>
     </div>
   </div>
@@ -1293,7 +1293,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           <li>Surface Hidden Gems to pitch before competitors</li>
           <li>Shortcut vibe coding with base code that's 70% of the solution</li>
         </ul>
-        <a href="checkout-operator.html" class="av-cta">Start Scouting for Agencies →</a>
+        <a href="checkout-operator.html" class="av-cta" data-checkout-plan="operator">Start Scouting for Agencies →</a>
       </div>
       <div class="av-card av2">
         <div class="av-num">Avatar 02</div>
@@ -1308,7 +1308,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           <li>Spot biz-op and market gap signals from tool category trends</li>
           <li>Monitor 15 sources without checking any of them manually</li>
         </ul>
-        <a href="checkout-director.html" class="av-cta">Start Scouting Your Stack →</a>
+        <a href="checkout-director.html" class="av-cta" data-checkout-plan="director">Start Scouting Your Stack →</a>
       </div>
       <div class="av-card av3">
         <div class="av-num">Avatar 03</div>
@@ -1323,7 +1323,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           <li>Present clients with real solutions not estimates</li>
           <li>Discover baseline code to fork and extend, not build from zero</li>
         </ul>
-        <a href="checkout-director.html" class="av-cta">Start Scouting Projects →</a>
+        <a href="checkout-director.html" class="av-cta" data-checkout-plan="director">Start Scouting Projects →</a>
       </div>
     </div>
   </div>
@@ -1569,7 +1569,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
           <li>Monthly stack audit report</li>
           <li>14-day trial + 14-day money-back</li>
         </ul>
-        <a href="checkout-director.html" class="uc-btn">Lock In $37/mo — Start Free Trial</a>
+        <a href="checkout-director.html" class="uc-btn" data-checkout-plan="director">Lock In $37/mo - Start Free Trial</a>
         <div class="uc-mbg">🛡️ 14-Day Money-Back Guarantee — Full Refund, No Questions</div>
       </div>
     </div>
@@ -1623,7 +1623,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
   <h2>15 Sources. 2 Modes.<br>6 Dimensions. <em>One Advantage.</em></h2>
   <p>The intelligence engine is live. 47 founding seats remain at $37/mo. The 14-day money-back guarantee removes the last reason to wait. <strong>Your competitors' Hidden Gem alert already went out this week.</strong></p>
   <div class="cta-row">
-    <a href="checkout-director.html" class="btn-primary">Lock In $37/mo — Start Free Trial</a>
+    <a href="checkout-director.html" class="btn-primary" data-checkout-plan="director">Lock In $37/mo - Start Free Trial</a>
     <a href="#faq" class="btn-ghost">Questions first? →</a>
   </div>
   <p class="cta-sub">14-day free trial · 14-day money-back guarantee · No credit card · All 15 sources · Founding rate locked forever · Cancel anytime</p>
@@ -1644,6 +1644,7 @@ footer{border-top:1px solid var(--border);padding:28px 60px;display:flex;justify
 
 <script src="assets/launch-config.js"></script>
 <script src="assets/launch-analytics.js"></script>
+<script src="assets/launch-checkout.js"></script>
 <script>
 /* ── NAV ── */
 window.addEventListener('scroll',()=>{document.getElementById('main-nav').classList.toggle('scrolled',window.scrollY>60);});
@@ -1769,35 +1770,6 @@ function calcUpdate(){
   document.getElementById('calc-payback').textContent=`~${paybackMonths} months`;
 }
 calcUpdate();
-
-/* -- STRIPE BUY BOX HANDOFF -- */
-function decorateCheckoutUrl(rawUrl){
-  const link=new URL(rawUrl,window.location.href);
-  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(key=>{
-    const params=new URLSearchParams(window.location.search);
-    const value=params.get(key)||sessionStorage.getItem(key);
-    if(value)link.searchParams.set(key,value);
-  });
-  return link.toString();
-}
-
-function wireCheckoutLinks(){
-  const config=window.GITHUB_SCOUT_LAUNCH_CONFIG||{};
-  const planLinks={
-    operator:config.operatorCheckoutUrl,
-    director:config.directorCheckoutUrl
-  };
-  document.querySelectorAll('[data-checkout-plan]').forEach(link=>{
-    const plan=link.getAttribute('data-checkout-plan');
-    if(planLinks[plan]){
-      link.href=decorateCheckoutUrl(planLinks[plan]);
-      link.target='_blank';
-      link.rel='noopener';
-    }
-    link.addEventListener('click',()=>window.githubScoutTrack?.(`${plan}_buy_box_clicked`,{href:link.href}));
-  });
-}
-wireCheckoutLinks();
 
 /* ── FAQ ── */
 function toggleFaq(btn){
