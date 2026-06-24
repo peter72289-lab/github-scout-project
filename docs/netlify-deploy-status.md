@@ -20,7 +20,7 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a346c646a5a1f3de4b3452c--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a3c0def77629a0c4a7d4d9b--githubscout-ecommerce-v9-20260609.netlify.app
 ```
 
 ## Redeploy Command
@@ -40,6 +40,8 @@ npx netlify deploy --prod --dir netlify-v9-githubscout-ecommerce --site 3f86b1e7
 - Operator URL scan Netlify Function endpoint with public storefront crawl/signature detection.
 - Operator sample report gallery.
 - Operator analyzer export/share/print actions and local event tracking.
+- Launch config for Stripe links and Meta Pixel ID.
+- UTM capture, webhook-ready lead handoff, rate limiting, scanner hardening, and production security headers.
 - Sample Shopify URL analysis page.
 - Operator URL scan lead/function flow.
 - Operator checkout intake Netlify Form.

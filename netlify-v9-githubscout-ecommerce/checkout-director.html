@@ -11,14 +11,32 @@
     h1 { font-family: Georgia, serif; color: #f5b030; font-size: clamp(38px, 6vw, 64px); line-height: 1; margin: 0 0 18px; }
     p { color: #d4e6f4; line-height: 1.7; font-size: 18px; }
     a { color: #080e16; background: #f5b030; display: inline-block; margin-top: 22px; padding: 14px 20px; text-decoration: none; font-family: ui-monospace, SFMono-Regular, monospace; text-transform: uppercase; letter-spacing: .1em; }
+    .secondary { color: #d4e6f4; background: transparent; border: 1px solid #2a4560; }
   </style>
 </head>
 <body>
   <main>
     <h1>Director Plan</h1>
-    <p>This live v8 checkout placeholder preserves the funnel route for the Netlify build. Connect Stripe, Lemon Squeezy, or your preferred payment flow here when the production checkout is ready.</p>
-    <a href="/">Return to Scout</a>
+    <p>Director gives higher-volume ecommerce operators 30 storefront analyses per month across all 15 sources. Paste your Director Stripe Payment Link into <code>assets/launch-config.js</code> when the product is ready.</p>
+    <a id="directorStripeCta" href="#" hidden>Pay With Stripe - Start Director</a>
+    <a class="secondary" href="/">Return to Scout</a>
   </main>
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const directorUrl = window.GITHUB_SCOUT_LAUNCH_CONFIG?.directorCheckoutUrl;
+    const cta = document.querySelector('#directorStripeCta');
+    if (directorUrl && cta) {
+      const link = new URL(directorUrl, window.location.href);
+      ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+        const value = params.get(key) || sessionStorage.getItem(key);
+        if (value) link.searchParams.set(key, value);
+      });
+      cta.href = link.toString();
+      cta.hidden = false;
+    }
+    cta?.addEventListener('click', () => window.githubScoutTrack?.('director_stripe_clicked'));
+  </script>
 </body>
 </html>
-

@@ -12,7 +12,7 @@ GitHub Scout is an ecommerce intelligence project for finding better software, p
 
 - V9 ecommerce page is built and includes the clicked-tabs cockpit demo video.
 - Operator Shopify savings funnel is now added at `netlify-v9-githubscout-ecommerce/operator-shopify-savings.html`.
-- Operator URL intake and checkout-intake forms are prepared as Netlify Forms.
+- Operator URL intake runs through the Netlify Function analyzer flow; checkout pages are Stripe Payment Link-ready through `assets/launch-config.js`.
 - Static 9:16 ad batches are stored under `ads/`.
 - V9 production deploy is live again as of June 10, 2026.
 

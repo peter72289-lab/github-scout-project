@@ -170,6 +170,13 @@
       </div>
       <form id="operator-url-form" name="operator-url-scan" method="GET" action="operator-url-analysis.html">
         <input type="hidden" name="form-name" value="operator-url-scan">
+        <input type="hidden" name="utm_source">
+        <input type="hidden" name="utm_medium">
+        <input type="hidden" name="utm_campaign">
+        <input type="hidden" name="utm_content">
+        <input type="hidden" name="utm_term">
+        <input type="hidden" name="landing_page">
+        <input type="hidden" name="referrer">
         <div class="form-grid">
           <label>Email<input name="email" type="email" required placeholder="you@store.com"></label>
           <label>Store URL<input name="store_url" type="url" required placeholder="https://yourstore.com"></label>
@@ -188,11 +195,26 @@
     <span>GitHub Scout Operator - Shopify URL software savings funnel</span>
     <span><a href="index.html">V9 Home</a> · <a href="checkout-operator.html">Operator Checkout</a> · <a href="sample-shopify-url-analysis.html">Sample Report</a></span>
   </footer>
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
   <script>
     const operatorUrlForm = document.querySelector('#operator-url-form');
+    const trackingParams = new URLSearchParams(window.location.search);
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+      const value = trackingParams.get(key) || sessionStorage.getItem(key) || '';
+      if (value) sessionStorage.setItem(key, value);
+      const input = operatorUrlForm?.querySelector(`[name="${key}"]`);
+      if (input) input.value = value;
+    });
+    const landingInput = operatorUrlForm?.querySelector('[name="landing_page"]');
+    const referrerInput = operatorUrlForm?.querySelector('[name="referrer"]');
+    if (landingInput) landingInput.value = window.location.href;
+    if (referrerInput) referrerInput.value = document.referrer || '';
+
     operatorUrlForm?.addEventListener('submit', (event) => {
       event.preventDefault();
       const formData = new FormData(operatorUrlForm);
+      window.githubScoutTrack?.('analyzer_form_submitted');
       const data = Object.fromEntries(formData.entries());
       sessionStorage.setItem('operatorUrlScan', JSON.stringify(data));
       formData.set('intent', 'lead');
@@ -207,7 +229,12 @@
       const query = new URLSearchParams({
         store_url: data.store_url || '',
         monthly_ad_spend: data.monthly_ad_spend || '',
-        primary_goal: data.primary_goal || ''
+        primary_goal: data.primary_goal || '',
+        utm_source: data.utm_source || '',
+        utm_medium: data.utm_medium || '',
+        utm_campaign: data.utm_campaign || '',
+        utm_content: data.utm_content || '',
+        utm_term: data.utm_term || ''
       });
       window.location.href = `operator-url-analysis.html?${query.toString()}`;
     });

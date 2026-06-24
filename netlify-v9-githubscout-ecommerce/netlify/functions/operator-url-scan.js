@@ -1,4 +1,9 @@
 const money = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: 0});
+const MAX_HTML_CHARS = 180000;
+const MAX_CONTENT_LENGTH = 900000;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX = 12;
+const rateBuckets = new Map();
 
 const categoryRules = {
   'Email/SMS': {threshold: 150, native: 'Shopify Email or platform automations', cheaper: 'MailerLite / Omnisend lower tier', replacement: 'Compare the current email/SMS platform against a lower-cost tier before adding another capture tool.'},
@@ -102,7 +107,10 @@ function normalizeUrl(value) {
   const host = url.hostname.toLowerCase();
   if (
     host === 'localhost' ||
+    host === 'metadata.google.internal' ||
+    host === '169.254.169.254' ||
     host.endsWith('.local') ||
+    host.endsWith('.internal') ||
     host === '0.0.0.0' ||
     host === '127.0.0.1' ||
     host === '::1' ||
@@ -113,6 +121,59 @@ function normalizeUrl(value) {
     throw new Error('Private or local URLs cannot be scanned.');
   }
   return url;
+}
+
+function clientIp(event) {
+  return event.headers['x-nf-client-connection-ip'] ||
+    event.headers['client-ip'] ||
+    event.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    'unknown';
+}
+
+function checkRateLimit(key) {
+  const now = Date.now();
+  const bucket = rateBuckets.get(key) || {count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS};
+  if (now > bucket.resetAt) {
+    bucket.count = 0;
+    bucket.resetAt = now + RATE_LIMIT_WINDOW_MS;
+  }
+  bucket.count += 1;
+  rateBuckets.set(key, bucket);
+  return {
+    allowed: bucket.count <= RATE_LIMIT_MAX,
+    resetAt: bucket.resetAt,
+    remaining: Math.max(0, RATE_LIMIT_MAX - bucket.count)
+  };
+}
+
+async function readLimitedText(response) {
+  const contentLength = Number(response.headers.get('content-length') || 0);
+  if (contentLength > MAX_CONTENT_LENGTH) {
+    throw new Error(`Storefront response is too large to scan safely (${contentLength.toLocaleString('en-US')} bytes).`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType && !contentType.includes('text/html') && !contentType.includes('application/xhtml+xml') && !contentType.includes('text/plain')) {
+    throw new Error(`Storefront returned ${contentType}; only public HTML can be scanned.`);
+  }
+
+  if (!response.body?.getReader) {
+    return (await response.text()).slice(0, MAX_HTML_CHARS);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let html = '';
+  let done = false;
+  while (!done && html.length < MAX_HTML_CHARS) {
+    const chunk = await reader.read();
+    done = chunk.done;
+    if (chunk.value) html += decoder.decode(chunk.value, {stream: !done});
+  }
+  try {
+    await reader.cancel();
+  } catch (error) {}
+  return html.slice(0, MAX_HTML_CHARS);
 }
 
 async function crawlStorefront(storeUrl) {
@@ -128,7 +189,7 @@ async function crawlStorefront(storeUrl) {
         'Accept': 'text/html,application/xhtml+xml'
       }
     });
-    const html = (await response.text()).slice(0, 180000);
+    const html = await readLimitedText(response);
     return {
       ok: response.ok,
       url: url.toString(),
@@ -317,6 +378,57 @@ async function analyzeSubmission(submission) {
   };
 }
 
+function publicSubmission(submission) {
+  return {
+    email: submission.email || null,
+    store_url: submission.store_url || null,
+    monthly_ad_spend: submission.monthly_ad_spend || null,
+    monthly_app_spend: submission.monthly_app_spend || null,
+    primary_goal: submission.primary_goal || null,
+    priority: submission.priority || null,
+    notes: submission.notes || null,
+    intent: submission.intent || 'lead',
+    utm_source: submission.utm_source || null,
+    utm_medium: submission.utm_medium || null,
+    utm_campaign: submission.utm_campaign || null,
+    utm_content: submission.utm_content || null,
+    utm_term: submission.utm_term || null,
+    landing_page: submission.landing_page || null,
+    referrer: submission.referrer || null,
+    received_at: new Date().toISOString()
+  };
+}
+
+async function sendWebhook(submission, analysis) {
+  const webhookUrl = process.env.GHL_WEBHOOK_URL || process.env.LEAD_WEBHOOK_URL;
+  if (!webhookUrl) return {sent: false, reason: 'not_configured'};
+
+  const payload = {
+    source: 'github-scout-operator',
+    submission: publicSubmission(submission),
+    analysis_summary: analysis ? {
+      crawl_ok: Boolean(analysis.crawl?.ok),
+      detected_count: analysis.detectedApps?.length || 0,
+      urgency: analysis.summary?.urgency || null,
+      score: analysis.summary?.score || null,
+      monthly_savings: analysis.summary?.monthlySavings || null,
+      annual_savings: analysis.summary?.annualSavings || null
+    } : null
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    return {sent: response.ok, status: response.status};
+  } catch (error) {
+    console.error('lead-webhook-error', error.message);
+    return {sent: false, reason: error.message};
+  }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -339,29 +451,36 @@ exports.handler = async (event) => {
 
   const params = new URLSearchParams(event.body || '');
   const submission = Object.fromEntries(params.entries());
+  const ip = clientIp(event);
+  const limit = checkRateLimit(`${ip}:${submission.intent || 'lead'}`);
+  if (!limit.allowed) {
+    return {
+      statusCode: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(Math.ceil((limit.resetAt - Date.now()) / 1000))
+      },
+      body: JSON.stringify({ok: false, error: 'Too many scan requests. Please wait a minute and try again.'})
+    };
+  }
 
-  console.log('operator-url-scan', {
-    email: submission.email || null,
-    store_url: submission.store_url || null,
-    monthly_ad_spend: submission.monthly_ad_spend || null,
-    primary_goal: submission.primary_goal || null,
-    intent: submission.intent || 'lead',
-    received_at: new Date().toISOString()
-  });
+  console.log('operator-url-scan', publicSubmission(submission));
 
   if (submission.intent === 'lead') {
+    const webhook = await sendWebhook(submission, null);
     return {
       statusCode: 200,
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ok: true})
+      body: JSON.stringify({ok: true, webhook})
     };
   }
 
   const analysis = await analyzeSubmission(submission);
+  const webhook = await sendWebhook(submission, analysis);
 
   return {
     statusCode: 200,
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ok: true, analysis})
+    body: JSON.stringify({ok: true, analysis, webhook})
   };
 };

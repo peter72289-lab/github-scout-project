@@ -178,6 +178,8 @@
     <span><a href="operator-shopify-savings.html">Operator Funnel</a> · <a href="operator-sample-reports.html">Sample Reports</a></span>
   </footer>
 
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     let stored = {};
@@ -557,7 +559,10 @@
       window.print();
     });
     document.querySelectorAll('a[href*="checkout-operator"]').forEach((link) => {
-      link.addEventListener('click', () => trackEvent('checkout_cta_clicked', {href: link.getAttribute('href')}));
+      link.addEventListener('click', () => {
+        trackEvent('checkout_cta_clicked', {href: link.getAttribute('href')});
+        window.githubScoutTrack?.('checkout_cta_clicked', {href: link.getAttribute('href')});
+      });
     });
 
     const domain = domainFromUrl(scan.store_url);

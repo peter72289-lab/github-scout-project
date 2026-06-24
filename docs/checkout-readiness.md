@@ -8,7 +8,7 @@ The V9 site has safe checkout-intake routes, but not real payment processing yet
 - Director route: `netlify-v9-githubscout-ecommerce/checkout-director.html`
 - Agency route: `netlify-v9-githubscout-ecommerce/agency-pricing.html`
 
-Operator now captures high-intent leads through Netlify Forms while the payment provider is being connected.
+Operator now captures high-intent leads through the Operator URL scan Netlify Function while the payment provider is being connected.
 
 ## Recommended Payment Setup
 
@@ -26,10 +26,10 @@ Use one of:
 - Included sources: `All 15`
 - Promise: Shopify/ecommerce software recommendations for savings and conversion.
 
-Suggested payment route:
+Fastest payment route:
 
 ```text
-checkout-operator.html -> payment provider -> operator-thank-you.html
+checkout-operator.html -> Stripe Payment Link -> operator-thank-you.html
 ```
 
 ## Director Product
@@ -48,6 +48,8 @@ If checkout is handled outside the static site, keep these names consistent:
 OPERATOR_CHECKOUT_URL
 DIRECTOR_CHECKOUT_URL
 AGENCY_CONTACT_URL
+GHL_WEBHOOK_URL
+LEAD_WEBHOOK_URL
 ```
 
 ## Pre-Launch Checklist
@@ -58,5 +60,6 @@ AGENCY_CONTACT_URL
 - Configure cancellation URL.
 - Add test purchase.
 - Confirm webhook or email notification path.
-- Replace intake CTA with payment link when ready.
-- Keep Netlify Forms as backup lead capture.
+- Paste Stripe links into `netlify-v9-githubscout-ecommerce/assets/launch-config.js`.
+- Add `GHL_WEBHOOK_URL` to Netlify environment variables.
+- Keep the intake form as backup lead capture.

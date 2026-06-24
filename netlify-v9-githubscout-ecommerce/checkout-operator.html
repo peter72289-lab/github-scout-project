@@ -25,6 +25,7 @@
     textarea{min-height:102px;resize:vertical}
     input:focus,select:focus,textarea:focus{outline:1px solid var(--amber);border-color:var(--amber)}
     button,.button{border:0;background:var(--amber);color:var(--black);padding:15px 18px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:900;cursor:pointer;text-decoration:none;text-align:center}
+    .stripe-cta{display:block;margin:18px 0 0}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .note{font-size:14px;color:var(--muted);line-height:1.6;margin:0}
     .dev{border:1px dashed var(--border);background:rgba(22,40,64,.48);padding:16px;margin-top:18px}
@@ -47,12 +48,20 @@
         <div class="fact"><strong>Payment status</strong><span>Ready to connect</span></div>
       </div>
       <div class="dev">
-        <p class="note"><strong>Payment handoff:</strong> replace this intake form with a Stripe Payment Link, Stripe Checkout Session, or Lemon Squeezy checkout URL when the merchant account is ready. Keep the same route so ad links do not break.</p>
+        <p class="note"><strong>Payment handoff:</strong> paste your Stripe Operator Payment Link into <code>assets/launch-config.js</code>. This page will show the payment CTA automatically while keeping the intake form as backup.</p>
         <p class="note">Suggested env/link name: <code>OPERATOR_CHECKOUT_URL</code></p>
       </div>
+      <a id="operatorStripeCta" class="button stripe-cta" href="#" hidden>Pay With Stripe - Start Operator</a>
     </section>
     <form name="operator-checkout-intake" method="POST" data-netlify="true" action="operator-thank-you.html">
       <input type="hidden" name="form-name" value="operator-checkout-intake">
+      <input type="hidden" name="utm_source">
+      <input type="hidden" name="utm_medium">
+      <input type="hidden" name="utm_campaign">
+      <input type="hidden" name="utm_content">
+      <input type="hidden" name="utm_term">
+      <input type="hidden" name="landing_page">
+      <input type="hidden" name="referrer">
       <div class="grid2">
         <label>Email<input type="email" name="email" required placeholder="you@store.com"></label>
         <label>Store URL<input type="url" name="store_url" required placeholder="https://yourstore.com"></label>
@@ -66,5 +75,35 @@
       <p class="note">This is live as a waitlist/intake form until the final payment provider is connected.</p>
     </form>
   </main>
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
+  <script>
+    const checkoutForm = document.querySelector('form[name="operator-checkout-intake"]');
+    const params = new URLSearchParams(window.location.search);
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+      const value = params.get(key) || sessionStorage.getItem(key) || '';
+      if (value) sessionStorage.setItem(key, value);
+      const input = checkoutForm?.querySelector(`[name="${key}"]`);
+      if (input) input.value = value;
+    });
+    const landingInput = checkoutForm?.querySelector('[name="landing_page"]');
+    const referrerInput = checkoutForm?.querySelector('[name="referrer"]');
+    if (landingInput) landingInput.value = window.location.href;
+    if (referrerInput) referrerInput.value = document.referrer || '';
+
+    const operatorUrl = window.GITHUB_SCOUT_LAUNCH_CONFIG?.operatorCheckoutUrl;
+    const stripeCta = document.querySelector('#operatorStripeCta');
+    if (operatorUrl && stripeCta) {
+      const link = new URL(operatorUrl, window.location.href);
+      ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+        const value = sessionStorage.getItem(key) || params.get(key);
+        if (value) link.searchParams.set(key, value);
+      });
+      stripeCta.href = link.toString();
+      stripeCta.hidden = false;
+    }
+    checkoutForm?.addEventListener('submit', () => window.githubScoutTrack?.('operator_intake_submitted'));
+    stripeCta?.addEventListener('click', () => window.githubScoutTrack?.('operator_stripe_clicked'));
+  </script>
 </body>
 </html>
