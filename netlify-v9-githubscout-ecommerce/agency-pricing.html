@@ -161,8 +161,16 @@
       </div>
     </section>
 
-    <form name="agency-pricing" method="POST" data-netlify="true">
+    <form name="agency-pricing" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="thank-you.html">
       <input type="hidden" name="form-name" value="agency-pricing">
+      <p hidden><label>Do not fill this out<input name="bot-field"></label></p>
+      <input type="hidden" name="utm_source">
+      <input type="hidden" name="utm_medium">
+      <input type="hidden" name="utm_campaign">
+      <input type="hidden" name="utm_content">
+      <input type="hidden" name="utm_term">
+      <input type="hidden" name="landing_page">
+      <input type="hidden" name="referrer">
       <label>Work email
         <input name="email" type="email" autocomplete="email" required>
       </label>
@@ -179,6 +187,22 @@
       <p class="note">We will use this to follow up about agency-volume pricing for Scout.</p>
     </form>
   </main>
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
+  <script>
+    const agencyForm = document.querySelector('form[name="agency-pricing"]');
+    const params = new URLSearchParams(window.location.search);
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+      const value = params.get(key) || sessionStorage.getItem(key) || '';
+      if (value) sessionStorage.setItem(key, value);
+      const input = agencyForm?.querySelector(`[name="${key}"]`);
+      if (input) input.value = value;
+    });
+    const landingInput = agencyForm?.querySelector('[name="landing_page"]');
+    const referrerInput = agencyForm?.querySelector('[name="referrer"]');
+    if (landingInput) landingInput.value = window.location.href;
+    if (referrerInput) referrerInput.value = document.referrer || '';
+    agencyForm?.addEventListener('submit', () => window.githubScoutTrack?.('agency_pricing_submitted'));
+  </script>
 </body>
 </html>
-

@@ -53,8 +53,9 @@
       </div>
       <a id="operatorStripeCta" class="button stripe-cta" href="#" hidden>Pay With Stripe - Start Operator</a>
     </section>
-    <form name="operator-checkout-intake" method="POST" data-netlify="true" action="operator-thank-you.html">
+    <form name="operator-checkout-intake" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="operator-thank-you.html">
       <input type="hidden" name="form-name" value="operator-checkout-intake">
+      <p hidden><label>Do not fill this out<input name="bot-field"></label></p>
       <input type="hidden" name="utm_source">
       <input type="hidden" name="utm_medium">
       <input type="hidden" name="utm_campaign">

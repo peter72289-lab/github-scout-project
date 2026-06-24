@@ -41,7 +41,8 @@ The next GTM path is:
 To redeploy V9:
 
 ```bash
-npx netlify deploy --prod --dir netlify-v9-githubscout-ecommerce --site 3f86b1e7-82aa-4919-8ef7-55289185cc16
+cd netlify-v9-githubscout-ecommerce
+npx netlify deploy --prod --dir . --functions netlify/functions --site 3f86b1e7-82aa-4919-8ef7-55289185cc16
 ```
 
 ## Latest Useful Commits

@@ -4,6 +4,43 @@
 [functions]
   directory = "netlify/functions"
 
+[[redirects]]
+  from = "/checkout-command.html"
+  to = "/agency-pricing.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/checkout-command"
+  to = "/agency-pricing.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/operator-shopify-savings"
+  to = "/operator-shopify-savings.html"
+  status = 200
+
+[[redirects]]
+  from = "/operator-url-analysis"
+  to = "/operator-url-analysis.html"
+  status = 200
+
+[[redirects]]
+  from = "/checkout-operator"
+  to = "/checkout-operator.html"
+  status = 200
+
+[[redirects]]
+  from = "/checkout-director"
+  to = "/checkout-director.html"
+  status = 200
+
+[[redirects]]
+  from = "/agency-pricing"
+  to = "/agency-pricing.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -12,3 +49,13 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self'; connect-src 'self' https:; frame-ancestors 'self'; form-action 'self' https://checkout.stripe.com https://buy.stripe.com; base-uri 'self'; object-src 'none'"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

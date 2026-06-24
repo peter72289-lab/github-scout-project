@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/operator-shopify-savings.html</loc>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/operator-sample-reports.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/sample-shopify-url-analysis.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/checkout-operator.html</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/checkout-director.html</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/agency-pricing.html</loc>
+    <priority>0.5</priority>
+  </url>
+</urlset>

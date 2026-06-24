@@ -9,6 +9,9 @@
 - Checkout pages can show Stripe CTAs when payment links are added to `assets/launch-config.js`.
 - Meta Pixel bootstrap exists in `assets/launch-analytics.js`; add the pixel ID in `assets/launch-config.js`.
 - Security headers and CSP are configured in `netlify.toml`.
+- Command-tier checkout routes redirect to agency pricing.
+- Extensionless launch routes, `robots.txt`, `sitemap.xml`, `.well-known/security.txt`, branded `404.html`, and a health endpoint are in place.
+- Live verification can be rerun with `node scripts/verify-v9-launch.js`.
 
 ## Account Values You Need To Add
 
