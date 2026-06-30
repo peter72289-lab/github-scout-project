@@ -28,4 +28,24 @@
     <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/agency-pricing.html</loc>
     <priority>0.5</priority>
   </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/privacy.html</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/terms.html</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/data-handling.html</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/refunds.html</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v9-20260609.netlify.app/support.html</loc>
+    <priority>0.3</priority>
+  </url>
 </urlset>

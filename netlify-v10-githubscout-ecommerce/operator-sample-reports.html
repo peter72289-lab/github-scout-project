@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Scout - Operator Sample Reports</title>
+  <style>
+    :root{--black:#080e16;--deep:#0f1c2c;--surface:#162840;--surf2:#1c314c;--border:#2a4560;--blt:#3f5f7f;--amber:#f5b030;--white:#f6f2ed;--body:#d4e6f4;--muted:#a6c4dc;--green:#50d8a0;--red:#ff7066}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--black);color:var(--white);font-family:Barlow,Avenir Next,Helvetica,Arial,sans-serif}
+    header{padding:56px 30px 40px;background:radial-gradient(circle at 75% 15%,rgba(80,216,160,.14),transparent 32%),var(--deep);border-bottom:1px solid var(--border)}
+    main{padding:44px 30px 72px}
+    .wrap{max-width:1120px;margin:0 auto}
+    a.back{display:inline-block;margin-bottom:24px;color:var(--amber);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;font-size:13px;text-decoration:none}
+    .kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:var(--green);letter-spacing:.18em;text-transform:uppercase;font-size:13px;font-weight:800;margin-bottom:14px}
+    h1{font-family:Georgia,Times New Roman,serif;font-size:clamp(42px,6vw,82px);line-height:.96;margin:0 0 18px;text-transform:uppercase;max-width:920px}
+    h1 em,h2 em{color:var(--amber);font-style:normal}
+    .lead{font-size:20px;line-height:1.65;color:var(--body);max-width:820px;margin:0}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .card{border:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--deep));padding:24px}
+    .card h2{font-family:Georgia,Times New Roman,serif;font-size:32px;line-height:1.05;margin:0 0 12px}
+    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:18px 0}
+    .metric{background:var(--surf2);padding:14px}
+    .metric strong{display:block;color:var(--amber);font-size:24px;line-height:1}
+    .metric span{display:block;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.08em;font-size:10px;margin-top:7px}
+    p{color:var(--body);line-height:1.65;margin:0 0 14px}
+    .block{border:1px solid var(--border);background:rgba(8,14,22,.32);padding:14px;margin-top:10px}
+    .block strong{display:block;color:var(--white);margin-bottom:6px}
+    .tag{display:inline-block;margin:4px 6px 0 0;color:var(--green);border:1px solid rgba(80,216,160,.35);background:rgba(80,216,160,.12);padding:5px 8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.08em;font-size:10px}
+    .cta{display:inline-block;margin-top:26px;background:var(--amber);color:var(--black);text-decoration:none;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;font-weight:900;font-size:13px;padding:15px 18px}
+    @media(max-width:840px){header,main{padding-left:22px;padding-right:22px}.grid,.meta{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="back" href="operator-shopify-savings.html">Back to Operator funnel</a>
+      <div class="kicker">Five sample report patterns</div>
+      <h1>What Scout surfaces across <em>different store types.</em></h1>
+      <p class="lead">Use these as sales examples for the paid Operator plan. Each one shows current stack contrast, savings logic, urgency, and the first practical move.</p>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <div class="grid">
+        <article class="card">
+          <div class="kicker">Beauty brand</div>
+          <h2>Proof surface is doing too many jobs.</h2>
+          <p>Current pattern: review widget, UGC app, popup capture, and quiz funnel all competing above the fold.</p>
+          <div class="meta"><div class="metric"><strong>$220-$680</strong><span>Monthly savings</span></div><div class="metric"><strong>High</strong><span>Severity</span></div><div class="metric"><strong>7 days</strong><span>Proof window</span></div></div>
+          <div class="block"><strong>Scout recommendation</strong><p>Consolidate reviews and UGC first, then keep the quiz only if it improves email quality or product routing.</p></div>
+          <span class="tag">Reviews</span><span class="tag">Quiz</span><span class="tag">Email capture</span>
+        </article>
+        <article class="card">
+          <div class="kicker">Supplement store</div>
+          <h2>Subscription stack needs a payback check.</h2>
+          <p>Current pattern: subscription app, post-purchase upsell, SMS platform, and review proof all touching repeat-purchase behavior.</p>
+          <div class="meta"><div class="metric"><strong>$340-$1.1k</strong><span>Monthly savings</span></div><div class="metric"><strong>Critical</strong><span>Severity</span></div><div class="metric"><strong>14 days</strong><span>Payback</span></div></div>
+          <div class="block"><strong>Scout recommendation</strong><p>Keep subscription logic if revenue is core, but compare the current tier against Shopify-native or lower-cost alternatives before renewal.</p></div>
+          <span class="tag">Subscriptions</span><span class="tag">Upsell</span><span class="tag">SMS</span>
+        </article>
+        <article class="card">
+          <div class="kicker">Apparel store</div>
+          <h2>Traffic is arriving before AOV is ready.</h2>
+          <p>Current pattern: paid social traffic, basic product pages, light review proof, and no clear bundle or quantity-break surface.</p>
+          <div class="meta"><div class="metric"><strong>$180-$540</strong><span>Monthly savings</span></div><div class="metric"><strong>High</strong><span>Severity</span></div><div class="metric"><strong>8-15%</strong><span>AOV target</span></div></div>
+          <div class="block"><strong>Scout recommendation</strong><p>Run one bundle test on the highest-traffic product template before adding another broad CRO app.</p></div>
+          <span class="tag">AOV</span><span class="tag">Bundles</span><span class="tag">Paid traffic</span>
+        </article>
+        <article class="card">
+          <div class="kicker">Pet brand</div>
+          <h2>Loyalty and referral need usage proof.</h2>
+          <p>Current pattern: loyalty points, referral app, email capture, and shipping protection all billed separately.</p>
+          <div class="meta"><div class="metric"><strong>$190-$720</strong><span>Monthly savings</span></div><div class="metric"><strong>Medium</strong><span>Severity</span></div><div class="metric"><strong>24 hrs</strong><span>First action</span></div></div>
+          <div class="block"><strong>Scout recommendation</strong><p>Audit redemptions and referred revenue. Downgrade or pause any incentive tool that cannot prove weekly contribution.</p></div>
+          <span class="tag">Loyalty</span><span class="tag">Referral</span><span class="tag">Shipping</span>
+        </article>
+        <article class="card">
+          <div class="kicker">High-ticket store</div>
+          <h2>Analytics must decide what stays.</h2>
+          <p>Current pattern: heatmaps, analytics, personalization, chat, and search all claim to improve conversion.</p>
+          <div class="meta"><div class="metric"><strong>$420-$1.6k</strong><span>Monthly savings</span></div><div class="metric"><strong>High</strong><span>Severity</span></div><div class="metric"><strong>30%</strong><span>Cleanup target</span></div></div>
+          <div class="block"><strong>Scout recommendation</strong><p>Make every app prove revenue impact. Keep the tools tied to real decisions and remove the rest before the next billing cycle.</p></div>
+          <span class="tag">Analytics</span><span class="tag">Search</span><span class="tag">Personalization</span>
+        </article>
+      </div>
+      <a class="cta" href="operator-shopify-savings.html#capture">Analyze my Shopify URL</a>
+    </div>
+  </main>
+</body>
+</html>

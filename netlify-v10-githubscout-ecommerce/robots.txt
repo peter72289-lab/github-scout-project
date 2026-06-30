@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://githubscout-ecommerce-v10-20260624.netlify.app/sitemap.xml

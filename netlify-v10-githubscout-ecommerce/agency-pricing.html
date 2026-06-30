@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scout Agency Pricing</title>
+  <style>
+    :root {
+      --black: #080e16;
+      --deep: #0f1c2c;
+      --surface: #162840;
+      --surf2: #1e3452;
+      --border: #2a4560;
+      --amber: #f5b030;
+      --white: #f6f2ed;
+      --body: #d4e6f4;
+      --muted: #a6c4dc;
+      --green: #50d8a0;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--black);
+      color: var(--white);
+      font-family: Barlow, Arial, sans-serif;
+    }
+
+    main {
+      width: min(960px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 72px 0;
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 42px;
+      align-items: start;
+    }
+
+    a.back {
+      display: inline-block;
+      margin-bottom: 28px;
+      color: var(--amber);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .kicker {
+      color: var(--amber);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: .96;
+      color: var(--white);
+    }
+
+    h1 em { color: var(--amber); font-style: italic; }
+    p { color: var(--body); line-height: 1.75; font-size: 17px; margin: 0 0 20px; }
+
+    .facts {
+      display: grid;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 26px;
+    }
+
+    .fact {
+      background: var(--surface);
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--body);
+    }
+
+    .fact span {
+      color: var(--amber);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    form {
+      background: var(--deep);
+      border: 1px solid var(--border);
+      padding: 30px;
+      display: grid;
+      gap: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--white);
+      padding: 13px 14px;
+      font: 16px Barlow, Arial, sans-serif;
+    }
+
+    textarea { min-height: 120px; resize: vertical; }
+    input:focus, textarea:focus { outline: 1px solid var(--amber); border-color: var(--amber); }
+
+    button {
+      border: 0;
+      background: var(--amber);
+      color: var(--black);
+      padding: 15px 18px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: #ffcc58; }
+    .note { color: var(--muted); font-size: 14px; margin: 0; }
+
+    @media (max-width: 760px) {
+      main { grid-template-columns: 1fr; padding: 42px 0; }
+      form { padding: 22px; }
+      .fact { display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <a href="/" class="back">Back to Scout</a>
+      <div class="kicker">Agency Pricing</div>
+      <h1>More than <em>30 storefronts?</em></h1>
+      <p>Tell us how many storefronts you analyze each month and what kind of recommendations your team needs. We will shape a plan around volume, shared workflows, and reporting.</p>
+      <div class="facts">
+        <div class="fact"><strong>Included sources</strong><span>All 15</span></div>
+        <div class="fact"><strong>Monthly storefront volume</strong><span>Custom</span></div>
+        <div class="fact"><strong>Best for</strong><span>Agencies</span></div>
+      </div>
+    </section>
+
+    <form name="agency-pricing" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="thank-you.html">
+      <input type="hidden" name="form-name" value="agency-pricing">
+      <p hidden><label>Do not fill this out<input name="bot-field"></label></p>
+      <input type="hidden" name="utm_source">
+      <input type="hidden" name="utm_medium">
+      <input type="hidden" name="utm_campaign">
+      <input type="hidden" name="utm_content">
+      <input type="hidden" name="utm_term">
+      <input type="hidden" name="landing_page">
+      <input type="hidden" name="referrer">
+      <label>Work email
+        <input name="email" type="email" autocomplete="email" required>
+      </label>
+      <label>Company or agency
+        <input name="company" type="text" autocomplete="organization" required>
+      </label>
+      <label>Storefronts per month
+        <input name="storefronts" type="text" placeholder="Example: 75">
+      </label>
+      <label>What should Scout help you do?
+        <textarea name="needs" placeholder="Store audits, recommendations, client reporting, prospecting, competitive analysis..."></textarea>
+      </label>
+      <button type="submit">Request Agency Pricing</button>
+      <p class="note">We will use this to follow up about agency-volume pricing for Scout.</p>
+    </form>
+  </main>
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
+  <script>
+    const agencyForm = document.querySelector('form[name="agency-pricing"]');
+    const params = new URLSearchParams(window.location.search);
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+      const value = params.get(key) || sessionStorage.getItem(key) || '';
+      if (value) sessionStorage.setItem(key, value);
+      const input = agencyForm?.querySelector(`[name="${key}"]`);
+      if (input) input.value = value;
+    });
+    const landingInput = agencyForm?.querySelector('[name="landing_page"]');
+    const referrerInput = agencyForm?.querySelector('[name="referrer"]');
+    if (landingInput) landingInput.value = window.location.href;
+    if (referrerInput) referrerInput.value = document.referrer || '';
+    agencyForm?.addEventListener('submit', () => window.githubScoutTrack?.('agency_pricing_submitted'));
+  </script>
+</body>
+</html>

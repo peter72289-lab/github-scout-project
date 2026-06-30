@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Scout Operator - Shopify URL Savings Scan</title>
+  <style>
+    :root {
+      --black:#080e16; --deep:#0f1c2c; --surface:#162840; --surf2:#1e3452;
+      --border:#2a4560; --blt:#3c5e7a; --amber:#f5b030; --white:#f6f2ed;
+      --body:#d4e6f4; --muted:#a6c4dc; --faint:#6888a2; --green:#50d8a0;
+      --blue:#56a8ec; --red:#ee8888;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--black);color:var(--white);font-family:Barlow,Avenir Next,Helvetica,Arial,sans-serif}
+    a{color:inherit}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    nav{position:sticky;top:0;z-index:20;background:rgba(8,14,22,.95);border-bottom:1px solid var(--border);backdrop-filter:blur(18px);padding:14px 42px;display:flex;justify-content:space-between;align-items:center;gap:18px}
+    .brand{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);font-size:14px;text-decoration:none}
+    .navlinks{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+    .navlinks a{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-size:12px;text-decoration:none}
+    .navlinks .cta{background:var(--amber);color:var(--black);padding:10px 14px;font-weight:800}
+    .hero{position:relative;min-height:auto;padding:92px 58px 72px;display:block;overflow:hidden}
+    .hero:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,14,22,.98),rgba(8,14,22,.82),rgba(8,14,22,.98)),radial-gradient(circle at 50% 36%,rgba(80,216,160,.16),transparent 36%),radial-gradient(circle at 20% 78%,rgba(245,176,48,.12),transparent 28%);pointer-events:none}
+    .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:82px 82px;opacity:.13}
+    .hero-copy{position:relative;z-index:2;max-width:980px;margin:0 auto}
+    .kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:var(--green);letter-spacing:.2em;text-transform:uppercase;font-size:13px;font-weight:800;margin-bottom:18px}
+    h1{font-family:Georgia,Times New Roman,serif;font-size:clamp(46px,6.2vw,92px);line-height:.96;margin:0 0 24px;text-transform:uppercase;max-width:940px}
+    h1 em{color:var(--amber);font-style:normal}
+    .sub{font-size:22px;line-height:1.65;color:var(--body);max-width:890px;margin:0 0 18px}
+    .sub strong{color:var(--white)}
+    .dr-copy{display:grid;gap:14px;margin-top:24px;max-width:900px}
+    .dr-copy p{margin:0;color:var(--body);font-size:18px;line-height:1.75}
+    .dr-copy strong{color:var(--white)}
+    .actions{display:flex;gap:16px;flex-wrap:wrap;margin:30px 0 18px}
+    .btn{display:inline-block;text-decoration:none;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.13em;font-size:13px;font-weight:800;padding:16px 20px;border:1px solid var(--blt)}
+    .btn.primary{background:var(--amber);color:var(--black);border-color:var(--amber)}
+    .btn.secondary{color:var(--body);background:rgba(22,40,64,.55)}
+    .trust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);max-width:920px;margin-top:30px}
+    .trust div{background:rgba(22,40,64,.82);padding:18px;text-align:center}
+    .trust strong{display:block;color:var(--amber);font-family:Georgia,Times New Roman,serif;font-size:34px;line-height:1}
+    .trust span{display:block;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px;margin-top:7px}
+    section{padding:86px 58px;border-top:1px solid var(--border)}
+    .inner{max-width:1120px;margin:0 auto}
+    h2{font-family:Georgia,Times New Roman,serif;font-size:clamp(34px,4vw,58px);line-height:1.05;margin:0 0 18px}
+    h2 em{color:var(--amber);font-style:normal}
+    .lead{color:var(--body);font-size:18px;line-height:1.75;max-width:760px;margin:0 0 34px}
+    .grid3{display:grid;grid-template-columns:1fr;gap:1px;background:var(--border);border:1px solid var(--border);max-width:940px}
+    .tile{background:var(--surface);padding:28px}
+    .tile h3{margin:0 0 10px;color:var(--white);font-size:22px}
+    .tile p{margin:0;color:var(--muted);line-height:1.65}
+    .tile .num{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;font-size:12px;margin-bottom:12px}
+    .report{display:grid;grid-template-columns:1fr;gap:34px;align-items:start;max-width:940px}
+    .report-panel{border:1px solid var(--border);background:var(--deep);padding:28px}
+    .value-stack{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);max-width:940px}
+    .value-row{background:var(--surface);padding:22px 24px;display:grid;grid-template-columns:190px 1fr;gap:22px}
+    .value-row strong{color:var(--amber);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;font-size:12px}
+    .value-row p{margin:0;color:var(--body);line-height:1.65}
+    .score{display:grid;gap:10px}
+    .score-row{display:grid;grid-template-columns:140px 1fr 48px;gap:12px;align-items:center;color:var(--body)}
+    .bar{height:8px;background:var(--border);overflow:hidden}
+    .fill{height:100%;background:linear-gradient(90deg,var(--green),var(--amber))}
+    .stack-list{display:grid;gap:12px;margin-top:18px}
+    .swap{border:1px solid var(--border);background:rgba(22,40,64,.7);padding:16px;display:grid;gap:6px}
+    .swap strong{color:var(--white)}
+    .swap span{color:var(--green);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+    form{display:grid;gap:15px;border:1px solid var(--blt);background:var(--deep);padding:30px}
+    label{display:grid;gap:8px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+    input,select,textarea{width:100%;border:1px solid var(--border);background:var(--surface);color:var(--white);padding:14px;font:16px Barlow,Avenir Next,Helvetica,Arial,sans-serif}
+    textarea{min-height:112px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:1px solid var(--amber);border-color:var(--amber)}
+    button{border:0;background:var(--amber);color:var(--black);padding:16px 18px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.14em;font-weight:900;cursor:pointer}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .fine{color:var(--faint);font-size:13px;line-height:1.6}
+    footer{border-top:1px solid var(--border);padding:28px 58px;color:var(--faint);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    @media(max-width:900px){nav{padding:12px 20px}.hero{padding:52px 24px}.grid3,.report,.form-grid{grid-template-columns:1fr}.trust{grid-template-columns:1fr 1fr}.value-row{grid-template-columns:1fr;gap:8px}section{padding:60px 24px}footer{padding:24px}}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="brand">GitHub Scout</a>
+    <div class="navlinks">
+      <a href="#scan">URL Scan</a>
+      <a href="#report">Sample Report</a>
+      <a href="#capture" class="cta">Analyze My URL</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-copy">
+      <div class="kicker">Free Shopify URL analyzer for operators</div>
+      <h1>Your Shopify app stack may be <em>taxing every sale.</em></h1>
+      <p class="sub">Paste your storefront URL and Scout will look for the plugins, embeds, widgets, and third-party tools that may be costing too much, slowing the store down, or leaving conversion money on the table.</p>
+      <div class="dr-copy">
+        <p><strong>Why give us your email?</strong> Because the useful answer is not a generic “top Shopify apps” list. It is a storefront-specific software punch list: what to keep, what to replace, what to test, and where your current stack may be wasting budget.</p>
+        <p>If you are already spending money to drive traffic, your tools should either lower operating cost or help more shoppers buy. The URL analyzer is built to show where better software choices could protect margin before you buy another app.</p>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="#capture">Send My Free URL Scan</a>
+        <a class="btn secondary" href="sample-shopify-url-analysis.html">View Sample Report</a>
+      </div>
+      <div class="trust">
+        <div><strong>Free</strong><span>First URL review</span></div>
+        <div><strong>15</strong><span>Sources included</span></div>
+        <div><strong>10</strong><span>Storefronts / mo</span></div>
+        <div><strong>$17</strong><span>Operator / mo</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section id="scan">
+    <div class="inner">
+      <div class="kicker">What the scan checks</div>
+      <h2>Most Shopify stores do not have a traffic problem first. They have a <em>stack problem.</em></h2>
+      <p class="lead">Every paid click hits the software choices already sitting on your storefront: review widgets, upsells, popups, bundles, checkout tools, loyalty apps, chat embeds, subscription tools, tracking scripts, and trust badges. Scout turns that stack into a practical decision list.</p>
+      <div class="grid3">
+        <div class="tile"><div class="num">01 · Cost leaks</div><h3>Find expensive or overlapping app categories</h3><p>Scout looks for areas where one tool may be doing the job of two, where a lighter substitute may exist, or where an installed widget may not justify its monthly cost.</p></div>
+        <div class="tile"><div class="num">02 · Conversion surface</div><h3>Spot missing widgets worth testing</h3><p>Reviews, bundles, quantity breaks, subscriptions, trust, upsells, email capture, post-purchase offers, and checkout support are evaluated as practical CRO opportunities.</p></div>
+        <div class="tile"><div class="num">03 · App bloat</div><h3>Protect speed before adding more software</h3><p>Too many embeds and scripts can make a store slower and harder to operate. Scout flags categories to clean up before you install another “conversion” app.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="inner">
+      <div class="kicker">Why this is worth your email</div>
+      <h2>You are not opting in for a newsletter. You are asking for a <em>storefront-specific software diagnosis.</em></h2>
+      <p class="lead">The form gives Scout enough context to prioritize the scan. A store spending under $10k/month on ads needs different software choices than a store spending $250k/month. Your URL and ad spend range help frame the value of each recommendation.</p>
+      <div class="value-stack">
+        <div class="value-row"><strong>You send</strong><p>Your email, Shopify URL, monthly ad spend range, and the main problem you want fixed.</p></div>
+        <div class="value-row"><strong>Scout checks</strong><p>Visible storefront stack, plugin categories, conversion widgets, possible app overlap, third-party embeds, and software replacement opportunities.</p></div>
+        <div class="value-row"><strong>You get</strong><p>A practical punch list: software to consider replacing, tools worth testing, bloat to investigate, and recommendations tied to savings or conversion.</p></div>
+        <div class="value-row"><strong>The point</strong><p>If one app swap lowers spend, one widget improves conversion, or one cleanup improves speed, the scan can pay for itself before the month is over.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="report">
+    <div class="inner report">
+      <div>
+        <div class="kicker">Sample output</div>
+        <h2>A report your operator can <em>act on.</em></h2>
+        <p class="lead">Each scan should end in a concise action plan: what to keep, what to replace, what to test, and what to watch.</p>
+        <a class="btn primary" href="sample-shopify-url-analysis.html">Open Sample Analysis</a>
+      </div>
+      <div class="report-panel">
+        <div class="score">
+          <div class="score-row"><span>Cost waste</span><div class="bar"><div class="fill" style="width:72%"></div></div><strong>$164</strong></div>
+          <div class="score-row"><span>App bloat</span><div class="bar"><div class="fill" style="width:64%"></div></div><strong>High</strong></div>
+          <div class="score-row"><span>CRO surface</span><div class="bar"><div class="fill" style="width:84%"></div></div><strong>8.4</strong></div>
+        </div>
+        <div class="stack-list">
+          <div class="swap"><span>Swap idea</span><strong>Replace duplicate review + UGC widgets with one review platform that supports photo proof and Q&A.</strong></div>
+          <div class="swap"><span>Test idea</span><strong>Add bundle/quantity break widget to top three product templates before chasing new traffic.</strong></div>
+          <div class="swap"><span>Remove idea</span><strong>Audit inactive scripts and old promo widgets before adding another optimization app.</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="capture">
+    <div class="inner report">
+      <div>
+        <div class="kicker">Lead capture</div>
+        <h2>Send the URL. Get the <em>software punch list.</em></h2>
+        <p class="lead">Drop your storefront URL and ad spend range. Scout will use that context to prioritize app savings, better plugin options, conversion widgets, third-party embeds, and stack cleanup opportunities.</p>
+        <p class="fine">Your first URL review is positioned as the front door into Operator. If the scan shows enough savings or conversion upside, the $17/month plan gives you 10 storefront analyses per month across all 15 sources.</p>
+      </div>
+      <form id="operator-url-form" name="operator-url-scan" method="GET" action="operator-url-analysis.html">
+        <input type="hidden" name="form-name" value="operator-url-scan">
+        <input type="hidden" name="utm_source">
+        <input type="hidden" name="utm_medium">
+        <input type="hidden" name="utm_campaign">
+        <input type="hidden" name="utm_content">
+        <input type="hidden" name="utm_term">
+        <input type="hidden" name="landing_page">
+        <input type="hidden" name="referrer">
+        <div class="form-grid">
+          <label>Email<input name="email" type="email" required placeholder="you@store.com"></label>
+          <label>Store URL<input name="store_url" type="url" required placeholder="https://yourstore.com"></label>
+        </div>
+        <div class="form-grid">
+          <label>Monthly ad spend<select name="monthly_ad_spend" required><option value="">Select range</option><option>Under $10,000 a month</option><option>$10,000 to $100,000 a month</option><option>$100,000 to $250,000 a month</option><option>More than $250,000 a month</option></select></label>
+          <label>Biggest goal<select name="primary_goal" required><option value="">Select goal</option><option>Cut app costs</option><option>Improve conversion</option><option>Speed up storefront</option><option>Find better widgets</option><option>Clean up app stack</option></select></label>
+        </div>
+        <label>What should Scout look for first?<textarea name="notes" placeholder="Example: our paid traffic is expensive, conversion is flat, our app stack feels bloated, or we are unsure which widgets are worth testing."></textarea></label>
+        <button type="submit">Run My URL Analyzer</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <span>GitHub Scout Operator - Shopify URL software savings funnel</span>
+    <span><a href="index.html">V10 Home</a> · <a href="checkout-operator.html" data-checkout-plan="operator">Operator Checkout</a> · <a href="sample-shopify-url-analysis.html">Sample Report</a></span>
+  </footer>
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
+  <script src="assets/launch-checkout.js"></script>
+  <script>
+    const operatorUrlForm = document.querySelector('#operator-url-form');
+    const trackingParams = new URLSearchParams(window.location.search);
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+      const value = trackingParams.get(key) || sessionStorage.getItem(key) || '';
+      if (value) sessionStorage.setItem(key, value);
+      const input = operatorUrlForm?.querySelector(`[name="${key}"]`);
+      if (input) input.value = value;
+    });
+    const landingInput = operatorUrlForm?.querySelector('[name="landing_page"]');
+    const referrerInput = operatorUrlForm?.querySelector('[name="referrer"]');
+    if (landingInput) landingInput.value = window.location.href;
+    if (referrerInput) referrerInput.value = document.referrer || '';
+
+    operatorUrlForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(operatorUrlForm);
+      window.githubScoutTrack?.('analyzer_form_submitted');
+      const data = Object.fromEntries(formData.entries());
+      sessionStorage.setItem('operatorUrlScan', JSON.stringify(data));
+      formData.set('intent', 'lead');
+
+      fetch('/.netlify/functions/operator-url-scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams(formData).toString(),
+        keepalive: true
+      }).catch(() => {});
+
+      const query = new URLSearchParams({
+        store_url: data.store_url || '',
+        monthly_ad_spend: data.monthly_ad_spend || '',
+        primary_goal: data.primary_goal || '',
+        utm_source: data.utm_source || '',
+        utm_medium: data.utm_medium || '',
+        utm_campaign: data.utm_campaign || '',
+        utm_content: data.utm_content || '',
+        utm_term: data.utm_term || ''
+      });
+      window.location.href = `operator-url-analysis.html?${query.toString()}`;
+    });
+  </script>
+</body>
+</html>

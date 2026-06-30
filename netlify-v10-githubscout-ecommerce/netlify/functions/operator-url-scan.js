@@ -225,7 +225,7 @@ async function fetchPublicHtml(url, redirectCount = 0) {
       signal: controller.signal,
       redirect: 'manual',
       headers: {
-        'User-Agent': `Mozilla/5.0 (compatible; GitHubScoutOperatorScan/1.0; +${process.env.URL || 'https://githubscout-ecommerce-v9-20260609.netlify.app'})`,
+        'User-Agent': `Mozilla/5.0 (compatible; GitHubScoutOperatorScan/1.0; +${process.env.URL || 'https://githubscout-ecommerce-v10-20260624.netlify.app'})`,
         'Accept': 'text/html,application/xhtml+xml'
       }
     });

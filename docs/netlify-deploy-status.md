@@ -7,9 +7,16 @@
 - Site URL: https://githubscout-ecommerce-v9-20260609.netlify.app
 - Admin URL: https://app.netlify.com/projects/githubscout-ecommerce-v9-20260609
 
+## Current V10 Site
+
+- Site name: `githubscout-ecommerce-v10-20260624`
+- Site ID: `c7971299-4914-4ef4-863b-ff7880704171`
+- Site URL: https://githubscout-ecommerce-v10-20260624.netlify.app
+- Admin URL: https://app.netlify.com/projects/githubscout-ecommerce-v10-20260624
+
 ## Current Deploy State
 
-As of June 24, 2026, the V9 site is active and production deploy succeeded.
+As of June 30, 2026, the V9 and V10 sites are active and production deploys succeeded.
 
 ```text
 disabled: false
@@ -20,7 +27,14 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a3c1fbf6ce2c85348f3f28d--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a440e6914afe34aabf7f395--githubscout-ecommerce-v9-20260609.netlify.app
+```
+
+Latest V10 successful deploy:
+
+```text
+Production URL: https://githubscout-ecommerce-v10-20260624.netlify.app
+Unique deploy URL: https://6a440e7e31c9dd542715c461--githubscout-ecommerce-v10-20260624.netlify.app
 ```
 
 ## Redeploy Command
@@ -30,6 +44,13 @@ Run this from the V9 app folder so Netlify picks up `netlify.toml`, redirects, h
 ```bash
 cd netlify-v9-githubscout-ecommerce
 npx netlify deploy --prod --dir . --functions netlify/functions --site 3f86b1e7-82aa-4919-8ef7-55289185cc16
+```
+
+Run this from the V10 app folder:
+
+```bash
+cd netlify-v10-githubscout-ecommerce
+npx netlify deploy --prod --dir . --functions netlify/functions --site c7971299-4914-4ef4-863b-ff7880704171
 ```
 
 ## What Should Go Live After Deploy
@@ -50,6 +71,8 @@ npx netlify deploy --prod --dir . --functions netlify/functions --site 3f86b1e7-
 - Sample Shopify URL analysis page.
 - Operator URL scan lead/function flow.
 - Operator checkout intake Netlify Form.
+- Privacy, Terms, Data Handling, Refunds, and Support pages.
+- Generic verification script at `scripts/verify-githubscout-launch.js`.
 
 ## Verification After Deploy
 
@@ -60,6 +83,11 @@ Check these URLs:
 - `/sample-shopify-url-analysis.html`
 - `/checkout-operator.html`
 - `/operator-thank-you.html`
+- `/privacy.html`
+- `/terms.html`
+- `/data-handling.html`
+- `/refunds.html`
+- `/support.html`
 - `/robots.txt`
 - `/sitemap.xml`
 - `/.well-known/security.txt`
@@ -69,7 +97,8 @@ Check these URLs:
 Run the production verification script:
 
 ```bash
-node scripts/verify-v9-launch.js https://githubscout-ecommerce-v9-20260609.netlify.app
+node scripts/verify-githubscout-launch.js https://githubscout-ecommerce-v9-20260609.netlify.app
+node scripts/verify-githubscout-launch.js https://githubscout-ecommerce-v10-20260624.netlify.app
 ```
 
 Submit one test form with a clearly marked test email and confirm it appears in Netlify Forms or your configured webhook.

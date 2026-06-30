@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Scout - Operator URL Analysis</title>
+  <style>
+    :root{--black:#080e16;--deep:#0f1c2c;--surface:#162840;--surf2:#1c314c;--border:#2a4560;--blt:#3f5f7f;--amber:#f5b030;--white:#f6f2ed;--body:#d4e6f4;--muted:#a6c4dc;--green:#50d8a0;--red:#ff7066}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--black);color:var(--white);font-family:Barlow,Avenir Next,Helvetica,Arial,sans-serif}
+    a{color:inherit}
+    nav{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 30px;background:rgba(8,14,22,.94);border-bottom:1px solid var(--border);backdrop-filter:blur(14px)}
+    .brand{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);font-size:14px;text-decoration:none}
+    .navlinks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    .navlinks a{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-size:12px;text-decoration:none}
+    .cta{background:var(--amber);color:var(--black)!important;padding:10px 13px;font-weight:900}
+    section{padding:72px 30px;border-bottom:1px solid var(--border)}
+    .inner{max-width:1120px;margin:0 auto}
+    .hero{padding-top:64px;background:radial-gradient(circle at 78% 18%,rgba(80,216,160,.14),transparent 30%),linear-gradient(180deg,var(--deep),var(--black))}
+    .kicker{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:var(--green);letter-spacing:.2em;text-transform:uppercase;font-size:13px;font-weight:800;margin-bottom:16px}
+    h1{font-family:Georgia,Times New Roman,serif;font-size:clamp(42px,6.5vw,86px);line-height:.96;margin:0 0 22px;text-transform:uppercase;max-width:980px}
+    h2{font-family:Georgia,Times New Roman,serif;font-size:clamp(32px,4.8vw,60px);line-height:1;margin:0 0 18px;text-transform:uppercase}
+    h3{font-size:24px;line-height:1.15;margin:0;color:var(--white)}
+    h1 em,h2 em{color:var(--amber);font-style:normal}
+    p{color:var(--body);line-height:1.7;font-size:18px;margin:0 0 18px}
+    .lead{font-size:21px;max-width:900px;color:var(--body)}
+    .actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+    .btn{display:inline-block;text-decoration:none;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.13em;font-size:13px;font-weight:900;padding:15px 18px;border:1px solid var(--blt)}
+    .primary{background:var(--amber);color:var(--black);border-color:var(--amber)}
+    .secondary{color:var(--body)}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:34px}
+    .metric{border:1px solid var(--border);background:rgba(22,40,64,.86);padding:18px;min-height:124px}
+    .metric strong{display:block;font-family:Georgia,Times New Roman,serif;font-size:28px;color:var(--white);line-height:1.05}
+    .metric span{display:block;margin-top:8px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase;font-size:11px}
+    .metric p{font-size:14px;color:var(--muted);line-height:1.45;margin:9px 0 0}
+    .status-strip{margin-top:22px;border:1px solid rgba(80,216,160,.35);background:rgba(80,216,160,.09);padding:16px 18px;color:var(--body);font-size:15px;line-height:1.55}
+    .status-strip strong{color:var(--green)}
+    .tool-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .mini-btn{border:1px solid var(--blt);background:rgba(22,40,64,.88);color:var(--body);padding:11px 13px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:900;cursor:pointer}
+    .mini-btn.primary{background:var(--amber);border-color:var(--amber);color:var(--black)}
+    .context-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+    .context-card{border:1px solid var(--border);background:var(--surface);padding:16px}
+    .context-card span{display:block;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px;margin-bottom:7px}
+    .context-card strong{display:block;color:var(--white);font-size:18px;overflow-wrap:anywhere}
+    .section-head{margin-bottom:26px}
+    .section-head p{max-width:900px}
+    .recommendation-stack{display:grid;gap:18px}
+    .rec-card{border:1px solid var(--border);background:linear-gradient(180deg,rgba(22,40,64,.98),rgba(15,28,44,.98));padding:0;overflow:hidden}
+    .rec-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px;border-bottom:1px solid var(--border)}
+    .rec-title{display:flex;gap:14px;align-items:flex-start}
+    .rank{display:grid;place-items:center;width:38px;height:38px;background:var(--amber);color:var(--black);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:900;flex:0 0 auto}
+    .rec-meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .pill{display:inline-block;border:1px solid var(--blt);padding:6px 8px;color:var(--body);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;font-size:11px;white-space:nowrap}
+    .pill.hot{border-color:rgba(255,112,102,.55);background:rgba(255,112,102,.12);color:#ffd0cc}
+    .pill.warn{border-color:rgba(245,176,48,.55);background:rgba(245,176,48,.13);color:var(--amber)}
+    .pill.good{border-color:rgba(80,216,160,.45);background:rgba(80,216,160,.12);color:var(--green)}
+    .rec-body{padding:24px;display:grid;gap:18px}
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .compare-box{border:1px solid var(--border);background:rgba(8,14,22,.34);padding:18px;min-height:154px}
+    .compare-box span{display:block;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px;margin-bottom:8px}
+    .compare-box strong{display:block;color:var(--white);font-size:18px;line-height:1.35;margin-bottom:8px}
+    .compare-box p{font-size:15px;line-height:1.58;margin:0;color:var(--body)}
+    .value-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .value-chip{border:1px solid var(--border);background:var(--surf2);padding:14px}
+    .value-chip span{display:block;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.09em;font-size:10px;margin-bottom:6px}
+    .value-chip strong{display:block;color:var(--white);font-size:17px;line-height:1.2}
+    .why-now{border-left:3px solid var(--amber);background:rgba(245,176,48,.08);padding:16px 18px;color:var(--body);font-size:16px;line-height:1.6}
+    .why-now strong{color:var(--amber)}
+    .detected-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .detected-item{border:1px solid var(--border);background:var(--surface);padding:16px}
+    .detected-item strong{display:block;color:var(--white);margin-bottom:6px}
+    .detected-item span{display:block;color:var(--muted);font-size:14px;line-height:1.5}
+    .action-panel{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;align-items:start}
+    .checklist{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+    .check{border:1px solid var(--border);background:var(--surf2);padding:14px;color:var(--body);line-height:1.5}
+    .check strong{color:var(--white)}
+    .fine{font-size:14px;color:var(--muted);line-height:1.6}
+    footer{padding:26px 30px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+    footer a{color:var(--amber)}
+    @media(max-width:900px){
+      nav{padding:12px 20px}.navlinks{display:none}section{padding:56px 22px}
+      .summary,.context-grid,.compare-grid,.value-row,.detected-grid,.action-panel{grid-template-columns:1fr}
+      .rec-top{display:grid}.rec-meta{justify-content:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="brand">GitHub Scout</a>
+    <div class="navlinks">
+      <a href="operator-shopify-savings.html#capture">Run Another URL</a>
+      <a href="#recommendations">Recommendations</a>
+      <a href="checkout-operator.html" class="cta" data-checkout-plan="operator">Start Operator</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="inner">
+      <div class="kicker">Operator URL analyzer</div>
+      <h1>Software savings scan for <em id="domainName">your storefront.</em></h1>
+      <p class="lead" id="scanIntro">Scout is checking public storefront signals, likely app overlap, cost drag, and the quickest software moves worth investigating today.</p>
+      <div class="actions">
+        <a class="btn primary" href="#recommendations">See Compare And Contrast</a>
+        <a class="btn secondary" href="checkout-operator.html" data-checkout-plan="operator">Unlock 10 Monthly Storefronts</a>
+      </div>
+      <div class="summary">
+        <div class="metric"><strong id="savingsBand">$120-$420</strong><span>Monthly waste to inspect</span><p>Estimated recurring software drag worth challenging.</p></div>
+        <div class="metric"><strong id="annualSavings">$1.4k-$5k</strong><span>Annual savings glimpse</span><p>Conservative target before conversion lift.</p></div>
+        <div class="metric"><strong id="priorityScore">76</strong><span>Stack urgency score</span><p>Higher means action should happen before the next app billing cycle.</p></div>
+        <div class="metric"><strong id="detectedCount">Scanning</strong><span>Public app signals</span><p>Detected from crawlable storefront HTML.</p></div>
+      </div>
+      <div class="status-strip" id="scanStatus"><strong>Scanning:</strong> fetching public storefront HTML and checking common Shopify app signatures.</div>
+      <div class="tool-row" aria-label="Report actions">
+        <button class="mini-btn primary" type="button" id="exportReport">Export Scan JSON</button>
+        <button class="mini-btn" type="button" id="copyShareLink">Copy Share Link</button>
+        <button class="mini-btn" type="button" id="printReport">Print Report</button>
+      </div>
+      <div class="context-grid">
+        <div class="context-card"><span>Submitted URL</span><strong id="submittedUrl">Not provided</strong></div>
+        <div class="context-card"><span>Ad spend range</span><strong id="spendRange">Not provided</strong></div>
+        <div class="context-card"><span>Primary goal</span><strong id="primaryGoal">Not provided</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="recommendations">
+    <div class="inner">
+      <div class="section-head">
+        <div class="kicker">What you have vs what Scout recommends</div>
+        <h2>The value is in the <em>contrast.</em></h2>
+        <p class="lead">This preview shows the kind of operator-grade comparison GitHub Scout turns into a recurring storefront workflow: current signals, recommended move, savings range, severity, and why it matters now.</p>
+      </div>
+      <div class="recommendation-stack" id="recommendationList"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="inner">
+      <div class="section-head">
+        <div class="kicker">Detected public signals</div>
+        <h2>What the URL crawl could <em>actually see.</em></h2>
+        <p class="lead">Some apps hide behind tag managers, theme bundles, or server-side integrations. The paid Operator workflow combines URL scans, source research, and repeat monitoring across all 15 sources.</p>
+      </div>
+      <div class="detected-grid" id="detectedList"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="inner action-panel">
+      <div>
+        <div class="kicker">Take action today</div>
+        <h2>Do this before buying <em>another app.</em></h2>
+        <p class="lead">The first win is usually not adding more tools. It is proving which installed tools deserve to stay, which should be replaced, and which conversion surface should be tested first.</p>
+        <div class="actions">
+          <a class="btn primary" href="checkout-operator.html" data-checkout-plan="operator">Start Operator</a>
+          <a class="btn secondary" href="operator-shopify-savings.html#capture">Analyze Another URL</a>
+        </div>
+      </div>
+      <ol class="checklist" id="actionPlan"></ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="inner">
+      <div class="kicker">Operator plan</div>
+      <h2>Run this for <em>10 storefronts a month.</em></h2>
+      <p class="lead">Operator gives you access to all 15 sources, 10 storefront analyses per month, search, recommendations, and tips. This quick analyzer is just the appetite-builder.</p>
+      <div class="actions">
+        <a class="btn primary" href="checkout-operator.html" data-checkout-plan="operator">Start Operator</a>
+        <a class="btn secondary" href="operator-sample-reports.html">View Sample Reports</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>GitHub Scout Operator URL analysis</span>
+    <span><a href="operator-shopify-savings.html">Operator Funnel</a> · <a href="operator-sample-reports.html">Sample Reports</a></span>
+  </footer>
+
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
+  <script src="assets/launch-checkout.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    let stored = {};
+    try { stored = JSON.parse(sessionStorage.getItem('operatorUrlScan') || '{}'); } catch (error) {}
+    const scan = {
+      email: stored.email || '',
+      store_url: stored.store_url || params.get('store_url') || '',
+      monthly_ad_spend: stored.monthly_ad_spend || params.get('monthly_ad_spend') || '',
+      primary_goal: stored.primary_goal || params.get('primary_goal') || '',
+      notes: stored.notes || ''
+    };
+    let latestAnalysis = null;
+
+    const money = new Intl.NumberFormat('en-US', {style:'currency', currency:'USD', maximumFractionDigits:0});
+
+    function domainFromUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.hostname.replace(/^www\./, '');
+      } catch (error) {
+        return value.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] || 'your storefront';
+      }
+    }
+
+    function spendProfile(range) {
+      if (range.includes('250,000')) return {monthly:'$1.8k-$6.5k', annual:'$21.6k-$78k', low:1800, high:6500, annualLow:21600, annualHigh:78000, score:94, urgency:'Critical', note:'At this traffic level, slow scripts and weak widgets compound quickly.'};
+      if (range.includes('100,000')) return {monthly:'$850-$2.9k', annual:'$10.2k-$34.8k', low:850, high:2900, annualLow:10200, annualHigh:34800, score:89, urgency:'High', note:'Your app stack should be conversion-accountable, not just feature-rich.'};
+      if (range.includes('10,000 to')) return {monthly:'$320-$1.2k', annual:'$3.8k-$14.4k', low:320, high:1200, annualLow:3840, annualHigh:14400, score:84, urgency:'High', note:'This is the sweet spot for consolidation and better CRO tooling.'};
+      return {monthly:'$120-$420', annual:'$1.4k-$5k', low:120, high:420, annualLow:1440, annualHigh:5040, score:76, urgency:'Medium', note:'Lean software choices matter most when every paid click has to work.'};
+    }
+
+    function fallbackAnalysis(reason) {
+      const profile = spendProfile(scan.monthly_ad_spend);
+      return {
+        ok: false,
+        crawl: {ok:false, statusLabel: reason || 'Live crawl unavailable. Showing a conservative preview from your submitted context.'},
+        summary: {monthlySavings: profile.monthly, annualSavings: profile.annual, score: profile.score, urgency: profile.urgency, detectedCount: 0},
+        detectedApps: [],
+        recommendations: buildRecommendations([], profile, scan.primary_goal),
+        actionPlan: buildActionPlan(profile)
+      };
+    }
+
+    function buildRecommendations(detectedApps, profile, goal) {
+      const byCategory = detectedApps.reduce((acc, app) => {
+        acc[app.category] = acc[app.category] || [];
+        acc[app.category].push(app);
+        return acc;
+      }, {});
+      const has = (category) => byCategory[category]?.map(app => app.name).join(', ');
+      const detectedLine = (category, fallback) => has(category) ? `Detected ${has(category)} in public storefront HTML.` : fallback;
+      const categories = [
+        {
+          category:'Reviews + UGC',
+          title:'Consolidate the proof surface',
+          severity: has('Reviews') ? 'High' : 'Medium',
+          current: detectedLine('Reviews', 'No review-platform signature was visible in the initial crawl. Proof may be missing, bundled, or hidden behind a tag manager.'),
+          currentDetail:'If reviews, Q&A, UGC, and product proof are split across multiple widgets, shoppers see noise while you pay for overlap.',
+          recommend:'Use one review platform that supports photo reviews, Q&A, product-level placement, and import/export control.',
+          recommendDetail:'The paid Operator scan compares review tools by cost, proof depth, speed impact, and whether the widget actually supports the products getting paid traffic.',
+          monthly:`${money.format(Math.round(profile.low * .16))}-${money.format(Math.round(profile.high * .22))}/mo`,
+          percent:'12-18% waste risk',
+          confidence: has('Reviews') ? 'Detected' : 'Check first',
+          why:'Review proof affects every paid click. Waiting means another billing cycle passes before you know whether the proof layer is helping conversion or just adding script weight.',
+          action:'Export current review volume, check product-page placement, and compare one lighter alternative before renewing another paid review tier.'
+        },
+        {
+          category:'Email/SMS capture',
+          title:'Replace blunt popups with intent capture',
+          severity: has('Email/SMS') ? 'High' : 'Medium',
+          current: detectedLine('Email/SMS', 'No email/SMS platform signature was visible in the first crawl. Capture may be absent or injected through a tag manager.'),
+          currentDetail:'Generic popups often collect low-intent emails while interrupting shoppers who came from expensive paid traffic.',
+          recommend:'Use behavior-based capture that changes by traffic source, returning visitor state, cart value, and product category.',
+          recommendDetail:'Scout looks for leaner capture tools, lower-cost tiers, and open alternatives when the current platform is too heavy for the store stage.',
+          monthly:`${money.format(Math.round(profile.low * .18))}-${money.format(Math.round(profile.high * .28))}/mo`,
+          percent:'15-24% spend leverage',
+          confidence: has('Email/SMS') ? 'Detected' : 'Check first',
+          why:'If capture is weak, every ad dollar has a shorter payback window. Fixing the capture surface today gives the next campaign a better chance to create owned traffic.',
+          action:'Segment capture by paid source, suppress repeat annoyance, and compare your current platform tier against one lower-cost alternative.'
+        },
+        {
+          category:'Upsell + AOV',
+          title:'Test AOV lift before buying more traffic',
+          severity: has('Upsell') ? 'High' : goal === 'Improve conversion' ? 'High' : 'Medium',
+          current: detectedLine('Upsell', 'No upsell or bundle signature was visible in the first crawl. The store may be missing an AOV lever on paid-traffic products.'),
+          currentDetail:'Many stores pay for traffic before product pages have bundles, quantity breaks, post-purchase offers, or cart-level lift.',
+          recommend:'Start with one bundle, quantity break, or post-purchase offer on the products already receiving paid clicks.',
+          recommendDetail:'Operator compares native Shopify options, lighter widgets, and conversion-focused third-party tools before recommending another broad CRO app.',
+          monthly:`${money.format(Math.round(profile.low * .22))}-${money.format(Math.round(profile.high * .34))}/mo`,
+          percent:'8-15% AOV upside target',
+          confidence: has('Upsell') ? 'Detected' : 'Opportunity',
+          why:'AOV improvements can pay back faster than new traffic. If you wait, you keep sending expensive visitors into the same under-monetized cart path.',
+          action:'Choose the top paid-traffic product, add one offer test, and measure add-to-cart, checkout progression, and revenue per visitor for seven days.'
+        },
+        {
+          category:'Script bloat',
+          title:'Remove inactive third-party scripts',
+          severity: 'High',
+          current: detectedApps.length ? `The crawl found ${detectedApps.length} public software signal${detectedApps.length === 1 ? '' : 's'} that may add scripts, pixels, or embeds.` : 'The crawl did not expose many app signatures, which often means scripts are bundled, tag-managed, or loaded after consent.',
+          currentDetail:'Old promo apps, inactive widgets, duplicate analytics, and abandoned experiments can keep loading after the team stops using them.',
+          recommend:'Audit every script touching product pages, cart, checkout, analytics, reviews, popups, chat, and post-purchase.',
+          recommendDetail:'Scout prioritizes the scripts most likely to hurt speed or duplicate another tool, then turns that into a keep, replace, remove, or test list.',
+          monthly:`${money.format(Math.round(profile.low * .20))}-${money.format(Math.round(profile.high * .30))}/mo`,
+          percent:'18-30% cleanup target',
+          confidence:'Always inspect',
+          why:'Script bloat taxes every session. The longer it stays live, the more paid clicks get routed through a slower and harder-to-measure storefront.',
+          action:'Pull the theme/app embed list today, remove one inactive script, and document the owner for every remaining third-party tool.'
+        },
+        {
+          category:'Measurement',
+          title:'Make every app prove revenue impact',
+          severity: goal === 'Cut app costs' ? 'High' : 'Medium',
+          current: detectedLine('Analytics', 'No analytics signature was visible in the first crawl. Attribution may be missing, server-side, or tag-managed.'),
+          currentDetail:'Without clean event tracking, the team cannot tell whether a paid app helps conversion or simply feels useful.',
+          recommend:'Tie app decisions to app cost, site speed, conversion rate, add-to-cart rate, AOV, and checkout progression.',
+          recommendDetail:'Operator turns the scan into a monthly review cadence so software decisions happen before renewal, not after the invoice hits.',
+          monthly:`${money.format(Math.round(profile.low * .12))}-${money.format(Math.round(profile.high * .20))}/mo`,
+          percent:'7-day proof window',
+          confidence: has('Analytics') ? 'Detected' : 'Check first',
+          why:'If measurement is vague, the safest default becomes keeping every app. That is exactly how stack cost creeps up.',
+          action:'Mark each tool as revenue, support, compliance, or convenience. Cancel, downgrade, or replace anything with no weekly owner.'
+        }
+      ];
+
+      if (goal === 'Cut app costs') return [categories[3], categories[4], categories[0], categories[1], categories[2]];
+      if (goal === 'Improve conversion') return [categories[2], categories[1], categories[0], categories[4], categories[3]];
+      if (goal === 'Speed up storefront') return [categories[3], categories[4], categories[0], categories[1], categories[2]];
+      if (goal === 'Find better widgets') return [categories[0], categories[1], categories[2], categories[4], categories[3]];
+      return categories;
+    }
+
+    function buildActionPlan(profile) {
+      return [
+        ['Today', 'Save the current app list and identify every script, widget, embed, pixel, popup, review tool, cart tool, and analytics tag touching the storefront.'],
+        ['24 hours', `Challenge at least ${profile.urgency === 'Critical' ? 'three paid app renewals' : 'one paid app renewal'} before the next billing cycle. Start with the tool with the weakest owner or least measurable revenue impact.`],
+        ['48 hours', 'Pick one compare-and-contrast test: current widget versus lower-cost replacement, or current popup versus intent-based capture.'],
+        ['7 days', 'Measure app cost, speed, add-to-cart rate, checkout progression, AOV, and revenue per visitor before making the next software purchase.']
+      ];
+    }
+
+    function setText(selector, value) {
+      const node = document.querySelector(selector);
+      if (node) node.textContent = value;
+    }
+
+    function tagClass(severity) {
+      if (severity === 'Critical' || severity === 'High') return 'hot';
+      if (severity === 'Medium') return 'warn';
+      return 'good';
+    }
+
+    function renderAnalysis(analysis) {
+      latestAnalysis = analysis;
+      const profile = spendProfile(scan.monthly_ad_spend);
+      const summary = analysis.summary || {};
+      setText('#savingsBand', summary.monthlySavings || profile.monthly);
+      setText('#annualSavings', summary.annualSavings || profile.annual);
+      setText('#priorityScore', String(summary.score || profile.score));
+      setText('#detectedCount', summary.detectedCount ? String(summary.detectedCount) : '0');
+
+      const status = document.querySelector('#scanStatus');
+      if (status) {
+        status.innerHTML = '';
+        const strong = document.createElement('strong');
+        strong.textContent = analysis.crawl?.ok ? 'Live crawl complete: ' : 'Preview mode: ';
+        status.append(strong, document.createTextNode(analysis.crawl?.statusLabel || 'Showing conservative recommendations from submitted context.'));
+      }
+
+      renderRecommendations(analysis.recommendations || buildRecommendations([], profile, scan.primary_goal));
+      renderDetected(analysis.detectedApps || []);
+      renderActionPlan(analysis.actionPlan || buildActionPlan(profile));
+      trackEvent('analysis_rendered', {
+        detectedCount: analysis.detectedApps?.length || 0,
+        crawlOk: Boolean(analysis.crawl?.ok),
+        score: summary.score || profile.score
+      });
+    }
+
+    function renderRecommendations(items) {
+      const list = document.querySelector('#recommendationList');
+      list.innerHTML = '';
+      items.forEach((item, index) => {
+        const card = document.createElement('article');
+        card.className = 'rec-card';
+
+        const top = document.createElement('div');
+        top.className = 'rec-top';
+        const titleWrap = document.createElement('div');
+        titleWrap.className = 'rec-title';
+        const rank = document.createElement('div');
+        rank.className = 'rank';
+        rank.textContent = String(index + 1).padStart(2, '0');
+        const titleText = document.createElement('div');
+        const kicker = document.createElement('div');
+        kicker.className = 'kicker';
+        kicker.textContent = item.category;
+        const h3 = document.createElement('h3');
+        h3.textContent = item.title;
+        titleText.append(kicker, h3);
+        titleWrap.append(rank, titleText);
+
+        const meta = document.createElement('div');
+        meta.className = 'rec-meta';
+        [
+          [item.severity || 'Medium', tagClass(item.severity || 'Medium')],
+          [item.monthly || '$120-$420/mo', 'warn'],
+          [item.confidence || 'Preview', 'good']
+        ].forEach(([text, klass]) => {
+          const pill = document.createElement('span');
+          pill.className = `pill ${klass}`;
+          pill.textContent = text;
+          meta.appendChild(pill);
+        });
+        top.append(titleWrap, meta);
+
+        const body = document.createElement('div');
+        body.className = 'rec-body';
+        const compare = document.createElement('div');
+        compare.className = 'compare-grid';
+        compare.append(compareBox('What you appear to have', item.current, item.currentDetail), compareBox('What Scout recommends', item.recommend, item.recommendDetail));
+
+        const values = document.createElement('div');
+        values.className = 'value-row';
+        [
+          ['Savings glimpse', item.monthly],
+          ['Impact signal', item.percent],
+          ['Severity', item.severity],
+          ['Next move', item.action]
+        ].forEach(([label, value]) => {
+          const chip = document.createElement('div');
+          chip.className = 'value-chip';
+          const span = document.createElement('span');
+          span.textContent = label;
+          const strong = document.createElement('strong');
+          strong.textContent = value;
+          chip.append(span, strong);
+          values.appendChild(chip);
+        });
+
+        const why = document.createElement('div');
+        why.className = 'why-now';
+        const whyStrong = document.createElement('strong');
+        whyStrong.textContent = 'Why take action today: ';
+        why.append(whyStrong, document.createTextNode(item.why));
+
+        body.append(compare, values, why);
+        card.append(top, body);
+        list.appendChild(card);
+      });
+    }
+
+    function compareBox(label, headline, detail) {
+      const box = document.createElement('div');
+      box.className = 'compare-box';
+      const span = document.createElement('span');
+      span.textContent = label;
+      const strong = document.createElement('strong');
+      strong.textContent = headline;
+      const p = document.createElement('p');
+      p.textContent = detail;
+      box.append(span, strong, p);
+      return box;
+    }
+
+    function renderDetected(apps) {
+      const list = document.querySelector('#detectedList');
+      list.innerHTML = '';
+      if (!apps.length) {
+        const empty = document.createElement('div');
+        empty.className = 'detected-item';
+        empty.innerHTML = '<strong>No public app signatures confirmed</strong><span>The store may still use apps behind a tag manager, bundled theme script, customer account flow, checkout extension, or server-side integration.</span>';
+        list.appendChild(empty);
+        return;
+      }
+      apps.forEach((app) => {
+        const item = document.createElement('div');
+        item.className = 'detected-item';
+        const strong = document.createElement('strong');
+        strong.textContent = app.name;
+        const span = document.createElement('span');
+        span.textContent = `${app.category} · ${app.confidence || 72}% confidence · estimated ${app.monthlyCost || '$0'}/mo · matched ${app.matched?.join(', ') || 'public signal'}`;
+        item.append(strong, span);
+        list.appendChild(item);
+      });
+    }
+
+    function renderActionPlan(items) {
+      const list = document.querySelector('#actionPlan');
+      list.innerHTML = '';
+      items.forEach(([label, text]) => {
+        const li = document.createElement('li');
+        li.className = 'check';
+        const strong = document.createElement('strong');
+        strong.textContent = `${label}: `;
+        li.append(strong, document.createTextNode(text));
+        list.appendChild(li);
+      });
+    }
+
+    async function runLiveAnalysis() {
+      const profile = spendProfile(scan.monthly_ad_spend);
+      renderAnalysis(fallbackAnalysis('Starting with a conservative preview while the live crawl runs.'));
+      try {
+        const body = new URLSearchParams({...scan, intent:'analyze'}).toString();
+        const response = await fetch('/.netlify/functions/operator-url-scan', {
+          method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          body
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) throw new Error(payload.error || 'Analyzer returned an error.');
+        renderAnalysis(payload.analysis || fallbackAnalysis('The crawler returned no analysis payload.'));
+      } catch (error) {
+        renderAnalysis(fallbackAnalysis(`Live crawl could not finish: ${error.message}`));
+      }
+    }
+
+    function trackEvent(name, detail = {}) {
+      try {
+        const key = 'githubscout_operator_events';
+        const events = JSON.parse(localStorage.getItem(key) || '[]');
+        events.unshift({
+          name,
+          detail,
+          store_url: scan.store_url || null,
+          primary_goal: scan.primary_goal || null,
+          monthly_ad_spend: scan.monthly_ad_spend || null,
+          at: new Date().toISOString()
+        });
+        localStorage.setItem(key, JSON.stringify(events.slice(0, 80)));
+      } catch (error) {}
+    }
+
+    function downloadReport() {
+      const payload = {
+        scan,
+        analysis: latestAnalysis,
+        exported_at: new Date().toISOString(),
+        source: 'GitHub Scout Operator URL Analyzer'
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `github-scout-operator-scan-${domainFromUrl(scan.store_url).replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'store'}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      trackEvent('export_report_clicked', {detectedCount: latestAnalysis?.detectedApps?.length || 0});
+    }
+
+    async function copyShareLink() {
+      const query = new URLSearchParams({
+        store_url: scan.store_url || '',
+        monthly_ad_spend: scan.monthly_ad_spend || '',
+        primary_goal: scan.primary_goal || ''
+      });
+      const shareUrl = `${location.origin}${location.pathname}?${query.toString()}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        const button = document.querySelector('#copyShareLink');
+        if (button) {
+          button.textContent = 'Copied Link';
+          setTimeout(() => { button.textContent = 'Copy Share Link'; }, 1800);
+        }
+      } catch (error) {
+        prompt('Copy this share link:', shareUrl);
+      }
+      trackEvent('copy_share_link_clicked');
+    }
+
+    document.querySelector('#exportReport')?.addEventListener('click', downloadReport);
+    document.querySelector('#copyShareLink')?.addEventListener('click', copyShareLink);
+    document.querySelector('#printReport')?.addEventListener('click', () => {
+      trackEvent('print_report_clicked');
+      window.print();
+    });
+    document.querySelectorAll('a[href*="checkout-operator"]').forEach((link) => {
+      link.addEventListener('click', () => {
+        trackEvent('checkout_cta_clicked', {href: link.getAttribute('href')});
+        window.githubScoutTrack?.('checkout_cta_clicked', {href: link.getAttribute('href')});
+      });
+    });
+
+    const domain = domainFromUrl(scan.store_url);
+    const profile = spendProfile(scan.monthly_ad_spend);
+    document.title = `GitHub Scout - ${domain} URL Analysis`;
+    setText('#domainName', domain);
+    setText('#scanIntro', `${domain} is being checked for visible app signatures, stack bloat, conversion widgets, and software swaps. ${profile.note}`);
+    setText('#submittedUrl', scan.store_url || 'Not provided');
+    setText('#spendRange', scan.monthly_ad_spend || 'Not provided');
+    setText('#primaryGoal', scan.primary_goal || 'Not provided');
+    runLiveAnalysis();
+  </script>
+</body>
+</html>

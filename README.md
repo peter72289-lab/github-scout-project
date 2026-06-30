@@ -5,19 +5,23 @@ GitHub Scout is an ecommerce intelligence project for finding better software, p
 ## Live / Share Links
 
 - GitHub repo: https://github.com/peter72289-lab/github-scout-project
+- V10 Netlify site: https://githubscout-ecommerce-v10-20260624.netlify.app
 - V9 Netlify site: https://githubscout-ecommerce-v9-20260609.netlify.app
 - V8 Netlify site: https://githubscout-ecommerce-v8-20260605.netlify.app
 
 ## Current Status
 
+- V10 ecommerce split-test page is built as a separate Netlify site and does not overwrite V9.
 - V9 ecommerce page is built and includes the clicked-tabs cockpit demo video.
 - Operator Shopify savings funnel is now added at `netlify-v9-githubscout-ecommerce/operator-shopify-savings.html`.
-- Operator URL intake runs through the Netlify Function analyzer flow; checkout pages are Stripe Payment Link-ready through `assets/launch-config.js`.
+- Operator URL intake runs through the Netlify Function analyzer flow; checkout pages route to live Stripe Payment Links through `assets/launch-config.js`.
+- Launch support pages are live in both V9 and V10: Privacy, Terms, Data Handling, Refunds, and Support.
 - Static 9:16 ad batches are stored under `ads/`.
-- V9 production deploy is live again as of June 10, 2026.
+- V9 production deploy is live as of June 10, 2026. V10 production deploy is live as of June 24, 2026.
 
 ## Key Folders
 
+- `netlify-v10-githubscout-ecommerce/` - V10 split-test static Netlify site.
 - `netlify-v9-githubscout-ecommerce/` - current V9 static Netlify site.
 - `netlify-v8-githubscout/` - earlier V8 Netlify site.
 - `ads/v9-static-9x16/` - broad V9 Meta-style ad set.
@@ -43,6 +47,20 @@ To redeploy V9:
 ```bash
 cd netlify-v9-githubscout-ecommerce
 npx netlify deploy --prod --dir . --functions netlify/functions --site 3f86b1e7-82aa-4919-8ef7-55289185cc16
+```
+
+To redeploy V10:
+
+```bash
+cd netlify-v10-githubscout-ecommerce
+npx netlify deploy --prod --dir . --functions netlify/functions --site c7971299-4914-4ef4-863b-ff7880704171
+```
+
+To verify either live site after deploy:
+
+```bash
+node scripts/verify-githubscout-launch.js https://githubscout-ecommerce-v9-20260609.netlify.app
+node scripts/verify-githubscout-launch.js https://githubscout-ecommerce-v10-20260624.netlify.app
 ```
 
 ## Latest Useful Commits

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Scout Data Handling</title>
+  <style>
+    :root{--bg:#080e16;--panel:#0f1c2c;--line:#2a4560;--gold:#f5b030;--text:#f6f2ed;--body:#d4e6f4;--muted:#a6c4dc;--green:#50d8a0}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Barlow,Avenir Next,Helvetica,Arial,sans-serif;line-height:1.65;padding:28px}main{width:min(860px,100%);margin:0 auto;border:1px solid var(--line);background:var(--panel);padding:clamp(26px,5vw,48px)}a{color:var(--gold)}.back{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;font-size:13px;text-decoration:none}.kicker{margin-top:26px;color:var(--green);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:800}h1{font-family:Georgia,Times New Roman,serif;font-size:clamp(42px,7vw,74px);line-height:1;margin:12px 0 20px;color:var(--gold)}h2{font-size:22px;margin:30px 0 8px}p,li{color:var(--body);font-size:17px}
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="/">Back to GitHub Scout</a>
+    <div class="kicker">Launch security baseline</div>
+    <h1>Data Handling</h1>
+    <p>The URL analyzer is designed to inspect public ecommerce storefront signals only. It does not log into Shopify admin, request passwords, request private API keys, or scan private network addresses.</p>
+    <h2>Scanner Guardrails</h2>
+    <ul>
+      <li>Only HTTP and HTTPS URLs are accepted.</li>
+      <li>Localhost, private IP ranges, internal hostnames, and local network addresses are blocked.</li>
+      <li>DNS resolution is checked before fetching so public-looking hostnames cannot resolve to private network targets.</li>
+      <li>Redirects are limited and each redirect destination is validated before fetching.</li>
+      <li>Responses are size-limited and restricted to public HTML-like content.</li>
+    </ul>
+    <h2>What the Scan Reads</h2>
+    <p>The scan reads public storefront HTML and known software signatures such as script URLs, widget markers, analytics tags, review tools, popup tools, and app embeds visible to a normal browser request.</p>
+    <h2>What It Does Not Read</h2>
+    <p>The scan does not access Shopify admin data, customer records, orders, private source code, hidden databases, or authenticated pages.</p>
+    <h2>Operational Notes</h2>
+    <p>Production recommendations should still be verified by the store owner before installing, removing, downgrading, or replacing any app that touches checkout, customer data, subscriptions, fulfillment, or compliance.</p>
+  </main>
+</body>
+</html>
