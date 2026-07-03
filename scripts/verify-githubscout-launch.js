@@ -9,6 +9,7 @@ const requiredPages = [
   '/checkout-operator.html',
   '/checkout-director.html',
   '/agency-pricing.html',
+  '/customer-onboarding.html',
   '/privacy.html',
   '/terms.html',
   '/data-handling.html',

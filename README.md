@@ -16,6 +16,7 @@ GitHub Scout is an ecommerce intelligence project for finding better software, p
 - Operator Shopify savings funnel is now added at `netlify-v9-githubscout-ecommerce/operator-shopify-savings.html`.
 - Operator URL intake runs through the Netlify Function analyzer flow; checkout pages route to live Stripe Payment Links through `assets/launch-config.js`.
 - Launch support pages are live in both V9 and V10: Privacy, Terms, Data Handling, Refunds, and Support.
+- Paid customer onboarding is available at `customer-onboarding.html` for storefront URL submission after checkout.
 - Static 9:16 ad batches are stored under `ads/`.
 - V9 production deploy is live as of June 10, 2026. V10 production deploy is live as of June 24, 2026.
 
@@ -28,6 +29,9 @@ GitHub Scout is an ecommerce intelligence project for finding better software, p
 - `ads/operator-shopify-savings-9x16/` - Operator Shopify cost-savings ad set.
 - `cockpit-v2-demo/` - cockpit demo capture/render assets and finished MP4s.
 - `docs/` - campaign, checkout, and deployment operating notes.
+- `docs/customer-onboarding-email-templates.md` - launch email copy for paid customer onboarding.
+- `docs/paid-scan-report-template.md` - fulfillment report structure for Operator and Director scans.
+- `docs/weekend-launch-qa-checklist.md` - pre-traffic launch QA checklist.
 - `servers/` - prototype server-side scanner code.
 
 ## Most Important Funnel

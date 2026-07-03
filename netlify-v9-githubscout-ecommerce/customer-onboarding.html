@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Scout Customer Onboarding</title>
+  <style>
+    :root{--black:#080e16;--deep:#0f1c2c;--surface:#162840;--surf2:#1e3452;--border:#2a4560;--amber:#f5b030;--white:#f6f2ed;--body:#d4e6f4;--muted:#a6c4dc;--green:#50d8a0}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 70% 18%,rgba(245,176,48,.12),transparent 30%),radial-gradient(circle at 12% 82%,rgba(80,216,160,.12),transparent 30%),var(--black);color:var(--white);font-family:Barlow,Avenir Next,Helvetica,Arial,sans-serif}
+    main{width:min(1080px,calc(100% - 40px));margin:0 auto;padding:56px 0;display:grid;grid-template-columns:.9fr 1.1fr;gap:34px;align-items:start}
+    a.back{display:inline-block;margin-bottom:22px;color:var(--amber);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;font-size:13px;text-decoration:none}
+    .kicker,label{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:800}
+    .kicker{color:var(--green);margin-bottom:14px}
+    h1{font-family:Georgia,Times New Roman,serif;font-size:clamp(42px,7vw,78px);line-height:.96;margin:0 0 18px;text-transform:uppercase}
+    h1 em{color:var(--amber);font-style:normal}
+    p{color:var(--body);font-size:17px;line-height:1.7;margin:0 0 18px}
+    .limits{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:24px}
+    .limit{background:rgba(22,40,64,.82);padding:16px 18px;display:flex;justify-content:space-between;gap:18px}
+    .limit strong{color:var(--white)}.limit span{color:var(--amber);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+    form{background:var(--deep);border:1px solid var(--border);padding:28px;display:grid;gap:15px}
+    label{display:grid;gap:8px;color:var(--muted)}
+    input,select,textarea{width:100%;border:1px solid var(--border);background:var(--surface);color:var(--white);padding:13px 14px;font:16px Barlow,Avenir Next,Helvetica,Arial,sans-serif}
+    textarea{min-height:118px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:1px solid var(--amber);border-color:var(--amber)}
+    button{border:0;background:var(--amber);color:var(--black);padding:15px 18px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:900;cursor:pointer}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .note{font-size:14px;color:var(--muted);line-height:1.6;margin:0}
+    @media(max-width:860px){main{grid-template-columns:1fr;padding:36px 0}.grid2{grid-template-columns:1fr}.limit{display:grid}}
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <a href="/" class="back">Back to GitHub Scout</a>
+      <div class="kicker">Paid customer onboarding</div>
+      <h1>Send the URLs. <em>We build the action plan.</em></h1>
+      <p>Use this form after checkout to start fulfillment. Submit the storefronts you want analyzed, the software decisions you are weighing, and anything that feels expensive, slow, or conversion-limiting.</p>
+      <p>The first report focuses on what you have now, what to keep, what to replace, what to remove, and the highest-leverage next action.</p>
+      <div class="limits">
+        <div class="limit"><strong>Operator</strong><span>10 storefronts / month</span></div>
+        <div class="limit"><strong>Director</strong><span>30 storefronts / month</span></div>
+        <div class="limit"><strong>Agency</strong><span>Custom volume</span></div>
+        <div class="limit"><strong>Sources</strong><span>All 15 included</span></div>
+      </div>
+    </section>
+    <form name="customer-onboarding" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="thank-you.html">
+      <input type="hidden" name="form-name" value="customer-onboarding">
+      <p hidden><label>Do not fill this out<input name="bot-field"></label></p>
+      <input type="hidden" name="utm_source">
+      <input type="hidden" name="utm_medium">
+      <input type="hidden" name="utm_campaign">
+      <input type="hidden" name="utm_content">
+      <input type="hidden" name="utm_term">
+      <input type="hidden" name="landing_page">
+      <input type="hidden" name="referrer">
+      <div class="grid2">
+        <label>Checkout email<input type="email" name="email" required placeholder="you@store.com"></label>
+        <label>Plan<select name="plan" required><option value="">Select plan</option><option>Operator - 10 storefronts/month</option><option>Director - 30 storefronts/month</option><option>Agency / Custom</option></select></label>
+      </div>
+      <label>Storefront URLs<textarea name="storefront_urls" required placeholder="Paste one URL per line. Example: https://yourstore.com"></textarea></label>
+      <div class="grid2">
+        <label>Primary goal<select name="primary_goal" required><option value="">Select focus</option><option>Cut app costs</option><option>Improve conversion</option><option>Find better widgets</option><option>Speed up storefront</option><option>Prep agency recommendations</option></select></label>
+        <label>Monthly ad spend<select name="monthly_ad_spend"><option value="">Select range</option><option>Under $10,000 a month</option><option>$10,000 to $100,000 a month</option><option>$100,000 to $250,000 a month</option><option>More than $250,000 a month</option></select></label>
+      </div>
+      <label>Current software stack<textarea name="current_stack" placeholder="List known apps, plugins, embeds, analytics, review tools, popups, subscriptions, helpdesk, upsell tools, or anything you suspect is bloated."></textarea></label>
+      <label>What decision should the report help you make?<textarea name="decision_needed" placeholder="Example: Should we keep Klaviyo and Yotpo, replace our review widget, remove popup tools, or consolidate analytics?"></textarea></label>
+      <button type="submit">Submit Storefronts for Analysis</button>
+      <p class="note">Do not submit passwords, Shopify admin access, private API keys, customer exports, or internal URLs. GitHub Scout only needs public storefront URLs and context.</p>
+    </form>
+  </main>
+  <script src="assets/launch-config.js"></script>
+  <script src="assets/launch-analytics.js"></script>
+  <script>
+    const form = document.querySelector('form[name="customer-onboarding"]');
+    const params = new URLSearchParams(window.location.search);
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach((key) => {
+      const value = params.get(key) || sessionStorage.getItem(key) || '';
+      if (value) sessionStorage.setItem(key, value);
+      const input = form?.querySelector(`[name="${key}"]`);
+      if (input) input.value = value;
+    });
+    const email = params.get('email');
+    const plan = params.get('plan');
+    if (email) form.querySelector('[name="email"]').value = email;
+    if (plan) {
+      const select = form.querySelector('[name="plan"]');
+      [...select.options].forEach((option) => {
+        if (option.text.toLowerCase().includes(plan.toLowerCase())) select.value = option.value;
+      });
+    }
+    form.querySelector('[name="landing_page"]').value = window.location.href;
+    form.querySelector('[name="referrer"]').value = document.referrer || '';
+    form?.addEventListener('submit', () => window.githubScoutTrack?.('customer_onboarding_submitted'));
+  </script>
+</body>
+</html>

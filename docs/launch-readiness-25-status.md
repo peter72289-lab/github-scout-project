@@ -31,6 +31,10 @@
 27. Add Privacy, Terms, Data Handling, Refunds, and Support pages to V9 and V10.
 28. Remove stale free-trial/no-card language from paid V9 CTAs.
 29. Update checkout and thank-you pages to reflect live Stripe checkout and customer onboarding expectations.
+30. Add customer onboarding page for paid subscribers to submit storefront URLs and report context.
+31. Add onboarding email templates for immediate welcome, missing URL nudge, report delivery, and refund/cancellation support.
+32. Add paid scan report template for Operator and Director fulfillment.
+33. Add weekend launch QA checklist covering payments, lead flow, live pages, attribution, and first-day metrics.
 
 ## Needs Your Manual Account/Admin Action
 

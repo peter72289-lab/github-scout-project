@@ -29,6 +29,10 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/customer-onboarding.html</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/privacy.html</loc>
     <priority>0.3</priority>
   </url>

@@ -16,7 +16,7 @@
 
 ## Current Deploy State
 
-As of June 30, 2026, the V9 and V10 sites are active and production deploys succeeded.
+As of July 3, 2026, the V9 and V10 sites are active and production deploys succeeded.
 
 ```text
 disabled: false
@@ -27,14 +27,14 @@ Latest successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v9-20260609.netlify.app
-Unique deploy URL: https://6a440e6914afe34aabf7f395--githubscout-ecommerce-v9-20260609.netlify.app
+Unique deploy URL: https://6a47e676af4d3af4803e8bf9--githubscout-ecommerce-v9-20260609.netlify.app
 ```
 
 Latest V10 successful deploy:
 
 ```text
 Production URL: https://githubscout-ecommerce-v10-20260624.netlify.app
-Unique deploy URL: https://6a440e7e31c9dd542715c461--githubscout-ecommerce-v10-20260624.netlify.app
+Unique deploy URL: https://6a47e67f68ec87ccd6432b0b--githubscout-ecommerce-v10-20260624.netlify.app
 ```
 
 ## Redeploy Command
@@ -72,6 +72,7 @@ npx netlify deploy --prod --dir . --functions netlify/functions --site c7971299-
 - Operator URL scan lead/function flow.
 - Operator checkout intake Netlify Form.
 - Privacy, Terms, Data Handling, Refunds, and Support pages.
+- Customer onboarding page for paid subscribers.
 - Generic verification script at `scripts/verify-githubscout-launch.js`.
 
 ## Verification After Deploy
@@ -83,6 +84,7 @@ Check these URLs:
 - `/sample-shopify-url-analysis.html`
 - `/checkout-operator.html`
 - `/operator-thank-you.html`
+- `/customer-onboarding.html`
 - `/privacy.html`
 - `/terms.html`
 - `/data-handling.html`
