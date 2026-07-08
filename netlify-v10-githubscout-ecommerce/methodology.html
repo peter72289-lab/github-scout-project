@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology — how Scout detects and estimates</title>
+<meta name="description" content="Exactly which sources Scout checks, how detection confidence is computed, and how savings estimates are grounded. No black box.">
+<style>
+:root{--bg:#0d0f12;--panel:#15181d;--line:#262b33;--amber:#f5b642;--ink:#e8e6e1;--dim:#9aa3ad;--green:#8fd07f}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 Georgia,serif;padding-bottom:80px}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-bottom:1px solid var(--line);font-family:system-ui,sans-serif}
+header b{font-size:18px}
+header a{color:var(--dim);text-decoration:none;margin-left:16px;font-size:14px}
+main{max-width:760px;margin:0 auto;padding:40px 24px}
+h1{font-size:32px;line-height:1.25;margin-bottom:10px}
+.lead{color:var(--dim);font-size:18px;margin-bottom:34px}
+h2{font-size:22px;margin:36px 0 12px;color:var(--amber)}
+p{margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-family:system-ui,sans-serif;font-size:14px;margin:14px 0}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.live{color:var(--green)} .planned{color:var(--dim)}
+code{background:#1a1e25;padding:2px 6px;border-radius:4px;font-size:14px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:18px 0;font-family:system-ui,sans-serif;font-size:14.5px}
+a{color:var(--amber)}
+</style>
+</head>
+<body>
+<header><b>Scout</b><nav><a href="/">Home</a><a href="/operator-url-analysis.html">Run a scan</a><a href="/dashboard.html">Dashboard</a></nav></header>
+<main>
+  <h1>How the scan actually works</h1>
+  <p class="lead">No black box. This page lists every source we check, how confidence is scored, and how savings estimates are grounded — including what we refuse to estimate.</p>
+
+  <h2>Detection sources</h2>
+  <p>Each scan checks up to 10 live sources. We say "up to" because some stores block some endpoints; your report shows a per-source pass/fail. Planned sources ship as they clear reliability testing — we don't count a source until it's live.</p>
+  <table>
+    <tr><th>Source</th><th>What it reveals</th><th>Status</th></tr>
+    <tr><td>Storefront homepage HTML</td><td>App scripts, widgets, pixels</td><td class="live">Live</td></tr>
+    <tr><td>Product page HTML</td><td>Reviews, upsell, subscription widgets where they actually run</td><td class="live">Live</td></tr>
+    <tr><td>Cart page HTML</td><td>Cart-level upsell, shipping protection</td><td class="live">Live</td></tr>
+    <tr><td>Shopify <code>/products.json</code></td><td>Platform confirmation, catalog shape, product URLs to scan</td><td class="live">Live</td></tr>
+    <tr><td>robots.txt + sitemap</td><td>Platform fingerprint, crawl surface</td><td class="live">Live</td></tr>
+    <tr><td>HTTP response headers</td><td>Platform, CDN, server-side tooling</td><td class="live">Live</td></tr>
+    <tr><td>DNS TXT/MX records</td><td>Email/SMS platform verification records</td><td class="live">Live</td></tr>
+    <tr><td>Third-party script host census</td><td>Every external domain your storefront loads code from</td><td class="live">Live</td></tr>
+    <tr><td>JSON-LD / meta generator tags</td><td>Structured-data and page-builder fingerprints</td><td class="live">Live</td></tr>
+    <tr><td>Checkout / payment provider fingerprint</td><td>Shop Pay, Stripe, PayPal/Braintree, Bolt, and others</td><td class="live">Live</td></tr>
+    <tr><td>Shopify App Store listing cross-check</td><td>Version/tier corroboration</td><td class="planned">Planned</td></tr>
+    <tr><td>Script weight / performance impact</td><td>Which apps actually slow the store</td><td class="planned">Planned</td></tr>
+    <tr><td>Historical stack changes (web archive)</td><td>What was tried and removed</td><td class="planned">Planned</td></tr>
+    <tr><td>Ad library creative fingerprints</td><td>Which tools power your competitors' ads</td><td class="planned">Planned</td></tr>
+    <tr><td>Signup flow / ESP fingerprint</td><td>Email platform behind the capture form</td><td class="planned">Planned</td></tr>
+    <tr><td>Checkout provider fingerprint</td><td>Payment/checkout stack</td><td class="planned">Planned</td></tr>
+  </table>
+
+  <h2>Confidence scoring</h2>
+  <p>An app's confidence reflects <b>corroboration</b>: how many independent sources saw it. One HTML substring match starts at 62%. A script served from the vendor's own CDN adds weight. A DNS verification record adds more. Confidence caps at 95% — external scanning can never be 100% certain, and we won't pretend otherwise.</p>
+
+  <h2>Cost benchmarks — what they are and aren't</h2>
+  <div class="box">Every dollar figure in a report is a <b>benchmark</b>: typical published mid-tier pricing from the vendor's own pricing page (cited in the full report). It is <b>not</b> your invoice. Your actual bill may be higher or lower. Free and native tools are marked $0 and never counted toward savings.</div>
+
+  <h2>Savings estimates — grounded or absent</h2>
+  <p>The savings band is <b>15–40% of the benchmarked cost of paid apps we actually detected</b> — the typical consolidation/downgrade outcome when a stack has overlap. Three rules we enforce in code:</p>
+  <p>1. <b>No detections, no estimate.</b> If the scan finds no paid apps, the report says "no estimate" instead of inventing a number.<br>
+  2. <b>Your ad-spend answer never changes the dollars.</b> It only sets urgency framing.<br>
+  3. <b>Overlaps are itemized.</b> Two paid review tools? The report names both, shows both benchmarks, and prices the consolidation explicitly.</p>
+
+  <h2>Limits we're upfront about</h2>
+  <p>Server-side integrations, consent-gated scripts, and tag-manager-injected tools can be invisible to external scanning. When the scan sees little, the report says so and recommends an admin-side audit rather than guessing. The scanner fetches only public pages, respects a strict size/time budget, and never authenticates to your store.</p>
+
+  <p style="margin-top:36px"><a href="/operator-url-analysis.html">Run a scan</a> · <a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a></p>
+</main>
+</body>
+</html>

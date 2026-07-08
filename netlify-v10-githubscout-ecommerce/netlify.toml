@@ -4,6 +4,10 @@
 [functions]
   directory = "netlify/functions"
 
+# Daily housekeeping of expired links/sessions/rate rows.
+[functions."cleanup-scheduled"]
+  schedule = "@daily"
+
 [[redirects]]
   from = "/checkout-command.html"
   to = "/agency-pricing.html"
@@ -47,8 +51,22 @@
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Cross-Origin-Opener-Policy = "same-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self'; connect-src 'self' https:; frame-ancestors 'self'; form-action 'self' https://checkout.stripe.com https://buy.stripe.com; base-uri 'self'; object-src 'none'"
+
+# Keep authenticated + account surfaces out of search indexes.
+[[headers]]
+  for = "/login.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/dashboard.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
 
 [[headers]]
   for = "/assets/*"

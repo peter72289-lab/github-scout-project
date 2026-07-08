@@ -110,7 +110,7 @@
         <div class="metric"><strong id="priorityScore">76</strong><span>Stack urgency score</span><p>Higher means action should happen before the next app billing cycle.</p></div>
         <div class="metric"><strong id="detectedCount">Scanning</strong><span>Public app signals</span><p>Detected from crawlable storefront HTML.</p></div>
       </div>
-      <div class="status-strip" id="scanStatus"><strong>Scanning:</strong> fetching public storefront HTML and checking common Shopify app signatures.</div>
+      <div class="status-strip" id="scanStatus" role="status" aria-live="polite"><strong>Scanning:</strong> fetching public storefront HTML and checking common Shopify app signatures.</div>
       <div class="tool-row" aria-label="Report actions">
         <button class="mini-btn primary" type="button" id="exportReport">Export Scan JSON</button>
         <button class="mini-btn" type="button" id="copyShareLink">Copy Share Link</button>
@@ -140,7 +140,7 @@
       <div class="section-head">
         <div class="kicker">Detected public signals</div>
         <h2>What the URL crawl could <em>actually see.</em></h2>
-        <p class="lead">Some apps hide behind tag managers, theme bundles, or server-side integrations. The paid Operator workflow combines URL scans, source research, and repeat monitoring across all 15 sources.</p>
+        <p class="lead">Some apps hide behind tag managers, theme bundles, or server-side integrations. The paid Operator workflow combines URL scans, source research, and repeat monitoring across 10 live sources today (5 more on the roadmap — see the methodology page).</p>
       </div>
       <div class="detected-grid" id="detectedList"></div>
     </div>
@@ -165,7 +165,7 @@
     <div class="inner">
       <div class="kicker">Operator plan</div>
       <h2>Run this for <em>10 storefronts a month.</em></h2>
-      <p class="lead">Operator gives you access to all 15 sources, 10 storefront analyses per month, search, recommendations, and tips. This quick analyzer is just the appetite-builder.</p>
+      <p class="lead">Operator gives you 10 live detection sources (6 more on the roadmap), 10 storefront analyses per month, search, recommendations, and tips. This quick analyzer is just the appetite-builder.</p>
       <div class="actions">
         <a class="btn primary" href="checkout-operator.html" data-checkout-plan="operator">Start Operator</a>
         <a class="btn secondary" href="operator-sample-reports.html">View Sample Reports</a>
@@ -180,6 +180,7 @@
 
   <script src="assets/launch-config.js"></script>
   <script src="assets/launch-analytics.js"></script>
+<script src="assets/consent.js"></script>
   <script src="assets/launch-checkout.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -205,11 +206,14 @@
       }
     }
 
+    // Tier is messaging-only. Savings are NEVER derived from this dropdown;
+    // they come exclusively from apps the server actually detects.
     function spendProfile(range) {
-      if (range.includes('250,000')) return {monthly:'$1.8k-$6.5k', annual:'$21.6k-$78k', low:1800, high:6500, annualLow:21600, annualHigh:78000, score:94, urgency:'Critical', note:'At this traffic level, slow scripts and weak widgets compound quickly.'};
-      if (range.includes('100,000')) return {monthly:'$850-$2.9k', annual:'$10.2k-$34.8k', low:850, high:2900, annualLow:10200, annualHigh:34800, score:89, urgency:'High', note:'Your app stack should be conversion-accountable, not just feature-rich.'};
-      if (range.includes('10,000 to')) return {monthly:'$320-$1.2k', annual:'$3.8k-$14.4k', low:320, high:1200, annualLow:3840, annualHigh:14400, score:84, urgency:'High', note:'This is the sweet spot for consolidation and better CRO tooling.'};
-      return {monthly:'$120-$420', annual:'$1.4k-$5k', low:120, high:420, annualLow:1440, annualHigh:5040, score:76, urgency:'Medium', note:'Lean software choices matter most when every paid click has to work.'};
+      const r = String(range || '');
+      if (/more than\s*\$?\s*250,?000/i.test(r)) return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'Critical', note:'At this traffic level, slow scripts and weak widgets compound quickly.'};
+      if (/100,?000\s*to\s*\$?\s*250,?000/i.test(r)) return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'High', note:'Your app stack should be conversion-accountable, not just feature-rich.'};
+      if (/10,?000\s*to\s*\$?\s*100,?000/i.test(r)) return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'High', note:'This is the sweet spot for consolidation and better CRO tooling.'};
+      return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'Medium', note:'Lean software choices matter most when every paid click has to work.'};
     }
 
     function fallbackAnalysis(reason) {
@@ -217,7 +221,7 @@
       return {
         ok: false,
         crawl: {ok:false, statusLabel: reason || 'Live crawl unavailable. Showing a conservative preview from your submitted context.'},
-        summary: {monthlySavings: profile.monthly, annualSavings: profile.annual, score: profile.score, urgency: profile.urgency, detectedCount: 0},
+        summary: {monthlySavings: null, annualSavings: null, score: null, urgency: profile.urgency, detectedCount: 0},
         detectedApps: [],
         recommendations: buildRecommendations([], profile, scan.primary_goal),
         actionPlan: buildActionPlan(profile)
@@ -336,9 +340,9 @@
       latestAnalysis = analysis;
       const profile = spendProfile(scan.monthly_ad_spend);
       const summary = analysis.summary || {};
-      setText('#savingsBand', summary.monthlySavings || profile.monthly);
-      setText('#annualSavings', summary.annualSavings || profile.annual);
-      setText('#priorityScore', String(summary.score || profile.score));
+      setText('#savingsBand', summary.monthlySavings || 'No estimate yet — no paid apps detected');
+      setText('#annualSavings', summary.annualSavings || 'Shown once paid apps are detected');
+      setText('#priorityScore', String(summary.evidenceScore ?? summary.score ?? 0));
       setText('#detectedCount', summary.detectedCount ? String(summary.detectedCount) : '0');
 
       const status = document.querySelector('#scanStatus');
