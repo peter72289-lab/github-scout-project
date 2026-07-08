@@ -13,6 +13,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/methodology.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/sample-report.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/changelog.html</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/sample-shopify-url-analysis.html</loc>
     <priority>0.7</priority>
   </url>
@@ -26,10 +38,6 @@
   </url>
   <url>
     <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/agency-pricing.html</loc>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://githubscout-ecommerce-v10-20260624.netlify.app/customer-onboarding.html</loc>
     <priority>0.5</priority>
   </url>
   <url>

@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /login.html
+Disallow: /dashboard.html
+Disallow: /.netlify/functions/
 
 Sitemap: https://githubscout-ecommerce-v10-20260624.netlify.app/sitemap.xml

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changelog — Scout</title>
+<meta name="description" content="What changed in Scout's detection engine and product, dated and versioned.">
+<style>
+:root{--bg:#0d0f12;--panel:#15181d;--line:#262b33;--amber:#f5b642;--ink:#e8e6e1;--dim:#9aa3ad;--green:#8fd07f}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,sans-serif;padding-bottom:70px}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 26px;border-bottom:1px solid var(--line)}
+header b{font-family:Georgia,serif;font-size:18px}
+header a{color:var(--dim);text-decoration:none;margin-left:16px;font-size:14px}
+main{max-width:720px;margin:0 auto;padding:36px 22px}
+h1{font-family:Georgia,serif;font-size:30px;margin-bottom:6px}
+.lead{color:var(--dim);margin-bottom:30px}
+.entry{border-left:2px solid var(--line);padding:0 0 26px 20px;position:relative}
+.entry::before{content:'';position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--amber)}
+.entry .when{font-size:13px;color:var(--dim);font-family:Georgia,serif}
+.entry h3{font-size:18px;margin:4px 0 8px}
+.entry .tag{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border:1px solid var(--line);border-radius:99px;color:var(--dim);margin-left:8px}
+.entry ul{margin:8px 0 0 18px;color:#cfd4da;font-size:14.5px}
+.entry li{margin-bottom:4px}
+a{color:var(--amber)}
+</style>
+</head>
+<body>
+<header><b>Scout</b><nav><a href="/">Home</a><a href="/methodology.html">Methodology</a><a href="/operator-url-analysis.html">Run a scan</a></nav></header>
+<main>
+  <h1>Changelog</h1>
+  <p class="lead">Detection ruleset and product changes, dated. The ruleset version shown in each report maps to the entries below.</p>
+
+  <div class="entry">
+    <div class="when">Ruleset v2.0.0 <span class="tag">Engine</span></div>
+    <h3>Multi-source detection + honest scoring</h3>
+    <ul>
+      <li>Detection now spans 10 live sources (homepage, product, cart, /products.json, robots, headers, DNS, script-host census, structured data, checkout fingerprint) instead of one HTML string match.</li>
+      <li>Confidence is now corroboration-based (how many independent sources saw the app), capped at 95%.</li>
+      <li>Savings are computed only from detected paid apps; no detections means no estimate.</li>
+      <li>Cost figures relabeled as published-pricing benchmarks with citations; the invalid "PayPal monthly fee" was removed.</li>
+      <li>Spend-tier matching bug fixed so ad-spend bands no longer collapse into higher tiers.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="when">Product <span class="tag">Platform</span></div>
+    <h3>Accounts, entitlements, and a real dashboard</h3>
+    <ul>
+      <li>Passwordless sign-in; Stripe purchases now provision an account and email a sign-in link.</li>
+      <li>Server-enforced monthly scan quotas; saved scans with before/after comparison and print-to-PDF.</li>
+      <li>Free scans return teaser depth; paid returns the full report with evidence trails.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="when">Security <span class="tag">Hardening</span></div>
+    <h3>Scanner abuse and SSRF fixes</h3>
+    <ul>
+      <li>DNS-rebinding closed via connect-time address validation; redirects re-validated per hop.</li>
+      <li>Rate limiting keyed on IP only (previously an attacker-supplied field could mint unlimited buckets), with an optional shared store.</li>
+      <li>Non-http(s) URL schemes rejected; magic-link tokens stored hashed.</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>

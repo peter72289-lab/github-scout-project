@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Dashboard — Scout</title>
+<style>
+:root{--bg:#0d0f12;--panel:#15181d;--line:#262b33;--amber:#f5b642;--ink:#e8e6e1;--dim:#9aa3ad;--green:#8fd07f;--red:#f0a49b}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,sans-serif;padding:0 0 60px}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-bottom:1px solid var(--line)}
+header b{font-family:Georgia,serif;font-size:19px}
+header nav a{color:var(--dim);text-decoration:none;margin-left:18px;font-size:14px}
+header nav a:hover{color:var(--amber)}
+main{max-width:1060px;margin:0 auto;padding:28px}
+h1{font-family:Georgia,serif;font-size:26px;margin-bottom:4px}
+.sub{color:var(--dim);margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.stat .k{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.stat .v{font-size:24px;font-family:Georgia,serif;margin-top:6px}
+.bar{height:6px;background:#0f1216;border-radius:3px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--amber)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:22px}
+.panel h2{font-family:Georgia,serif;font-size:19px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{color:var(--dim);text-align:left;font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td{padding:10px;border-bottom:1px solid #1b2027;vertical-align:top}
+tr:hover td{background:#181c22}
+a{color:var(--amber)}
+button,.btn{padding:9px 16px;border-radius:7px;border:1px solid var(--line);background:#1a1e25;color:var(--ink);cursor:pointer;font-size:14px;text-decoration:none;display:inline-block}
+button.primary,.btn.primary{background:var(--amber);color:#151004;border:0;font-weight:700}
+input,select{padding:9px 12px;border-radius:7px;border:1px solid var(--line);background:#0f1216;color:var(--ink);font-size:14px}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;background:#1a1e25;border:1px solid var(--line)}
+.pill.full{color:var(--green)}
+.muted{color:var(--dim);font-size:13px}
+#detail pre{display:none}
+.app-row{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#12151a}
+.app-row .head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.evidence{font-size:12.5px;color:var(--dim);margin-top:6px}
+.hidden{display:none}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.delta-add{color:var(--green)} .delta-rem{color:var(--red)}
+@media print{header nav,#rerun-form,#compare-ui,.btn,button{display:none!important}body{background:#fff;color:#000}.panel,.stat{border-color:#ccc;background:#fff}}
+</style>
+</head>
+<body>
+<header>
+  <b>Scout · Dashboard</b>
+  <nav>
+    <a href="/operator-url-analysis.html">New scan</a>
+    <a href="/methodology.html">Methodology</a>
+    <a href="/support.html">Support</a>
+    <a href="/.netlify/functions/auth-logout">Sign out</a>
+  </nav>
+</header>
+<main>
+  <h1 id="hello">Dashboard</h1>
+  <p class="sub" id="planline">Loading…</p>
+
+  <div id="upsell" class="panel hidden" style="border-color:var(--amber);background:#1c1808">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div><b id="upsell-title"></b><div class="muted" id="upsell-body"></div></div>
+      <a id="upsell-cta" class="btn primary" href="#">Upgrade</a>
+    </div>
+  </div>
+
+  <div class="grid" id="stats" style="display:none">
+    <div class="stat"><div class="k">Plan</div><div class="v" id="s-plan">—</div></div>
+    <div class="stat"><div class="k">Scans this month</div><div class="v" id="s-usage">—</div><div class="bar"><i id="s-bar" style="width:0%"></i></div></div>
+    <div class="stat"><div class="k">Saved scans</div><div class="v" id="s-count">—</div></div>
+  </div>
+
+  <div class="panel" id="rerun-form">
+    <h2>Run a scan</h2>
+    <form id="scanform" style="display:flex;gap:10px;flex-wrap:wrap">
+      <input name="store_url" id="store_url" placeholder="https://yourstore.com" required style="flex:1;min-width:240px">
+      <select name="monthly_ad_spend" id="ad_spend">
+        <option>Under $10,000 a month</option>
+        <option>$10,000 to $100,000 a month</option>
+        <option>$100,000 to $250,000 a month</option>
+        <option>More than $250,000 a month</option>
+      </select>
+      <button class="primary" id="scanbtn" type="submit">Scan</button>
+    </form>
+    <p class="muted" id="scanmsg" style="margin-top:10px" role="status" aria-live="polite"></p>
+  </div>
+
+  <div class="panel">
+    <h2>Saved scans</h2>
+    <div id="compare-ui" class="muted" style="margin-bottom:10px">Select two scans and <button id="cmpbtn" disabled>Compare</button></div>
+    <table id="scans"><thead><tr><th></th><th>Store</th><th>Detected</th><th>Evidence score</th><th>Depth</th><th>Date</th><th></th></tr></thead><tbody></tbody></table>
+    <p class="muted hidden" id="noscans">No saved scans yet. Run one above — paid scans are saved here automatically.</p>
+  </div>
+
+  <div class="panel hidden" id="detail">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <h2 id="d-title">Scan detail</h2>
+      <span><button onclick="window.print()">Print / save PDF</button> <button onclick="document.getElementById('detail').classList.add('hidden')">Close</button></span>
+    </div>
+    <div id="d-body"></div>
+  </div>
+
+  <div class="panel" style="border-color:#3a2020">
+    <h2 style="color:var(--red)">Danger zone</h2>
+    <p class="muted">Permanently delete your account, saved scans, and all associated data. This cannot be undone.</p>
+    <button id="delbtn" style="border-color:#5b2622;color:var(--red)">Delete my account</button>
+    <span id="delmsg" class="muted"></span>
+  </div>
+
+  <div class="panel hidden" id="compare">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2>Before / after</h2><button onclick="document.getElementById('compare').classList.add('hidden')">Close</button></div>
+    <div id="c-body" class="cmp"></div>
+    <div id="c-delta" style="margin-top:14px"></div>
+  </div>
+</main>
+<script src="/assets/launch-config.js"></script>
+<script>
+const $=(s)=>document.querySelector(s);
+const esc=(v)=>String(v??'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let me=null, scans=[];
+
+async function boot(){
+  const r=await fetch('/.netlify/functions/auth-me');
+  me=await r.json();
+  if(!me.authenticated){location.href='/login.html';return;}
+  $('#hello').textContent='Welcome back';
+  $('#planline').textContent=me.email+(me.plan?' · '+me.plan+' plan':' · no active subscription — scans run at free depth');
+  $('#stats').style.display='grid';
+  $('#s-plan').textContent=me.plan||'Free';
+  const quota={operator:10,command:30,director:100}[me.plan]||0;
+  $('#s-usage').textContent=quota?`${me.usageThisMonth??0} / ${quota}`:'—';
+  if(quota)$('#s-bar').style.width=Math.min(100,100*(me.usageThisMonth||0)/quota)+'%';
+  renderUpsell(quota);
+  await loadScans();
+}
+function renderUpsell(quota){
+  const cfg=window.GITHUB_SCOUT_LAUNCH_CONFIG||{};
+  const box=$('#upsell');
+  // No plan → subscribe. Near quota on a non-top plan → upgrade.
+  if(!me.plan){
+    $('#upsell-title').textContent='You’re on free scans (teaser depth)';
+    $('#upsell-body').textContent='Subscribe to unlock full reports: every detected app, evidence trails, overlap costing, and the action plan.';
+    $('#upsell-cta').textContent='See plans';$('#upsell-cta').href='/index.html#pricing';
+    box.classList.remove('hidden');return;
+  }
+  const used=me.usageThisMonth||0;
+  if(quota && used>=Math.ceil(quota*0.8) && me.plan!=='director'){
+    const next=me.plan==='operator'?'Director':'a higher tier';
+    $('#upsell-title').textContent=`You’ve used ${used} of ${quota} scans this month`;
+    $('#upsell-body').textContent=`Running low. ${next} gives you more monthly storefront scans and deeper reporting.`;
+    $('#upsell-cta').textContent=`Upgrade to ${next}`;$('#upsell-cta').href=cfg.directorCheckoutUrl||'/index.html#pricing';
+    box.classList.remove('hidden');
+  }
+}
+async function loadScans(){
+  const r=await fetch('/.netlify/functions/dashboard-data');
+  if(!r.ok)return;
+  const d=await r.json();
+  scans=d.scans||[];
+  $('#s-count').textContent=scans.length;
+  const tb=$('#scans tbody');tb.innerHTML='';
+  $('#noscans').classList.toggle('hidden',scans.length>0);
+  scans.forEach((s)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input type="checkbox" class="cmp-check" value="${esc(s.id)}"></td>
+      <td>${esc(s.store_url)}</td><td>${esc(s.detected_count)}</td><td>${esc(s.evidence_score)}</td>
+      <td><span class="pill ${s.depth==='full'?'full':''}">${esc(s.depth)}</span></td>
+      <td class="muted">${new Date(s.created_at).toLocaleDateString()}</td>
+      <td><a href="#" data-id="${esc(s.id)}" class="view">View</a></td>`;
+    tb.appendChild(tr);
+  });
+  tb.addEventListener('change',()=>{
+    const n=[...document.querySelectorAll('.cmp-check:checked')].length;
+    $('#cmpbtn').disabled=n!==2;
+  });
+}
+function renderReport(rep){
+  const s=rep.summary||{};
+  let h=`<p class="muted">${esc(rep.crawl?.statusLabel||'')}</p>`;
+  h+=`<div class="grid" style="margin:14px 0">
+    <div class="stat"><div class="k">Detected apps</div><div class="v">${esc(s.detectedCount)}</div></div>
+    <div class="stat"><div class="k">Benchmark savings band</div><div class="v">${esc(s.monthlySavings||'No estimate')}</div></div>
+    <div class="stat"><div class="k">Evidence score</div><div class="v">${esc(s.evidenceScore)}/100</div></div></div>`;
+  if(s.savingsBasis)h+=`<p class="muted" style="margin-bottom:14px">${esc(s.savingsBasis)}</p>`;
+  (rep.detectedApps||[]).forEach((a)=>{
+    h+=`<div class="app-row"><div class="head"><b>${esc(a.name)}</b><span>${esc(a.monthlyCost||'')} · ${esc(a.confidence)}% conf · ${esc(a.corroboratingSources||1)} source(s)</span></div>`;
+    if(a.evidence)h+=`<div class="evidence">${a.evidence.map((e)=>esc(e.source+': '+(e.values||[]).join(', '))).join(' · ')}</div>`;
+    if(a.pricingUrl)h+=`<div class="evidence">Benchmark source: <a href="${esc(a.pricingUrl)}" rel="noopener">${esc(a.pricingUrl)}</a></div>`;
+    h+='</div>';
+  });
+  if((rep.overlaps||[]).length&&rep.overlaps[0].detail){h+='<h2 style="margin:16px 0 10px">Overlaps</h2>';rep.overlaps.forEach((o)=>h+=`<div class="app-row">${esc(o.detail)}</div>`);}
+  if((rep.recommendations||[]).length){h+='<h2 style="margin:16px 0 10px">Recommendations</h2>';rep.recommendations.forEach((r2)=>h+=`<div class="app-row"><div class="head"><b>${esc(r2.title)}</b><span>${esc(r2.monthly||'')}</span></div><div class="evidence">${esc(r2.current||'')}</div><div class="evidence"><b>Do:</b> ${esc(r2.action||r2.recommend||'')}</div></div>`);}
+  if(rep.sources?.detail)h+=`<h2 style="margin:16px 0 10px">Sources checked (${esc(rep.sources.succeeded)}/${esc(rep.sources.live)} live)</h2>`+rep.sources.detail.map((x)=>`<div class="evidence">${x.ok?'✓':'✗'} ${esc(x.name)} — ${esc(x.detail)}</div>`).join('');
+  if(rep.methodology)h+=`<p class="muted" style="margin-top:16px">${esc(rep.methodology)}</p>`;
+  return h;
+}
+document.addEventListener('click',async(e)=>{
+  const v=e.target.closest('a.view');
+  if(v){e.preventDefault();
+    const r=await fetch('/.netlify/functions/dashboard-data?id='+encodeURIComponent(v.dataset.id));
+    const d=await r.json();
+    if(d.ok){$('#d-title').textContent=d.scan.store_url;$('#d-body').innerHTML=renderReport(d.scan.report);$('#detail').classList.remove('hidden');$('#detail').scrollIntoView({behavior:'smooth'});}
+  }
+});
+$('#cmpbtn').addEventListener('click',async()=>{
+  const ids=[...document.querySelectorAll('.cmp-check:checked')].map((c)=>c.value);
+  const r=await fetch('/.netlify/functions/dashboard-data?compare='+ids.join(','));
+  const d=await r.json();
+  if(!d.ok)return;
+  const [a,b]=d.scans.sort((x,y)=>new Date(x.created_at)-new Date(y.created_at));
+  const names=(s)=>(s.report.detectedApps||[]).map((x)=>x.name);
+  const added=names(b).filter((n)=>!names(a).includes(n));
+  const removed=names(a).filter((n)=>!names(b).includes(n));
+  $('#c-body').innerHTML=[a,b].map((s,i)=>`<div><h2 style="font-size:15px">${i?'After':'Before'} — ${new Date(s.created_at).toLocaleDateString()}</h2>${renderReport(s.report)}</div>`).join('');
+  $('#c-delta').innerHTML=`<b>Change:</b> <span class="delta-add">+ ${added.join(', ')||'none added'}</span> · <span class="delta-rem">− ${removed.join(', ')||'none removed'}</span>`;
+  $('#compare').classList.remove('hidden');$('#compare').scrollIntoView({behavior:'smooth'});
+});
+$('#scanform').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  $('#scanbtn').disabled=true;$('#scanmsg').textContent='Scanning — checking up to 10 live sources…';
+  const body=new URLSearchParams({intent:'scan',store_url:$('#store_url').value,monthly_ad_spend:$('#ad_spend').value,email:me.email});
+  try{
+    const r=await fetch('/.netlify/functions/operator-url-scan',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const d=await r.json();
+    if(d.ok){$('#scanmsg').textContent=d.entitled?'Done — saved to your dashboard.':'Done (free depth — subscribe for the full report).';$('#d-title').textContent=$('#store_url').value;$('#d-body').innerHTML=renderReport(d.analysis);$('#detail').classList.remove('hidden');await loadScans();await boot();}
+    else $('#scanmsg').textContent=d.error||'Scan failed.';
+  }catch(err){$('#scanmsg').textContent='Network error.';}
+  $('#scanbtn').disabled=false;
+});
+$('#delbtn').addEventListener('click',async()=>{
+  if(!confirm('Delete your account and all saved scans permanently? This cannot be undone.'))return;
+  $('#delbtn').disabled=true;$('#delmsg').textContent=' Deleting…';
+  try{
+    const r=await fetch('/.netlify/functions/account-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm:true})});
+    const d=await r.json();
+    if(d.ok){location.href='/login.html';}else{$('#delmsg').textContent=' '+(d.error||'Failed.');$('#delbtn').disabled=false;}
+  }catch(e){$('#delmsg').textContent=' Network error.';$('#delbtn').disabled=false;}
+});
+boot();
+</script>
+</body>
+</html>

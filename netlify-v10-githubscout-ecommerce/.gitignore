@@ -1,2 +1,9 @@
 # Local Netlify folder
 .netlify
+
+# Secrets / local config — commit launch-config.example.js instead
+assets/launch-config.js
+.env
+.env.*
+gitleaks-report.json
+replacements.txt

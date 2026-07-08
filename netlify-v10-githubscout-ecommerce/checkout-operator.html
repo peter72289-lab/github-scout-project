@@ -49,7 +49,7 @@
       </div>
       <div class="dev">
         <p class="note"><strong>Payment handoff:</strong> the primary button opens the live Operator Stripe order form. This intake form remains as a backup for customers who need help before checkout.</p>
-        <p class="note">After payment, Operator includes up to 10 storefront analyses per month across all 15 sources.</p>
+        <p class="note">After payment, Operator includes up to 10 storefront analyses per month across all live detection sources (10 at launch; 15 planned).</p>
       </div>
       <a id="operatorStripeCta" class="button stripe-cta" href="#" hidden>Pay With Stripe - Start Operator</a>
     </section>
@@ -78,6 +78,7 @@
   </main>
   <script src="assets/launch-config.js"></script>
   <script src="assets/launch-analytics.js"></script>
+<script src="assets/consent.js"></script>
   <script>
     const checkoutForm = document.querySelector('form[name="operator-checkout-intake"]');
     const params = new URLSearchParams(window.location.search);

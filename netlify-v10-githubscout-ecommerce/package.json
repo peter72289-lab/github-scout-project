@@ -1,0 +1,16 @@
+{
+  "name": "github-scout-v2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Shopify storefront app-stack scanner: multi-source detection, accounts, entitlements, and evidence-based savings.",
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "preflight": "node scripts/preflight.js",
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
