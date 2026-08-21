@@ -7,3 +7,27 @@
 # Generated video frame caches; keep source renderers and finished MP4 exports.
 cockpit-v2-demo/render/frames/
 cockpit-v2-demo/render/clicked-frames/
+
+# Dependencies
+node_modules/
+
+# Local env and secrets (runtime env lives in Netlify; keys live in ~/.api-keys)
+.env
+.env.*
+!.env.example
+
+# Deploy bundles and build output (a stale 5 MB deploy zip is already tracked; see TASKS_FOR_USER.md item 3)
+*.zip
+deploy-*.zip
+dist/
+build/
+
+# Scratch and logs
+tmp/
+*.log
+gitleaks-report.json
+replacements.txt
+
+# Editor
+.vscode/
+.idea/

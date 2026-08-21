@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Owner-only actions
+    # GitHub requires an absolute URL here. This points at the current `origin`, whose ownership
+    # is unconfirmed (TASKS_FOR_USER.md item 2), and TASKS_FOR_USER.md is not yet pushed, so the
+    # link 404s today. Update it once the remote is decided.
+    url: https://github.com/peter72289-lab/github-scout-project/blob/main/TASKS_FOR_USER.md
+    about: Decisions and account actions only the owner can take live in TASKS_FOR_USER.md, not issues.
