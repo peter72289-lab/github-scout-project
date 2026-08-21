@@ -6,9 +6,56 @@
 //     the app), not from an arbitrary formula on pattern count alone.
 //  3. Spend tier is used for messaging/urgency only — never to invent dollars.
 //  4. All costs are labeled benchmarks with citation where available.
+//  5. Evidence strength gates dollars: only evidence seen ON the storefront can
+//     produce a savings figure (see STRENGTH below).
 
 const {appSignatures, categoryRules, RULES_VERSION} = require('./rules');
 const money = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: 0});
+
+// --- Evidence-strength taxonomy -------------------------------------------
+// Why: the old formula scored one DNS TXT substring at 62% confidence, which a
+// customer reads as "we found this". A TXT or MX record proves a *domain*
+// relationship (usually just email routing or an old verification token); it
+// does not prove the app runs on the storefront. Same for a robots.txt line.
+// Strength is therefore computed from the KIND and INDEPENDENCE of evidence,
+// never from the raw count of matched substrings.
+//
+//   detected  — 2+ distinct sources agree, OR a third-party script host was
+//               parsed off a fetched page. A script host is direct evidence the
+//               app's code loads on the storefront. Band 70-95.
+//   likely    — exactly one storefront page matched a pattern, nothing else.
+//               The app is almost certainly there, but nothing corroborates it.
+//               Band 55-65.
+//   possible  — the only evidence is DNS records, a robots.txt reference, or a
+//               lone generic substring with no page and no host behind it.
+//               Band 20-35: deliberately below `likely` so it can never read as
+//               "we found this", and excluded from every dollar figure.
+//
+// The overall cap stays 95: confidence is a corroboration score, never a
+// probability, and the engine never claims certainty.
+const STRENGTH = {DETECTED: 'detected', LIKELY: 'likely', POSSIBLE: 'possible'};
+// Only these strengths may contribute dollars (savings, overlaps, benchmarks).
+const DOLLAR_STRENGTHS = new Set([STRENGTH.DETECTED, STRENGTH.LIKELY]);
+// Sources that are not the storefront itself. A pattern hit from one of these
+// is a domain-level or index-level reference, not an observed page load.
+const OFF_STOREFRONT_SOURCES = new Set(['dns-records', 'robots-sitemap']);
+
+function classifyStrength(evidence) {
+  const hasHost = evidence.some((e) => e.kind === 'host');
+  const hasStorefrontPage = evidence.some((e) => e.kind === 'pattern' && !OFF_STOREFRONT_SOURCES.has(e.source));
+  const distinctSources = new Set(evidence.map((e) => e.source)).size;
+  if (hasHost || distinctSources >= 2) return STRENGTH.DETECTED;
+  if (hasStorefrontPage) return STRENGTH.LIKELY;
+  return STRENGTH.POSSIBLE;
+}
+
+// Bands are contiguous and non-overlapping so a numeric comparison and a
+// strength comparison can never disagree.
+function scoreConfidence(strength, distinctSources, hasHost) {
+  if (strength === STRENGTH.DETECTED) return Math.min(95, 70 + (distinctSources - 1) * 8 + (hasHost ? 10 : 0));
+  if (strength === STRENGTH.LIKELY) return 60;
+  return 25;
+}
 
 // FIXED tier matching (v10 bug: includes('250,000') also matched the
 // "$100,000 to $250,000" option, shifting bands up a tier).
@@ -57,12 +104,14 @@ function detectFromEvidence(scan) {
     seen.add(sig.id);
 
     const distinctSources = new Set(evidence.map((e) => e.source)).size;
-    const hostBoost = evidence.some((e) => e.kind === 'host') ? 10 : 0;
-    const confidence = Math.min(95, 50 + distinctSources * 12 + hostBoost);
+    const hasHost = evidence.some((e) => e.kind === 'host');
+    const strength = classifyStrength(evidence);
+    const confidence = scoreConfidence(strength, distinctSources, hasHost);
     detections.push({
       id: sig.id, name: sig.name, category: sig.category,
       cost: sig.cost, costBasis: 'benchmark', pricingUrl: sig.pricingUrl || null, costNote: sig.note || null,
       monthlyCost: sig.cost ? money.format(sig.cost) : 'Free/native',
+      strength, countsTowardSavings: DOLLAR_STRENGTHS.has(strength) && Number(sig.cost) > 0,
       confidence, corroboratingSources: distinctSources, evidence
     });
   }
@@ -74,13 +123,40 @@ function moneyRange(low, high) {
   return `${money.format(Math.round(low))}-${money.format(Math.round(high))}/mo`;
 }
 
+// The crawl gate: dollars require that the scan actually reached the thing it
+// is pricing. A domain that is not a Shopify storefront, or a storefront no
+// page of which was fetched, yields no estimate — never a smaller one.
+// Returns null when the gate passes, otherwise the machine-readable reason.
+function savingsGateReason(scan) {
+  if (!scan || !scan.shopifyConfirmed) return 'not-shopify';
+  if (((scan && scan.pages) || []).length < 1) return 'no-pages-fetched';
+  return null;
+}
+
+// Detections that may contribute dollars: paid, and seen on the storefront.
+function billableDetections(detectedApps) {
+  return (detectedApps || []).filter((a) => Number(a.cost) > 0 && DOLLAR_STRENGTHS.has(a.strength));
+}
+
+const SUPPRESSION_BASIS = {
+  'not-shopify': 'No savings estimate: this URL was not confirmed as a Shopify storefront, so app costs cannot be attributed to a store.',
+  'no-pages-fetched': 'No savings estimate: no storefront page could be fetched, so nothing was observed running on the site.',
+  'no-paid-detections': 'No paid app signatures were seen on the storefront; no savings estimate is made. Possible-strength signals (DNS or robots.txt only) are reported but never priced.'
+};
+
 // Savings from detected paid apps only: 15%-40% of benchmarked detected spend
 // (consolidation/downgrade band), plus explicit overlap line items.
-function savingsFromDetected(detectedApps) {
-  const paid = (detectedApps || []).filter((a) => Number(a.cost) > 0);
+// `scan` is required: without the crawl context there is no evidence the store
+// was reached, and the honest answer is no number at all.
+function savingsFromDetected(detectedApps, scan) {
+  const gated = savingsGateReason(scan);
+  if (gated) {
+    return {monthly: null, annual: null, detectedMonthly: 0, suppressedReason: gated, basis: SUPPRESSION_BASIS[gated]};
+  }
+  const paid = billableDetections(detectedApps);
   const detectedMonthly = paid.reduce((s, a) => s + Number(a.cost), 0);
   if (!detectedMonthly) {
-    return {monthly: null, annual: null, detectedMonthly: 0, basis: 'No paid app signatures detected; no savings estimate is made.'};
+    return {monthly: null, annual: null, detectedMonthly: 0, suppressedReason: 'no-paid-detections', basis: SUPPRESSION_BASIS['no-paid-detections']};
   }
   const low = detectedMonthly * 0.15;
   const high = detectedMonthly * 0.40;
@@ -88,14 +164,18 @@ function savingsFromDetected(detectedApps) {
     monthly: moneyRange(low, high),
     annual: moneyRange(low * 12, high * 12),
     detectedMonthly,
+    suppressedReason: null,
     basis: `15-40% consolidation/downgrade band applied to ${money.format(detectedMonthly)}/mo of benchmarked cost across ${paid.length} detected paid app(s). Benchmarks are typical published pricing, not this store's invoices.`
   };
 }
 
-// Category overlaps: 2+ paid apps in one category = concrete consolidation target.
-function findOverlaps(detectedApps) {
+// Category overlaps: 2+ paid apps in one category = concrete consolidation
+// target. Same gate as savings — two possible-strength matches in a category
+// are not a consolidation finding, they are two unconfirmed guesses.
+function findOverlaps(detectedApps, scan) {
+  if (savingsGateReason(scan)) return [];
   const byCat = {};
-  (detectedApps || []).forEach((a) => { if (a.cost > 0) (byCat[a.category] = byCat[a.category] || []).push(a); });
+  billableDetections(detectedApps).forEach((a) => { (byCat[a.category] = byCat[a.category] || []).push(a); });
   return Object.entries(byCat)
     .filter(([, apps]) => apps.length >= 2)
     .map(([category, apps]) => {
@@ -132,7 +212,8 @@ function buildRecommendations(detectedApps, overlaps, goal) {
     confidence: 'Detected overlap',
     action: `Export data from the redundant tool(s), run both for one billing cycle max, then cancel the loser.`
   }));
-  const expensive = (detectedApps || []).filter((a) => a.cost > (categoryRules[a.category]?.threshold ?? 120));
+  // Only storefront-observed apps get a benchmark dollar figure attached.
+  const expensive = billableDetections(detectedApps).filter((a) => a.cost > (categoryRules[a.category]?.threshold ?? 120));
   expensive.slice(0, 4).forEach((a) => recs.push({
     category: a.category, title: `Pressure-test ${a.name}`, severity: 'Medium',
     current: `${a.name} detected (${a.corroboratingSources} corroborating source${a.corroboratingSources === 1 ? '' : 's'}). Benchmark cost ${a.monthlyCost}${a.pricingUrl ? ` (per ${a.pricingUrl})` : ''} — above the ${a.category} value threshold.`,
@@ -168,8 +249,13 @@ function buildActionPlan(urgency) {
 function buildReport(scan, submission, depth = 'full') {
   const context = spendContext(submission.monthly_ad_spend || '');
   const detected = detectFromEvidence(scan);
-  const savings = savingsFromDetected(detected);
-  const overlaps = findOverlaps(detected);
+  const savings = savingsFromDetected(detected, scan);
+  const overlaps = findOverlaps(detected, scan);
+  const strengthCounts = {
+    detected: detected.filter((a) => a.strength === STRENGTH.DETECTED).length,
+    likely: detected.filter((a) => a.strength === STRENGTH.LIKELY).length,
+    possible: detected.filter((a) => a.strength === STRENGTH.POSSIBLE).length
+  };
   const score = evidenceScore(scan, detected);
   const recommendations = buildRecommendations(detected, overlaps, submission.primary_goal || '');
 
@@ -191,8 +277,12 @@ function buildReport(scan, submission, depth = 'full') {
     summary: {
       monthlySavings: savings.monthly, annualSavings: savings.annual,
       savingsBasis: savings.basis, detectedMonthlyBenchmark: savings.detectedMonthly,
+      // null when a savings range is shown; otherwise why it is withheld.
+      savingsSuppressedReason: savings.suppressedReason || null,
       evidenceScore: score, urgency: context.urgency, tier: context.tier, tierNote: context.note,
-      detectedCount: detected.length
+      // detectedCount keeps its existing meaning for the client: every signal
+      // found, at any strength (operator-url-analysis.html:346, dashboard.html:195).
+      detectedCount: detected.length, strengthCounts
     },
     detectedApps: detected, overlaps, recommendations,
     checkoutProviders: scan.checkoutProviders || [],
@@ -203,7 +293,10 @@ function buildReport(scan, submission, depth = 'full') {
   if (depth === 'teaser') {
     return {
       ...full,
-      detectedApps: detected.slice(0, 3).map((a) => ({name: a.name, category: a.category, confidence: a.confidence, monthlyCost: a.monthlyCost})),
+      detectedApps: detected.slice(0, 3).map((a) => ({
+        name: a.name, category: a.category, confidence: a.confidence,
+        strength: a.strength, countsTowardSavings: a.countsTowardSavings, monthlyCost: a.monthlyCost
+      })),
       overlaps: overlaps.map((o) => ({category: o.category, apps: o.apps.length})),
       recommendations: recommendations.slice(0, 2),
       teaser: {
@@ -220,5 +313,6 @@ function buildReport(scan, submission, depth = 'full') {
 
 module.exports = {
   spendContext, detectFromEvidence, savingsFromDetected, findOverlaps,
-  evidenceScore, buildRecommendations, buildReport, moneyRange
+  evidenceScore, buildRecommendations, buildReport, moneyRange,
+  STRENGTH, DOLLAR_STRENGTHS, savingsGateReason, classifyStrength
 };
