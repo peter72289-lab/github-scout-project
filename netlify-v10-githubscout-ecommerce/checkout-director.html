@@ -23,11 +23,13 @@
   </main>
   <script src="assets/launch-config.js"></script>
   <script src="assets/source-counts.js"></script>
+  <script src="assets/launch-checkout.js"></script>
   <script src="assets/launch-analytics.js"></script>
 <script src="assets/consent.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
-    const directorUrl = window.GITHUB_SCOUT_LAUNCH_CONFIG?.directorCheckoutUrl;
+    // Routed through the shared gate (see checkout-operator.html).
+    const directorUrl = window.githubScoutCheckoutUrl?.('director');
     const cta = document.querySelector('#directorStripeCta');
     if (directorUrl && cta) {
       const link = new URL(directorUrl, window.location.href);

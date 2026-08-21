@@ -202,6 +202,10 @@ exports.handler = async (event) => {
 };
 
 // Exported for tests/run-tests.js so the shipped resolver is the one under test.
+// Exported so tests exercise the shipped verifier. The suite used to carry its
+// own copy of this algorithm, which meant the signature tests passed whatever
+// this file did — including if it stopped verifying at all.
+exports.verifyStripeSignature = verifyStripeSignature;
 exports.resolvePlanFromSession = resolvePlanFromSession;
 exports.PLAN_BY_PRICE = PLAN_BY_PRICE;
 exports.UNRESOLVED_PLAN = UNRESOLVED_PLAN;

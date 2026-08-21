@@ -1,6 +1,20 @@
 (function () {
+  // A checkout that takes money we cannot yet fulfil is worse than no checkout.
+  // Fulfilment needs Supabase, the Stripe webhook, and a verified sending
+  // domain to all be live: without them a buyer is charged and lands on a page
+  // promising a sign-in email that nothing can send. `fulfillmentReady` is the
+  // single switch that admits that, and it defaults to false. Flip it only
+  // after /.netlify/functions/health reports productionReady: true on the
+  // deployed site, and a test-mode purchase has been observed end to end.
+  // Every checkout CTA is gated on it, so an un-flipped deploy simply cannot
+  // charge a card.
+  function fulfillmentReady() {
+    return Boolean((window.GITHUB_SCOUT_LAUNCH_CONFIG || {}).fulfillmentReady);
+  }
+
   function checkoutUrl(plan) {
     const config = window.GITHUB_SCOUT_LAUNCH_CONFIG || {};
+    if (!fulfillmentReady()) return '';
     const rawUrl = plan === 'operator' ? config.operatorCheckoutUrl : config.directorCheckoutUrl;
     if (!rawUrl) return '';
 
@@ -14,6 +28,7 @@
   }
 
   window.githubScoutCheckoutUrl = checkoutUrl;
+  window.githubScoutFulfillmentReady = fulfillmentReady;
   window.githubScoutOpenCheckout = function (plan) {
     const url = checkoutUrl(plan);
     if (!url) return false;
