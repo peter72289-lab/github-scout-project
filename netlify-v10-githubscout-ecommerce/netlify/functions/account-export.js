@@ -24,11 +24,14 @@ exports.handler = async (event = {}) => {
   if (!session) return json(401, {ok: false, error: 'Sign in to export your data.'});
 
   const accountId = session.account.id;
-  let subscriptions, usage, scans;
+  let subscriptions, usage, scans, detectionFeedback;
   try {
     subscriptions = await db.select('subscriptions', `account_id=eq.${accountId}&select=plan,status,created_at&order=created_at.desc`);
     usage = await db.select('usage', `account_id=eq.${accountId}&select=period,used&order=period.desc`);
     scans = await db.select('scans', `account_id=eq.${accountId}&select=id,store_url,depth,detected_count,evidence_score,report,created_at&order=created_at.desc`);
+    // Verdicts the customer gave us on their own detections. Account-linked, so
+    // it belongs in an export that claims to be their data.
+    detectionFeedback = await db.select('detection_feedback', `account_id=eq.${accountId}&select=scan_id,signature_id,verdict,created_at,updated_at&order=updated_at.desc`);
   } catch (e) {
     console.error('account-export', e.message);
     return json(500, {ok: false, error: 'Could not build your export. Contact support.'});
@@ -42,9 +45,11 @@ exports.handler = async (event = {}) => {
     subscriptions: (subscriptions || []).map(publicSubscription),
     usage: usage || [],
     scans: scans || [],
+    detection_feedback: detectionFeedback || [],
     // Say plainly what a "full export" cannot include, so the file does not
     // read as more complete than it is (docs/DATA-RETENTION.md).
     not_included: {
+      scan_telemetry: 'The engine record of each scan (scan_events) carries no email, IP, account reference or storefront address, so there is no way to find the rows belonging to one person. It is deleted automatically after 24 months.',
       auth_tokens: 'Sign-in and session tokens are stored only as SHA-256 hashes and are not exported; the plaintext does not exist on our side.',
       payment_records: 'Card, charge, invoice and refund records are held by Stripe, not by us. Request those from Stripe or through support.',
       analytics_and_leads: 'Consent-gated ad-pixel events and lead-form submissions live with the providers listed on subprocessors.html, not in this database.'

@@ -664,7 +664,7 @@ let acctCalls = [];
 let stripeReply = {ok: true, status: 200};
 const testAccount = {id: 'acct-del', email: 'buyer@example.com', created_at: '2026-01-02T03:04:05Z'};
 
-function stubAccount({subscriptions = [], usage = [], scans = [], stripe = {ok: true, status: 200}} = {}) {
+function stubAccount({subscriptions = [], usage = [], scans = [], feedback = [], stripe = {ok: true, status: 200}} = {}) {
   acctCalls = [];
   stripeReply = stripe;
   dbMod.enabled = true;
@@ -673,6 +673,7 @@ function stubAccount({subscriptions = [], usage = [], scans = [], stripe = {ok: 
     if (table === 'subscriptions') return subscriptions;
     if (table === 'usage') return usage;
     if (table === 'scans') return scans;
+    if (table === 'detection_feedback') return feedback;
     return [];
   };
   dbMod.del = async (table) => { acctCalls.push({op: 'del', table}); return null; };
@@ -730,7 +731,7 @@ ta('delete: an account with no billable subscription deletes, and claims nothing
   assert.equal(body.ok, true);
   assert.equal(body.subscriptionsCanceled, 0);
   assert.ok(!/cancel/i.test(body.message), 'do not claim a cancellation that never happened');
-  assert.deepEqual(deletedTables(), ['scans', 'sessions', 'magic_links', 'usage', 'subscriptions', 'accounts']);
+  assert.deepEqual(deletedTables(), ['detection_feedback', 'scans', 'sessions', 'magic_links', 'usage', 'subscriptions', 'accounts']);
   assert.equal(stripeCalls().length, 0, 'a canceled row has nothing left to cancel');
   assert.match(res.headers['Set-Cookie'], /gs_session=; /);
 });
@@ -744,7 +745,7 @@ ta('delete: a one-time purchase row never reaches the Stripe subscriptions API',
   assert.equal(res.statusCode, 200);
   assert.equal(JSON.parse(res.body).subscriptionsCanceled, 0);
   assert.equal(stripeCalls().length, 0);
-  assert.equal(deletedTables().length, 6);
+  assert.equal(deletedTables().length, 7);
 });
 
 ta('delete: the success path cancels with Stripe BEFORE the first row is deleted', async () => {
@@ -761,7 +762,7 @@ ta('delete: the success path cancels with Stripe BEFORE the first row is deleted
   const cancelAt = acctCalls.findIndex((c) => c.op === 'stripe');
   const firstDelete = acctCalls.findIndex((c) => c.op === 'del');
   assert.ok(cancelAt < firstDelete, `cancel (${cancelAt}) must precede the first delete (${firstDelete})`);
-  assert.deepEqual(deletedTables(), ['scans', 'sessions', 'magic_links', 'usage', 'subscriptions', 'accounts']);
+  assert.deepEqual(deletedTables(), ['detection_feedback', 'scans', 'sessions', 'magic_links', 'usage', 'subscriptions', 'accounts']);
 });
 
 ta('delete: a past_due subscription still counts as billing', async () => {
@@ -793,7 +794,8 @@ ta('export: returns the whole account as a JSON attachment, without Stripe ids',
   stubAccount({
     subscriptions: [{plan: 'operator', status: 'active', created_at: '2026-02-01T00:00:00Z', stripe_customer_id: 'cus_leak', stripe_subscription_id: 'sub_leak'}],
     usage: [{period: '2026-08', used: 3}],
-    scans: [{id: 'scan-1', store_url: 'https://store.example', depth: 'full', detected_count: 2, evidence_score: 71, report: {summary: {detectedCount: 2}}, created_at: '2026-08-01T00:00:00Z'}]
+    scans: [{id: 'scan-1', store_url: 'https://store.example', depth: 'full', detected_count: 2, evidence_score: 71, report: {summary: {detectedCount: 2}}, created_at: '2026-08-01T00:00:00Z'}],
+    feedback: [{scan_id: 'scan-1', signature_id: 'klaviyo', verdict: 'incorrect', created_at: '2026-08-02T00:00:00Z', updated_at: '2026-08-02T00:00:00Z'}]
   });
   const res = await exportFn.handler({httpMethod: 'GET', headers: {}});
   assert.equal(res.statusCode, 200);
@@ -801,17 +803,338 @@ ta('export: returns the whole account as a JSON attachment, without Stripe ids',
   assert.match(res.headers['Content-Disposition'], /^attachment; filename="githubscout-account-export-\d{4}-\d{2}-\d{2}\.json"$/);
   assert.equal(res.headers['Cache-Control'], 'no-store');
   const body = JSON.parse(res.body);
-  assert.deepEqual(Object.keys(body), ['ok', 'format', 'generated_at', 'account', 'subscriptions', 'usage', 'scans', 'not_included']);
+  assert.deepEqual(Object.keys(body), ['ok', 'format', 'generated_at', 'account', 'subscriptions', 'usage', 'scans', 'detection_feedback', 'not_included']);
   assert.equal(body.format, exportFn.EXPORT_FORMAT);
   assert.equal(body.account.email, testAccount.email);
   assert.deepEqual(body.subscriptions, [{plan: 'operator', status: 'active', created_at: '2026-02-01T00:00:00Z'}]);
   assert.ok(!/cus_leak|sub_leak/.test(res.body), 'internal Stripe ids must not be echoed into a downloadable file');
   assert.deepEqual(body.usage, [{period: '2026-08', used: 3}]);
   assert.equal(body.scans[0].report.summary.detectedCount, 2, 'the full saved report is included, not just the row summary');
+  assert.deepEqual(body.detection_feedback, [{scan_id: 'scan-1', signature_id: 'klaviyo', verdict: 'incorrect', created_at: '2026-08-02T00:00:00Z', updated_at: '2026-08-02T00:00:00Z'}]);
   // privacy.html promises export; the file must not read broader than the DB is.
   assert.match(body.not_included.payment_records, /Stripe/);
   assert.match(body.not_included.auth_tokens, /hash/i);
+  // The one table the export cannot reach, and why. Omitting it silently would
+  // make the file read as complete when it is not.
+  assert.match(body.not_included.scan_telemetry, /no way to find the rows belonging to one person/);
   globalThis.fetch = realFetch;
+});
+
+// ---------- M13 Unit 1: PII-free scan telemetry ----------
+const telemetry = require('../netlify/functions/lib/telemetry.js');
+const cleanup = require('../netlify/functions/cleanup-scheduled.js');
+
+// The privacy contract, restated here as a literal. lib/telemetry.js exports the
+// same list; if the two ever disagree, someone added a column on one side only.
+// A field that carries personal data cannot reach the table without editing
+// BOTH this array and the library, which is the point.
+const EXPECTED_EVENT_KEYS = [
+  'rules_version', 'depth', 'store_hash', 'shopify_confirmed', 'crawl_ok',
+  'crawl_blocked', 'blocked_by', 'blocked_reason', 'pages_fetched',
+  'sources_live', 'sources_succeeded', 'source_results', 'detections',
+  'detected_count', 'strength_counts', 'savings_suppressed_reason', 'duration_ms'
+].sort();
+
+const telemetryScan = () => ({
+  ...fakeScan({
+    html: '<script src="https://static.klaviyo.com/onsite/js/klaviyo.js"></script><script src="https://cdn.judge.me/w.js"></script>',
+    hosts: ['static.klaviyo.com', 'cdn.judge.me'], shopify: true
+  }),
+  sources: [{id: 'home-html', name: 'Storefront homepage HTML', ok: true, detail: 'fetched https://acme-socks.example/ in 412ms'},
+    {id: 'dns-records', name: 'DNS TXT/MX records', ok: false, detail: 'no TXT for acme-socks.example'}]
+});
+const PII = {
+  email: 'buyer@example.com', ip: '198.51.100.9', host: 'acme-socks.example',
+  spend: '$10,000 to $100,000 a month', goal: 'Cut app costs', utm: 'utm_source=meta', account: 'acct-test'
+};
+const buildTelemetry = (over = {}) => telemetry.buildScanEvent({
+  report: agg.buildFullReport(telemetryScan(), {monthly_ad_spend: PII.spend, primary_goal: PII.goal, email: PII.email}),
+  scan: telemetryScan(), storeUrl: `https://www.${PII.host}/collections/all`, depth: 'teaser', durationMs: 1234, ...over
+});
+
+t('telemetry: the payload has exactly the declared keys, and no PII field', () => {
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  const row = buildTelemetry();
+  assert.deepEqual(Object.keys(row).sort(), EXPECTED_EVENT_KEYS);
+  assert.deepEqual([...telemetry.SCAN_EVENT_FIELDS].sort(), EXPECTED_EVENT_KEYS, 'lib and test must agree on the column set');
+  ['email', 'ip', 'ip_address', 'account_id', 'scan_id', 'session_id', 'store_url', 'utm_source',
+    'referrer', 'landing_page', 'monthly_ad_spend', 'monthly_app_spend', 'primary_goal', 'notes'
+  ].forEach((k) => assert.equal(row[k], undefined, `${k} must never be a telemetry column`));
+});
+t('telemetry: no submitted value survives anywhere in the serialized row', () => {
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  const row = buildTelemetry();
+  const serialized = JSON.stringify(row);
+  Object.entries(PII).forEach(([label, value]) => {
+    assert.ok(!serialized.includes(value), `${label} leaked into the telemetry row`);
+  });
+  // Page URLs live in report.crawl.pagesFetched and detectedApps[].evidence.
+  assert.ok(!/https?:\/\//.test(serialized), 'no URL of any kind belongs in this table');
+  // Per-source `detail` is a human sentence that can quote the fetched URL, so
+  // only the id and the boolean survive.
+  assert.ok(!JSON.stringify(row.source_results).includes('412ms'), 'per-source detail strings must be dropped');
+  row.source_results.forEach((s) => assert.deepEqual(Object.keys(s).sort(), ['id', 'ok']));
+  assert.equal(typeof row.pages_fetched, 'number', 'the page URLs are replaced by their count');
+});
+t('telemetry: the hostname hash is keyed, stable, and not reversible to the input', () => {
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  const a = telemetry.hashStoreHost('https://www.acme-socks.example/collections/all');
+  assert.match(a, /^[a-f0-9]{64}$/);
+  assert.ok(!a.includes('acme'), 'the digest must not carry the input');
+  assert.equal(a, telemetry.hashStoreHost('ACME-Socks.Example'), 'same store, however it was typed');
+  assert.notEqual(a, telemetry.hashStoreHost('other-store.example'));
+  // Keyed, so a precomputed digest table over the public domain list does not
+  // reverse it: the same hostname under another key is a different value, and
+  // the plain sha256 of the hostname is not what we stored.
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-2';
+  assert.notEqual(telemetry.hashStoreHost('acme-socks.example'), a);
+  assert.notEqual(auth.sha256('acme-socks.example'), a, 'an unkeyed digest would be brute-forceable');
+});
+t('telemetry: no salt configured stores no hash, never a bare digest', () => {
+  delete process.env.SCAN_TELEMETRY_SALT;
+  assert.equal(telemetry.hashStoreHost('acme-socks.example'), null);
+  assert.equal(buildTelemetry().store_hash, null);
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+});
+t('telemetry: an anonymous teaser scan still records every signature id', () => {
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  const row = buildTelemetry();
+  const ids = row.detections.map((d) => d.id);
+  assert.equal(row.depth, 'teaser', 'the free teaser is the bulk of traffic and the reason this table exists');
+  assert.ok(ids.includes('klaviyo') && ids.includes('judgeme'));
+  assert.equal(row.detected_count, row.detections.length);
+  row.detections.forEach((d) => {
+    assert.deepEqual(Object.keys(d).sort(), ['confidence', 'id', 'strength']);
+    assert.ok(['detected', 'likely', 'possible'].includes(d.strength));
+  });
+  assert.equal(row.rules_version, require('../netlify/functions/lib/rules.js').RULES_VERSION);
+  assert.equal(row.shopify_confirmed, true);
+  assert.equal(row.duration_ms, 1234);
+  assert.deepEqual(row.source_results, [{id: 'home-html', ok: true}, {id: 'dns-records', ok: false}]);
+});
+t('telemetry: a teaser row is not thinner than the full-depth row it came from', () => {
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  const teaser = buildTelemetry();
+  const full = buildTelemetry({depth: 'full'});
+  assert.deepEqual(teaser.detections, full.detections, 'depth changes what the CUSTOMER sees, not what we learn');
+});
+t('telemetry: a blocked crawl records who blocked it and why', () => {
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  const row = telemetry.buildScanEvent({
+    report: agg.buildFullReport(blockedScan, {}), scan: blockedScan, storeUrl: 'https://blocked.example', depth: 'teaser'
+  });
+  assert.equal(row.crawl_blocked, true);
+  assert.equal(row.blocked_by, 'Cloudflare');
+  assert.equal(row.blocked_reason, 'http-status');
+  assert.equal(row.crawl_ok, false);
+  assert.equal(row.savings_suppressed_reason, 'crawl-blocked');
+  assert.equal(row.pages_fetched, 0);
+  assert.equal(row.duration_ms, null);
+});
+t('telemetry: toTeaser derives the free view from the full report', () => {
+  const scan = fakeScan({html: 'klaviyo staticw2.yotpo.com yotpo-widget cdn.judge.me judgeme gorgias.chat rebuyengine', shopify: true});
+  const full = agg.buildFullReport(scan, {});
+  const teaser = agg.toTeaser(full);
+  assert.equal(full.depth, 'full');
+  assert.equal(teaser.depth, 'teaser');
+  assert.deepEqual(teaser, agg.buildReport(scan, {}, 'teaser'), 'buildReport(teaser) must stay exactly this');
+  assert.ok(full.detectedApps.length > teaser.detectedApps.length);
+  assert.equal(teaser.detectedApps[0].id, undefined, 'the teaser still sells the signature list');
+});
+t('telemetry: 24-month retention is wired into the daily cleanup', () => {
+  assert.equal(cleanup.TELEMETRY_RETENTION_DAYS, 730);
+  const src = fs.readFileSync(path.join(__dirname, '../netlify/functions/cleanup-scheduled.js'), 'utf8');
+  assert.match(src, /tryDel\('aged_scan_events', 'scan_events'/);
+});
+
+ta('telemetry: a write failure never breaks or blocks the scan response', async () => {
+  guard.rateBuckets.clear();
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  authMod.currentAccount = async () => null; // anonymous: the case that persisted nothing before
+  dbMod.enabled = true;
+  let attempted = 0;
+  dbMod.insert = async (table) => {
+    if (table === 'scan_events') { attempted++; throw new Error('Supabase POST scan_events -> 500'); }
+    return [{id: 'scan-row'}];
+  };
+  dbMod.rpc = async () => ({allowed: true, remaining: 5});
+  crawlOf({shopifyConfirmed: true, sourcesSucceeded: 10,
+    pages: [{sourceId: 'home-html', url: 'https://store.example/', evidence: parseHtmlEvidence('<script src="https://static.klaviyo.com/x.js"></script>')}],
+    scriptHosts: ['static.klaviyo.com'], crawlBlock: {blocked: false, reason: null, vendor: null, signals: []}});
+  const res = await scanHandler(scanEvent('198.51.100.21'));
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 200);
+  assert.equal(body.ok, true);
+  assert.ok(body.analysis.detectedApps.length, 'the report the customer came for is intact');
+  assert.equal(body.scanId, null, 'an anonymous scan still saves nothing to the dashboard');
+  await new Promise((r) => setImmediate(r)); // let the fire-and-forget settle
+  assert.equal(attempted, 1, 'the telemetry write was attempted and its failure was swallowed');
+});
+ta('telemetry: an anonymous scan writes one row, and the handler does not wait for it', async () => {
+  guard.rateBuckets.clear();
+  process.env.SCAN_TELEMETRY_SALT = 'test-salt-1';
+  authMod.currentAccount = async () => null;
+  dbMod.enabled = true;
+  let settled = false; let written = null;
+  dbMod.insert = async (table, row) => {
+    if (table !== 'scan_events') return [{id: 'x'}];
+    written = row;
+    await new Promise((r) => setTimeout(r, 30));
+    settled = true;
+    return [{id: 'ev-1'}];
+  };
+  dbMod.rpc = async () => ({allowed: true, remaining: 5});
+  crawlOf({shopifyConfirmed: true, sourcesSucceeded: 10,
+    pages: [{sourceId: 'home-html', url: 'https://store.example/', evidence: parseHtmlEvidence('<script src="https://static.klaviyo.com/x.js"></script>')}],
+    scriptHosts: ['static.klaviyo.com'], sources: [{id: 'home-html', name: 'Storefront homepage HTML', ok: true, detail: 'fetched'}],
+    crawlBlock: {blocked: false, reason: null, vendor: null, signals: []}});
+  const res = await scanHandler(scanEvent('198.51.100.22'));
+  assert.equal(res.statusCode, 200);
+  assert.equal(settled, false, 'the scan response must not wait on the telemetry insert');
+  assert.ok(written, 'the row was built and the insert started before the response returned');
+  assert.deepEqual(Object.keys(written).sort(), EXPECTED_EVENT_KEYS);
+  assert.equal(written.depth, 'teaser');
+  assert.ok(written.detections.some((d) => d.id === 'klaviyo'));
+  await new Promise((r) => setTimeout(r, 45));
+  assert.equal(settled, true);
+  dbMod.insert = async () => [{id: 'scan-row'}];
+});
+
+// ---------- M13 Unit 2: detection feedback ----------
+const feedbackFn = require('../netlify/functions/detection-feedback.js');
+let fbCalls = [];
+function stubFeedback({scans = [{id: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee', depth: 'full'}], account = testAccount} = {}) {
+  fbCalls = [];
+  dbMod.enabled = true;
+  dbMod.select = async (table, query) => { fbCalls.push({op: 'select', table, query}); return table === 'scans' ? scans : []; };
+  dbMod.upsert = async (table, row, onConflict) => { fbCalls.push({op: 'upsert', table, row, onConflict}); return [row]; };
+  authMod.currentAccount = async () => (account ? {account, subscription: {plan: 'operator'}} : null);
+}
+const SCAN_UUID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+const fbEvent = (body) => ({httpMethod: 'POST', headers: {}, body: JSON.stringify(body)});
+const validFeedback = {scanId: SCAN_UUID, signatureId: 'klaviyo', verdict: 'incorrect'};
+
+t('feedback: the body validator accepts only ruleset ids and the three verdicts', () => {
+  assert.ok(feedbackFn.parseFeedback(JSON.stringify(validFeedback)).ok);
+  assert.equal(feedbackFn.parseFeedback('not json').ok, false);
+  assert.equal(feedbackFn.parseFeedback(JSON.stringify({...validFeedback, scanId: 'nope'})).ok, false);
+  assert.equal(feedbackFn.parseFeedback(JSON.stringify({...validFeedback, signatureId: 'not-a-signature'})).ok, false);
+  assert.equal(feedbackFn.parseFeedback(JSON.stringify({...validFeedback, verdict: 'maybe'})).ok, false);
+  assert.deepEqual([...feedbackFn.VERDICTS], ['correct', 'incorrect', 'unsure']);
+});
+ta('feedback: an anonymous caller is refused and reads nothing', async () => {
+  stubFeedback({account: null});
+  const res = await feedbackFn.handler(fbEvent(validFeedback));
+  assert.equal(res.statusCode, 401);
+  assert.deepEqual(fbCalls, [], 'no row is read or written for a caller with no session');
+});
+ta('feedback: a non-POST is refused', async () => {
+  stubFeedback({});
+  assert.equal((await feedbackFn.handler({httpMethod: 'GET', headers: {}})).statusCode, 405);
+});
+ta('feedback: another account\'s scan is indistinguishable from a missing one', async () => {
+  stubFeedback({scans: []});
+  const res = await feedbackFn.handler(fbEvent(validFeedback));
+  assert.equal(res.statusCode, 404);
+  assert.equal(fbCalls.filter((c) => c.op === 'upsert').length, 0);
+  assert.match(fbCalls[0].query, /account_id=eq\.acct-del/, 'ownership is checked server-side, not trusted from the body');
+});
+ta('feedback: a teaser-depth scan cannot be rated', async () => {
+  stubFeedback({scans: [{id: SCAN_UUID, depth: 'teaser'}]});
+  const res = await feedbackFn.handler(fbEvent(validFeedback));
+  assert.equal(res.statusCode, 409);
+  assert.equal(fbCalls.filter((c) => c.op === 'upsert').length, 0);
+});
+ta('feedback: changing an answer upserts on (account, scan, signature), never duplicates', async () => {
+  stubFeedback({});
+  const first = await feedbackFn.handler(fbEvent(validFeedback));
+  assert.equal(first.statusCode, 200);
+  const second = await feedbackFn.handler(fbEvent({...validFeedback, verdict: 'correct'}));
+  assert.equal(second.statusCode, 200);
+  const writes = fbCalls.filter((c) => c.op === 'upsert');
+  assert.equal(writes.length, 2);
+  writes.forEach((w) => {
+    assert.equal(w.table, 'detection_feedback');
+    assert.equal(w.onConflict, 'account_id,scan_id,signature_id');
+    assert.equal(feedbackFn.CONFLICT_TARGET, w.onConflict);
+    assert.deepEqual(Object.keys(w.row).sort(), ['account_id', 'scan_id', 'signature_id', 'updated_at', 'verdict']);
+    assert.equal(w.row.account_id, testAccount.id);
+    assert.equal(w.row.scan_id, SCAN_UUID);
+    assert.equal(w.row.signature_id, 'klaviyo');
+  });
+  assert.equal(writes[0].row.verdict, 'incorrect');
+  assert.equal(writes[1].row.verdict, 'correct', 'the second answer replaces the first');
+  assert.equal(JSON.parse(second.body).verdict, 'correct');
+});
+ta('feedback: a database failure is reported, not swallowed as success', async () => {
+  stubFeedback({});
+  dbMod.upsert = async () => { throw new Error('Supabase POST detection_feedback -> 500'); };
+  const res = await feedbackFn.handler(fbEvent(validFeedback));
+  assert.equal(res.statusCode, 502);
+  assert.equal(JSON.parse(res.body).ok, false);
+});
+
+t('feedback UI: both surfaces gate the control on a saved, full-depth report', () => {
+  // Asserted against the shipped pages because the gate is the privacy-relevant
+  // part: a teaser row names no signature, so a verdict against one would be a
+  // guess, and an anonymous visitor has no scan to attach it to.
+  const analysis = fs.readFileSync(path.join(__dirname, '../operator-url-analysis.html'), 'utf8');
+  assert.match(analysis, /payload\.entitled\s*&&\s*payload\.scanId/, 'the analysis page needs both the entitlement and the saved id');
+  assert.match(analysis, /feedbackScanId\s*&&\s*app\.id/, 'no control without a signature id to be right or wrong about');
+  assert.match(analysis, /detection-feedback/);
+  const dash = fs.readFileSync(path.join(__dirname, '../dashboard.html'), 'utf8');
+  assert.match(dash, /canRate\s*=\s*Boolean\(scanId\)\s*&&\s*rep\.depth\s*===\s*'full'/);
+  assert.match(dash, /detection-feedback/);
+  // Every verdict the endpoint accepts is offered, and each page's verdict
+  // strings are drawn from that set — a page cannot invent a fourth answer.
+  [analysis, dash].forEach((src) => {
+    const block = src.slice(src.indexOf('detection-feedback') - 2000, src.indexOf('detection-feedback') + 500);
+    [...feedbackFn.VERDICTS].forEach((v) => assert.match(block, new RegExp(`'${v}'`), `the page must offer "${v}"`));
+  });
+});
+
+// ---------- M13 Unit 3: the accuracy report ----------
+const accuracy = require('../scripts/rules-accuracy.js');
+t('accuracy: summarize counts frequency, verdicts, dead rules, and co-occurrence', () => {
+  const events = [
+    {detections: [{id: 'klaviyo', strength: 'detected', confidence: 88}, {id: 'judgeme', strength: 'likely', confidence: 60}]},
+    {detections: [{id: 'klaviyo', strength: 'possible', confidence: 25}, {id: 'judgeme', strength: 'detected', confidence: 78}]},
+    {detections: [{id: 'klaviyo', strength: 'detected', confidence: 90}, {id: 'retired-signature', strength: 'detected', confidence: 70}]}
+  ];
+  const feedback = [{signature_id: 'klaviyo', verdict: 'correct'}, {signature_id: 'klaviyo', verdict: 'incorrect'}, {signature_id: 'judgeme', verdict: 'unsure'}];
+  const s = accuracy.summarize(events, feedback);
+  assert.equal(s.scans, 3);
+  assert.equal(s.feedbackCount, 3);
+  const klaviyo = s.fired.find((r) => r.id === 'klaviyo');
+  assert.equal(klaviyo.fired, 3);
+  assert.deepEqual(klaviyo.strengths, {detected: 2, likely: 0, possible: 1});
+  assert.equal(klaviyo.correct, 1);
+  assert.equal(klaviyo.incorrect, 1);
+  assert.equal(s.fired.find((r) => r.id === 'judgeme').unsure, 1);
+  assert.deepEqual(s.pairs[0], {apps: ['judgeme', 'klaviyo'], count: 2});
+  assert.equal(s.fired.length, 2, 'only signatures still in rules.js are counted as fired');
+  assert.equal(s.dead.length, appSignatures.length - 2);
+  assert.ok(!s.dead.some((r) => r.id === 'klaviyo'));
+  assert.deepEqual(s.unknown, [{id: 'retired-signature', count: 1}]);
+});
+t('accuracy: an empty corpus reports every signature as never fired', () => {
+  const s = accuracy.summarize([], []);
+  assert.equal(s.scans, 0);
+  assert.equal(s.fired.length, 0);
+  assert.equal(s.dead.length, appSignatures.length);
+  assert.equal(s.pairs.length, 0);
+});
+ta('accuracy: with no database it says so and exits clean', async () => {
+  dbMod.enabled = false;
+  const logged = [];
+  const realLog = console.log;
+  console.log = (...args) => logged.push(args.join(' '));
+  let result;
+  try { result = await accuracy.main(); } finally { console.log = realLog; }
+  assert.deepEqual(result, {ok: false, reason: 'db-not-configured'});
+  assert.match(logged.join('\n'), /SUPABASE_URL/);
+  assert.match(logged.join('\n'), /nothing is inferred/i);
+  dbMod.enabled = true;
 });
 
 (async () => {

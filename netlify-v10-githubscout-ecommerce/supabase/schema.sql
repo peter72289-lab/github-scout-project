@@ -52,6 +52,56 @@ create table if not exists scans (
 );
 create index if not exists scans_account_idx on scans (account_id, created_at desc);
 
+-- PII-free record of what the detection engine did, one row per scan, written
+-- for anonymous and signed-in scans alike (netlify/functions/lib/telemetry.js).
+-- Deliberately NOT linked to accounts or scans: there is no key here that joins
+-- back to a customer. `store_hash` is an HMAC-SHA256 of the normalized
+-- storefront hostname keyed with SCAN_TELEMETRY_SALT, and is null when that
+-- secret is unset — never a bare digest, which a domain list would reverse.
+-- Retained 24 months, purged daily by netlify/functions/cleanup-scheduled.js.
+-- See docs/DATA-RETENTION.md.
+create table if not exists scan_events (
+  id uuid primary key default gen_random_uuid(),
+  occurred_at timestamptz not null default now(),
+  rules_version text,                            -- lib/rules.js RULES_VERSION at scan time
+  depth text not null default 'teaser',          -- teaser | full (what was served)
+  store_hash text,                               -- keyed hostname digest, or null
+  shopify_confirmed boolean not null default false,
+  crawl_ok boolean not null default false,
+  crawl_blocked boolean not null default false,
+  blocked_by text,                               -- bot-protection vendor, when named
+  blocked_reason text,                           -- http-status | challenge-page | low-success-ratio
+  pages_fetched int not null default 0,          -- count only; the URLs are not stored
+  sources_live int not null default 0,
+  sources_succeeded int not null default 0,
+  source_results jsonb not null default '[]'::jsonb,   -- [{id, ok}] per source, no detail strings
+  detections jsonb not null default '[]'::jsonb,       -- [{id, strength, confidence}], no evidence trails
+  detected_count int not null default 0,
+  strength_counts jsonb not null default '{}'::jsonb,
+  savings_suppressed_reason text,
+  duration_ms int
+);
+create index if not exists scan_events_occurred_idx on scan_events (occurred_at desc);
+create index if not exists scan_events_store_idx on scan_events (store_hash, occurred_at desc);
+
+-- Ground truth: a customer telling us a detection was right or wrong. This is
+-- the one signal no competitor can collect for this ruleset, so unlike
+-- scan_events it is deliberately identified — an anonymous verdict is spam.
+-- One row per (account, scan, signature): the unique constraint makes the
+-- endpoint idempotent, so changing an answer updates rather than duplicates.
+-- Cascades away with the account on erasure (netlify/functions/account-delete.js).
+create table if not exists detection_feedback (
+  id uuid primary key default gen_random_uuid(),
+  account_id uuid not null references accounts(id) on delete cascade,
+  scan_id uuid not null references scans(id) on delete cascade,
+  signature_id text not null,                    -- lib/rules.js appSignatures[].id
+  verdict text not null,                         -- correct | incorrect | unsure
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (account_id, scan_id, signature_id)
+);
+create index if not exists detection_feedback_signature_idx on detection_feedback (signature_id, verdict);
+
 create table if not exists usage (
   account_id uuid not null references accounts(id) on delete cascade,
   period text not null,                          -- 'YYYY-MM'
@@ -125,6 +175,8 @@ alter table magic_links enable row level security;
 alter table sessions enable row level security;
 alter table subscriptions enable row level security;
 alter table scans enable row level security;
+alter table scan_events enable row level security;
+alter table detection_feedback enable row level security;
 alter table usage enable row level security;
 alter table rate_limits enable row level security;
 alter table stripe_events enable row level security;
@@ -133,3 +185,5 @@ alter table stripe_events enable row level security;
 --   delete from magic_links where expires_at < now() - interval '1 day';
 --   delete from sessions where expires_at < now();
 --   delete from rate_limits where window_start < now() - interval '1 hour';
+--   delete from scan_events where occurred_at < now() - interval '24 months';
+-- netlify/functions/cleanup-scheduled.js already runs all four daily.

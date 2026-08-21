@@ -41,4 +41,11 @@ const insert = (table, row) => rest(table, {method: 'POST', body: row});
 const update = (table, query, patch) => rest(`${table}?${query}`, {method: 'PATCH', body: patch});
 const del = (table, query) => rest(`${table}?${query}`, {method: 'DELETE'});
 
-module.exports = {enabled, rest, rpc, select, insert, update, del};
+// Insert-or-update against a unique constraint, in one statement. `onConflict`
+// names the constrained columns, so a repeated submission updates the existing
+// row instead of racing a select-then-insert into a duplicate.
+const upsert = (table, row, onConflict) => rest(`${table}?on_conflict=${encodeURIComponent(onConflict)}`, {
+  method: 'POST', body: row, headers: {'Prefer': 'return=representation,resolution=merge-duplicates'}
+});
+
+module.exports = {enabled, rest, rpc, select, insert, update, del, upsert};

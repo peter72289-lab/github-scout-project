@@ -292,9 +292,13 @@ function crawlBlockedLabel(block) {
 }
 
 /**
- * Build the full report. depth: 'full' | 'teaser' (free tier sees teaser).
+ * Build the full report. Always full depth; `toTeaser` derives the free view.
+ * Split out from buildReport so a caller that needs the complete detection list
+ * (scan telemetry: every signature id, at every depth) can get it without
+ * running detectFromEvidence a second time over the same page haystacks.
  */
-function buildReport(scan, submission, depth = 'full') {
+function buildFullReport(scan, submission) {
+  const depth = 'full';
   const context = spendContext(submission.monthly_ad_spend || '');
   const detected = detectFromEvidence(scan);
   const savings = savingsFromDetected(detected, scan);
@@ -347,30 +351,46 @@ function buildReport(scan, submission, depth = 'full') {
     methodology: 'Detection: public storefront pages, headers, robots.txt, catalog endpoint, and DNS records matched against ruleset v' + RULES_VERSION + '. Costs are published-pricing benchmarks (cited where available), not store invoices. Savings shown only when paid apps are detected.'
   };
 
-  if (depth === 'teaser') {
-    return {
-      ...full,
-      detectedApps: detected.slice(0, 3).map((a) => ({
-        name: a.name, category: a.category, confidence: a.confidence,
-        strength: a.strength, countsTowardSavings: a.countsTowardSavings, monthlyCost: a.monthlyCost
-      })),
-      overlaps: overlaps.map((o) => ({category: o.category, apps: o.apps.length})),
-      recommendations: recommendations.slice(0, 2),
-      teaser: {
-        hiddenApps: Math.max(0, detected.length - 3),
-        hiddenRecommendations: Math.max(0, recommendations.length - 2),
-        message: detected.length > 3
-          ? `${detected.length - 3} more detected app(s), full evidence trails, overlap costing, and the action plan are in the full report.`
-          : 'Full evidence trails, overlap costing, and the action plan are in the full report.'
-      }
-    };
-  }
   return full;
+}
+
+// The free view. Derived from the full report rather than built separately, so
+// the two can never disagree about what was detected. Every field dropped here
+// is dropped on purpose: signature ids, benchmark costs, and evidence trails are
+// what the paid report sells.
+function toTeaser(full) {
+  const detected = full.detectedApps || [];
+  const recommendations = full.recommendations || [];
+  return {
+    ...full,
+    depth: 'teaser',
+    detectedApps: detected.slice(0, 3).map((a) => ({
+      name: a.name, category: a.category, confidence: a.confidence,
+      strength: a.strength, countsTowardSavings: a.countsTowardSavings, monthlyCost: a.monthlyCost
+    })),
+    overlaps: (full.overlaps || []).map((o) => ({category: o.category, apps: o.apps.length})),
+    recommendations: recommendations.slice(0, 2),
+    teaser: {
+      hiddenApps: Math.max(0, detected.length - 3),
+      hiddenRecommendations: Math.max(0, recommendations.length - 2),
+      message: detected.length > 3
+        ? `${detected.length - 3} more detected app(s), full evidence trails, overlap costing, and the action plan are in the full report.`
+        : 'Full evidence trails, overlap costing, and the action plan are in the full report.'
+    }
+  };
+}
+
+/**
+ * Build the report at the caller's depth. depth: 'full' | 'teaser'.
+ */
+function buildReport(scan, submission, depth = 'full') {
+  const full = buildFullReport(scan, submission);
+  return depth === 'teaser' ? toTeaser(full) : full;
 }
 
 module.exports = {
   spendContext, detectFromEvidence, savingsFromDetected, findOverlaps,
-  evidenceScore, buildRecommendations, buildReport, moneyRange,
+  evidenceScore, buildRecommendations, buildReport, buildFullReport, toTeaser, moneyRange,
   STRENGTH, DOLLAR_STRENGTHS, savingsGateReason, classifyStrength,
   crawlBlocked, crawlBlockedLabel, SUPPRESSION_BASIS
 };

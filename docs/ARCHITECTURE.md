@@ -54,36 +54,43 @@ Every piece of the Supabase, Stripe-webhook, and Resend path is coded but has ne
 
 ## Supabase tables (`v10/supabase/schema.sql`)
 
-| Table           | Key columns                                                                                                                                           | Notes                                                             |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `accounts`      | `id uuid`, `email unique`                                                                                                                             |                                                                   |
-| `magic_links`   | `account_id`, `token_hash`, `expires_at`, `used_at`                                                                                                   | index on `token_hash`                                             |
-| `sessions`      | `account_id`, `token_hash`, `expires_at`                                                                                                              | index on `token_hash`                                             |
-| `subscriptions` | `account_id`, `stripe_customer_id`, `stripe_subscription_id unique`, `plan` (operator/command/director), `status` (active/trialing/past_due/canceled) |                                                                   |
-| `scans`         | `account_id`, `store_url`, `depth`, `report jsonb`, `detected_count`, `evidence_score`                                                                | index `(account_id, created_at desc)`                             |
-| `usage`         | PK `(account_id, period 'YYYY-MM')`, `used`                                                                                                           | incremented by `usage_increment(p_account_id, p_period, p_max)`   |
-| `rate_limits`   | PK `key`, `count`, `window_start`                                                                                                                     | fixed window via `rate_limit_hit(p_key, p_window_seconds, p_max)` |
-| `stripe_events` | PK `id` (evt_...), `type`, `processed_at`                                                                                                             | webhook idempotency                                               |
+| Table           | Key columns                                                                                                                                                           | Notes                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `accounts`      | `id uuid`, `email unique`                                                                                                                                             |                                                                   |
+| `magic_links`   | `account_id`, `token_hash`, `expires_at`, `used_at`                                                                                                                   | index on `token_hash`                                             |
+| `sessions`      | `account_id`, `token_hash`, `expires_at`                                                                                                                              | index on `token_hash`                                             |
+| `subscriptions` | `account_id`, `stripe_customer_id`, `stripe_subscription_id unique`, `plan` (operator/director/unresolved), `status` (active/trialing/past_due/canceled/needs_review) |                                                                   |
+| `scans`         | `account_id`, `store_url`, `depth`, `report jsonb`, `detected_count`, `evidence_score`                                                                                | index `(account_id, created_at desc)`                             |
+| `usage`         | PK `(account_id, period 'YYYY-MM')`, `used`                                                                                                                           | incremented by `usage_increment(p_account_id, p_period, p_max)`   |
+| `rate_limits`   | PK `key`, `count`, `window_start`                                                                                                                                     | fixed window via `rate_limit_hit(p_key, p_window_seconds, p_max)` |
+| `stripe_events` | PK `id` (evt_...), `type`, `processed_at`                                                                                                                             | webhook idempotency                                               |
 
-All FKs are `on delete cascade`. RLS is enabled on all eight tables with no policies.
+| `scan_events` | PII-free, no FK to any account: `store_hash` (HMAC of hostname), `rules_version`, per-source results, detections with strength/confidence, crawl/block state | index `(occurred_at desc)`, `(store_hash, occurred_at desc)`; aged out at 24 months |
+| `detection_feedback` | `account_id`, `scan_id`, `signature_id`, `verdict` | unique `(account_id, scan_id, signature_id)` |
+
+All FKs are `on delete cascade`. RLS is enabled on all ten tables with no policies. `scan_events` is deliberately unlinked to any account, which is what keeps it out of an erasure request — see `docs/DATA-RETENTION.md`.
 
 ## Environment variables
 
-Verified with `grep -rn "process.env." v10/netlify/`. Nothing else in the function tree reads env.
+Verified with `grep -rhno "process\.env\.[A-Z_]*" netlify/functions` on 2026-08-21. If you add one, add it here in the same commit.
 
-| Variable                    | Read by                                                               | Effect when unset                                                                                              |
-| --------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `SUPABASE_URL`              | `lib/supabase.js:6`                                                   | `db.enabled=false`; auth and webhook return 503, scans still work anonymously                                  |
-| `SUPABASE_SERVICE_ROLE_KEY` | `lib/supabase.js:7`                                                   | same                                                                                                           |
-| `STRIPE_WEBHOOK_SECRET`     | `stripe-webhook.js:46`                                                | webhook returns 503                                                                                            |
-| `STRIPE_PRICE_OPERATOR`     | `stripe-webhook.js:16`                                                | plan map entry missing (map is only consulted via `session.metadata.price_id`, which Payment Links do not set) |
-| `STRIPE_PRICE_COMMAND`      | `stripe-webhook.js:17`                                                | same, for the retired tier                                                                                     |
-| `STRIPE_PRICE_DIRECTOR`     | `stripe-webhook.js:18`                                                | same                                                                                                           |
-| `RESEND_API_KEY`            | `lib/auth.js:130`                                                     | magic links are logged, not sent; user still sees "on its way"                                                 |
-| `AUTH_EMAIL_FROM`           | `lib/auth.js:131`                                                     | defaults to `login@transactional.githubscout.ai` (non-resolving domain)                                        |
-| `GHL_WEBHOOK_URL`           | `operator-url-scan.js:27`                                             | lead forwarding disabled (`{sent:false, reason:'not_configured'}`)                                             |
-| `LEAD_WEBHOOK_URL`          | `operator-url-scan.js:27`                                             | fallback name for the same                                                                                     |
-| `URL` (Netlify-provided)    | `auth-request-link.js:21`, `stripe-webhook.js:90`, `lib/guard.js:141` | magic-link base falls back to `localhost:8888` or empty string; UA falls back to `githubscout.example`         |
+| Variable                    | Read by                                                               | Effect when unset                                                                                                                           |
+| --------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SUPABASE_URL`              | `lib/supabase.js:6`                                                   | `db.enabled=false`; auth and webhook return 503, scans still work anonymously                                                               |
+| `SUPABASE_SERVICE_ROLE_KEY` | `lib/supabase.js:7`                                                   | same                                                                                                                                        |
+| `STRIPE_WEBHOOK_SECRET`     | `stripe-webhook.js:46`                                                | webhook returns 503                                                                                                                         |
+| `STRIPE_PRICE_OPERATOR`     | `stripe-webhook.js:16`                                                | plan map entry missing (map is only consulted via `session.metadata.price_id`, which Payment Links do not set)                              |
+| `STRIPE_PRICE_COMMAND`      | `stripe-webhook.js:17`                                                | same, for the retired tier                                                                                                                  |
+| `STRIPE_PRICE_DIRECTOR`     | `stripe-webhook.js:18`                                                | same                                                                                                                                        |
+| `RESEND_API_KEY`            | `lib/auth.js:130`                                                     | magic links are logged, not sent; user still sees "on its way"                                                                              |
+| `AUTH_EMAIL_FROM`           | `lib/auth.js:131`                                                     | defaults to `login@transactional.githubscout.ai` (non-resolving domain)                                                                     |
+| `GHL_WEBHOOK_URL`           | `operator-url-scan.js:27`                                             | lead forwarding disabled (`{sent:false, reason:'not_configured'}`)                                                                          |
+| `LEAD_WEBHOOK_URL`          | `operator-url-scan.js:27`                                             | fallback name for the same                                                                                                                  |
+| `STRIPE_SECRET_KEY`         | `stripe-webhook.js`                                                   | restricted READ-ONLY key; without it plan resolution falls back to session metadata, and a purchase with neither resolves to `needs_review` |
+| `STRIPE_BILLING_KEY`        | `account-delete.js`                                                   | restricted key with Subscriptions:write; without it an account with a live subscription cannot self-delete (409)                            |
+| `SCAN_CONTACT_EMAIL`        | `lib/guard.js`                                                        | no `From` header on outbound crawls; we do not invent an address                                                                            |
+| `SCAN_TELEMETRY_SALT`       | `lib/telemetry.js`                                                    | `store_hash` is written as null rather than an unkeyed digest; repeat-scan analysis is lost, nothing else                                   |
+| `URL` (Netlify-provided)    | `auth-request-link.js:21`, `stripe-webhook.js:90`, `lib/guard.js:141` | magic-link base falls back to `localhost:8888` or empty string; UA falls back to `githubscout.example`                                      |
 
 `health.js` checks presence of all of the above except `AUTH_EMAIL_FROM`, `URL`, and `STRIPE_PRICE_COMMAND`; its `stripe_prices` flag is `STRIPE_PRICE_OPERATOR` OR `STRIPE_PRICE_DIRECTOR`. No `.env` file exists anywhere in the repo; none of these are set on the live Netlify sites.
 
