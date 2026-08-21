@@ -6,6 +6,10 @@ const agg = require('../netlify/functions/lib/aggregate.js');
 
 let pass = 0; const fail = [];
 const t = (name, fn) => { try { fn(); pass++; } catch (e) { fail.push(`${name}: ${e.message}`); } };
+// Async cases are queued and drained after the sync ones so a rejected promise
+// cannot slip past the counter.
+const asyncTests = [];
+const ta = (name, fn) => { asyncTests.push([name, fn]); };
 
 // ---------- Phase 1 regression: spend tiers must NOT collapse ----------
 t('tier: under 10k', () => assert.equal(agg.spendContext('Under $10,000 a month').tier, 'under-10k'));
@@ -171,6 +175,80 @@ t('auth.isEmail validates', () => {
   assert.ok(auth.isEmail('a@b.co')); assert.ok(!auth.isEmail('nope')); assert.ok(!auth.isEmail('a@b'));
 });
 
-console.log(`\n${pass} passed, ${fail.length} failed`);
-if (fail.length) { fail.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
-console.log('All integrity, gating, rate-limit, and SSRF tests passed.');
+// ---------- Plans: the single source of truth for quota + price mapping ----------
+const plans = require('../netlify/functions/lib/plans.js');
+t('quotaFor: operator = 10 (terms.html:20)', () => assert.equal(plans.quotaFor('operator'), 10));
+t('quotaFor: director = 30, not 100 (terms.html:21, index.html:529)', () => assert.equal(plans.quotaFor('director'), 30));
+t('quotaFor: retired command grants nothing', () => assert.equal(plans.quotaFor('command'), null));
+t('quotaFor: unknown plan grants nothing (no operator fallback)', () => assert.equal(plans.quotaFor('nonsense'), null));
+t('quotaFor: missing plan grants nothing', () => assert.equal(plans.quotaFor(undefined), null));
+t('isRetired: command retired, live plans are not', () => {
+  assert.ok(plans.isRetired('command'));
+  assert.ok(!plans.isRetired('operator')); assert.ok(!plans.isRetired('director'));
+});
+t('PLANS holds only the two live plans at the sold prices', () => {
+  assert.deepEqual(plans.PLANS.map((p) => p.id), ['operator', 'director']);
+  assert.deepEqual(plans.PLANS.map((p) => p.monthlyPrice), [17, 37]);
+});
+t('planByPriceId maps env price ids to plans', () => {
+  process.env.STRIPE_PRICE_OPERATOR = 'price_test_operator';
+  process.env.STRIPE_PRICE_DIRECTOR = 'price_test_director';
+  assert.equal(plans.planByPriceId('price_test_operator').id, 'operator');
+  assert.equal(plans.planByPriceId('price_test_director').id, 'director');
+});
+t('planByPriceId returns null for unknown or missing price ids', () => {
+  assert.equal(plans.planByPriceId('price_never_seen'), null);
+  assert.equal(plans.planByPriceId(undefined), null);
+  assert.equal(plans.planByPriceId(''), null);
+});
+t('planByPriceId ignores the retired command price', () => {
+  process.env.STRIPE_PRICE_COMMAND = 'price_test_command';
+  assert.equal(plans.planByPriceId('price_test_command'), null);
+});
+
+// ---------- Webhook plan resolution (the shipped resolver, not a copy) ----------
+const webhook = require('../netlify/functions/stripe-webhook.js');
+const checkoutSession = (metadata) => ({id: 'cs_test_1', mode: 'subscription', object: 'checkout_session', metadata});
+t('stripe-webhook still exports a handler function', () => assert.equal(typeof webhook.handler, 'function'));
+t('stripe-webhook exports resolvePlanFromSession', () => assert.equal(typeof webhook.resolvePlanFromSession, 'function'));
+t('PLAN_BY_PRICE carries the live plans only', () => {
+  const map = webhook.PLAN_BY_PRICE();
+  assert.equal(map['price_test_operator'], 'operator');
+  assert.equal(map['price_test_director'], 'director');
+  assert.equal(map['price_test_command'], undefined);
+});
+ta('resolve: metadata.plan wins over every other signal', async () => {
+  const r = await webhook.resolvePlanFromSession(checkoutSession({plan: 'director', github_scout_plan: 'operator', price_id: 'price_test_operator'}));
+  assert.equal(r.plan, 'director'); assert.equal(r.source, 'metadata.plan');
+});
+ta('resolve: github_scout_plan (the key the live Payment Links carry)', async () => {
+  const r = await webhook.resolvePlanFromSession(checkoutSession({github_scout_plan: 'director'}));
+  assert.equal(r.plan, 'director'); assert.equal(r.source, 'metadata.github_scout_plan');
+});
+ta('resolve: price_id maps through lib/plans.js', async () => {
+  const r = await webhook.resolvePlanFromSession(checkoutSession({price_id: 'price_test_director'}));
+  assert.equal(r.plan, 'director'); assert.equal(r.source, 'metadata.price_id');
+});
+ta('resolve: retired command in metadata does not entitle', async () => {
+  const r = await webhook.resolvePlanFromSession(checkoutSession({plan: 'command'}));
+  assert.equal(r.plan, null);
+});
+ta('resolve: no signal is UNRESOLVED, never a silent operator', async () => {
+  delete process.env.STRIPE_SECRET_KEY; // no API fallback, so no network in tests
+  const r = await webhook.resolvePlanFromSession(checkoutSession({}));
+  assert.equal(r.plan, null); assert.equal(r.source, 'unresolved');
+  assert.equal(webhook.UNRESOLVED_PLAN, 'unresolved');
+});
+ta('resolve: missing metadata object does not throw', async () => {
+  const r = await webhook.resolvePlanFromSession({id: 'cs_test_2', mode: 'subscription'});
+  assert.equal(r.plan, null);
+});
+
+(async () => {
+  for (const [name, fn] of asyncTests) {
+    try { await fn(); pass++; } catch (e) { fail.push(`${name}: ${e.message}`); }
+  }
+  console.log(`\n${pass} passed, ${fail.length} failed`);
+  if (fail.length) { fail.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
+  console.log('All integrity, gating, rate-limit, SSRF, and plan-resolution tests passed.');
+})();

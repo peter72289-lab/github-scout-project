@@ -34,8 +34,8 @@ create table if not exists subscriptions (
   account_id uuid not null references accounts(id) on delete cascade,
   stripe_customer_id text,
   stripe_subscription_id text unique,
-  plan text not null default 'operator',       -- operator | command | director
-  status text not null default 'active',        -- active | trialing | past_due | canceled
+  plan text not null default 'operator',       -- operator | director | unresolved (command is retired; see netlify/functions/lib/plans.js)
+  status text not null default 'active',        -- active | trialing | past_due | canceled | needs_review (plan could not be resolved from the Stripe session)
   created_at timestamptz not null default now()
 );
 create index if not exists subscriptions_account_idx on subscriptions (account_id, status);
