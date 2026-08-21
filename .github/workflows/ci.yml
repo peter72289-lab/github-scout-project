@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: netlify-v10-githubscout-ecommerce
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Secrets scan (tracked files)
+        working-directory: .
+        run: |
+          # Fails on real-looking Stripe secret/webhook keys or Supabase service-role JWTs in
+          # tracked files. Docs and tests that merely name the pattern use short placeholders
+          # (sk_live_OLDKEY, whsec_x) and are excluded by the length/charset requirement.
+          hits=$(git ls-files -z -- . ':!.github/workflows/ci.yml' \
+            | xargs -0 grep -nEI \
+              -e 'sk_live_[A-Za-z0-9]{20,}' \
+              -e 'rk_live_[A-Za-z0-9]{20,}' \
+              -e 'whsec_[A-Za-z0-9]{20,}' \
+              -e 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}' \
+              -e 'service_role[[:space:]]*[:=][[:space:]]*["'"'"']?eyJ' \
+              || true)
+          if [ -n "$hits" ]; then
+            echo "Secret-shaped strings found in tracked files:"
+            echo "$hits"
+            exit 1
+          fi
+          echo "No secret-shaped strings in tracked files."
+
+      - name: Unit tests
+        # Invoked directly under Bun; `bun run test` would shell out to node via package.json.
+        run: bun tests/run-tests.js
+
+      - name: Preflight (launch-readiness gate)
+        # Known to fail on the [[LEGAL ENTITY]] placeholders in terms.html / privacy.html
+        # (PLT-3). Remove continue-on-error once TASKS_FOR_USER.md item 4 is answered.
+        continue-on-error: true
+        run: bun scripts/preflight.js
+
+      - name: Format check
+        # Scoped to the files adopted on 2026-08-20. The v10 tree (41 js/json/md files) predates Prettier;
+        # formatting it is a chore unit in docs/GAP-TO-MARKET.md, after which this widens to
+        # "**/*.{js,json,md}".
+        working-directory: .
+        run: bunx prettier@3 --check "*.md" "status/**/*.md" ".github/**/*.md" "docs/{GAP-TO-MARKET,PRODUCT-OVERVIEW,ARCHITECTURE}.md" ".prettierrc.json"
