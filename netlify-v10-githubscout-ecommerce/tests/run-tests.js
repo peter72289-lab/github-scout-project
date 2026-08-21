@@ -617,6 +617,168 @@ ta('quota: a release that fails does not break the response', async () => {
   assert.equal(JSON.parse(res.body).usage.used, 5, 'an unreleased reservation is reported honestly, not guessed at');
 });
 
+// ---------- M3/M4: deletion must not strand billing; data export exists ----------
+// The shipped handlers are exercised with only their two edges stubbed:
+// Supabase and the Stripe REST call. `acctCalls` records every side effect in
+// order, so "cancelled BEFORE any row was deleted" is an assertion, not a hope.
+const deleteFn = require('../netlify/functions/account-delete.js');
+const exportFn = require('../netlify/functions/account-export.js');
+const realFetch = globalThis.fetch;
+
+let acctCalls = [];
+let stripeReply = {ok: true, status: 200};
+const testAccount = {id: 'acct-del', email: 'buyer@example.com', created_at: '2026-01-02T03:04:05Z'};
+
+function stubAccount({subscriptions = [], usage = [], scans = [], stripe = {ok: true, status: 200}} = {}) {
+  acctCalls = [];
+  stripeReply = stripe;
+  dbMod.enabled = true;
+  dbMod.select = async (table) => {
+    acctCalls.push({op: 'select', table});
+    if (table === 'subscriptions') return subscriptions;
+    if (table === 'usage') return usage;
+    if (table === 'scans') return scans;
+    return [];
+  };
+  dbMod.del = async (table) => { acctCalls.push({op: 'del', table}); return null; };
+  authMod.currentAccount = async () => ({account: testAccount, subscription: subscriptions[0] || null});
+  globalThis.fetch = async (url, opts) => {
+    acctCalls.push({op: 'stripe', method: opts && opts.method, url: String(url)});
+    return {ok: stripeReply.ok, status: stripeReply.status, text: async () => ''};
+  };
+}
+const deleteEvent = () => ({httpMethod: 'POST', headers: {}, body: JSON.stringify({confirm: true})});
+const deletedTables = () => acctCalls.filter((c) => c.op === 'del').map((c) => c.table);
+const stripeCalls = () => acctCalls.filter((c) => c.op === 'stripe');
+const liveSub = {id: 'sub-row-1', stripe_subscription_id: 'sub_live_1', status: 'active', plan: 'operator'};
+
+ta('delete: an active subscription with no billing key refuses, and deletes nothing', async () => {
+  delete process.env.STRIPE_BILLING_KEY;
+  stubAccount({subscriptions: [liveSub]});
+  const res = await deleteFn.handler(deleteEvent());
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 409);
+  assert.equal(body.ok, false);
+  assert.equal(body.reason, 'subscription_active');
+  assert.match(body.error, /billing portal/i);
+  assert.match(body.error, /nothing has been deleted/i);
+  assert.deepEqual(deletedTables(), [], 'a subscription we cannot cancel must not lose its account row');
+  assert.equal(stripeCalls().length, 0, 'no key means no Stripe call was even attempted');
+});
+
+ta('delete: a failed Stripe cancel aborts the deletion entirely', async () => {
+  process.env.STRIPE_BILLING_KEY = 'rk_test_billing';
+  stubAccount({subscriptions: [liveSub], stripe: {ok: false, status: 500}});
+  const res = await deleteFn.handler(deleteEvent());
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 502);
+  assert.equal(body.reason, 'cancel_failed');
+  assert.match(body.error, /your data is untouched/i);
+  assert.equal(stripeCalls().length, 1, 'the cancel was attempted');
+  assert.deepEqual(deletedTables(), [], 'a stranded subscription is worse than a delayed deletion');
+});
+
+ta('delete: a 404 from Stripe also aborts (a wrong-mode key answers the same way)', async () => {
+  process.env.STRIPE_BILLING_KEY = 'rk_test_billing';
+  stubAccount({subscriptions: [liveSub], stripe: {ok: false, status: 404}});
+  const res = await deleteFn.handler(deleteEvent());
+  assert.equal(res.statusCode, 502);
+  assert.deepEqual(deletedTables(), []);
+});
+
+ta('delete: an account with no billable subscription deletes, and claims nothing more', async () => {
+  process.env.STRIPE_BILLING_KEY = 'rk_test_billing';
+  stubAccount({subscriptions: [{id: 'sub-row-0', stripe_subscription_id: 'sub_old_1', status: 'canceled', plan: 'operator'}]});
+  const res = await deleteFn.handler(deleteEvent());
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 200);
+  assert.equal(body.ok, true);
+  assert.equal(body.subscriptionsCanceled, 0);
+  assert.ok(!/cancel/i.test(body.message), 'do not claim a cancellation that never happened');
+  assert.deepEqual(deletedTables(), ['scans', 'sessions', 'magic_links', 'usage', 'subscriptions', 'accounts']);
+  assert.equal(stripeCalls().length, 0, 'a canceled row has nothing left to cancel');
+  assert.match(res.headers['Set-Cookie'], /gs_session=; /);
+});
+
+ta('delete: a one-time purchase row never reaches the Stripe subscriptions API', async () => {
+  // stripe-webhook.js stores the checkout session id when mode !== subscription.
+  // Nothing recurring exists, so it must neither block the delete nor be DELETEd.
+  delete process.env.STRIPE_BILLING_KEY;
+  stubAccount({subscriptions: [{id: 'sub-row-2', stripe_subscription_id: 'cs_test_9', status: 'active', plan: 'operator'}]});
+  const res = await deleteFn.handler(deleteEvent());
+  assert.equal(res.statusCode, 200);
+  assert.equal(JSON.parse(res.body).subscriptionsCanceled, 0);
+  assert.equal(stripeCalls().length, 0);
+  assert.equal(deletedTables().length, 6);
+});
+
+ta('delete: the success path cancels with Stripe BEFORE the first row is deleted', async () => {
+  process.env.STRIPE_BILLING_KEY = 'rk_test_billing';
+  stubAccount({subscriptions: [liveSub]});
+  const res = await deleteFn.handler(deleteEvent());
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 200);
+  assert.equal(body.subscriptionsCanceled, 1);
+  assert.match(body.message, /cancelled with Stripe/);
+  const call = stripeCalls()[0];
+  assert.equal(call.method, 'DELETE');
+  assert.equal(call.url, 'https://api.stripe.com/v1/subscriptions/sub_live_1');
+  const cancelAt = acctCalls.findIndex((c) => c.op === 'stripe');
+  const firstDelete = acctCalls.findIndex((c) => c.op === 'del');
+  assert.ok(cancelAt < firstDelete, `cancel (${cancelAt}) must precede the first delete (${firstDelete})`);
+  assert.deepEqual(deletedTables(), ['scans', 'sessions', 'magic_links', 'usage', 'subscriptions', 'accounts']);
+});
+
+ta('delete: a past_due subscription still counts as billing', async () => {
+  delete process.env.STRIPE_BILLING_KEY;
+  stubAccount({subscriptions: [{id: 'sub-row-3', stripe_subscription_id: 'sub_live_2', status: 'past_due', plan: 'operator'}]});
+  const res = await deleteFn.handler(deleteEvent());
+  assert.equal(res.statusCode, 409);
+  assert.deepEqual(deletedTables(), []);
+  assert.ok(deleteFn.BILLABLE_STATUS.has('needs_review'), 'an unresolved paid purchase is still charging the card');
+  assert.ok(!deleteFn.BILLABLE_STATUS.has('canceled'));
+});
+
+ta('export: refuses without a session', async () => {
+  stubAccount({});
+  authMod.currentAccount = async () => null;
+  const res = await exportFn.handler({httpMethod: 'GET', headers: {}});
+  assert.equal(res.statusCode, 401);
+  assert.equal(JSON.parse(res.body).ok, false);
+  assert.equal(acctCalls.filter((c) => c.op === 'select').length, 0, 'no data is read for an anonymous caller');
+});
+
+ta('export: refuses a non-GET method', async () => {
+  stubAccount({});
+  const res = await exportFn.handler({httpMethod: 'POST', headers: {}});
+  assert.equal(res.statusCode, 405);
+});
+
+ta('export: returns the whole account as a JSON attachment, without Stripe ids', async () => {
+  stubAccount({
+    subscriptions: [{plan: 'operator', status: 'active', created_at: '2026-02-01T00:00:00Z', stripe_customer_id: 'cus_leak', stripe_subscription_id: 'sub_leak'}],
+    usage: [{period: '2026-08', used: 3}],
+    scans: [{id: 'scan-1', store_url: 'https://store.example', depth: 'full', detected_count: 2, evidence_score: 71, report: {summary: {detectedCount: 2}}, created_at: '2026-08-01T00:00:00Z'}]
+  });
+  const res = await exportFn.handler({httpMethod: 'GET', headers: {}});
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.headers['Content-Type'], 'application/json');
+  assert.match(res.headers['Content-Disposition'], /^attachment; filename="githubscout-account-export-\d{4}-\d{2}-\d{2}\.json"$/);
+  assert.equal(res.headers['Cache-Control'], 'no-store');
+  const body = JSON.parse(res.body);
+  assert.deepEqual(Object.keys(body), ['ok', 'format', 'generated_at', 'account', 'subscriptions', 'usage', 'scans', 'not_included']);
+  assert.equal(body.format, exportFn.EXPORT_FORMAT);
+  assert.equal(body.account.email, testAccount.email);
+  assert.deepEqual(body.subscriptions, [{plan: 'operator', status: 'active', created_at: '2026-02-01T00:00:00Z'}]);
+  assert.ok(!/cus_leak|sub_leak/.test(res.body), 'internal Stripe ids must not be echoed into a downloadable file');
+  assert.deepEqual(body.usage, [{period: '2026-08', used: 3}]);
+  assert.equal(body.scans[0].report.summary.detectedCount, 2, 'the full saved report is included, not just the row summary');
+  // privacy.html promises export; the file must not read broader than the DB is.
+  assert.match(body.not_included.payment_records, /Stripe/);
+  assert.match(body.not_included.auth_tokens, /hash/i);
+  globalThis.fetch = realFetch;
+});
+
 (async () => {
   for (const [name, fn] of asyncTests) {
     try { await fn(); pass++; } catch (e) { fail.push(`${name}: ${e.message}`); }

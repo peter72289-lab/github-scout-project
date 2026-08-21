@@ -15,6 +15,11 @@ window.GITHUB_SCOUT_LAUNCH_CONFIG = {
     annualMonthsCharged: 10
   },
   agencyContactUrl: 'agency-pricing.html',
+  // Stripe Customer Portal login link (Stripe Dashboard -> Settings -> Billing
+  // -> Customer portal -> "Create a login link"). Empty until the owner creates
+  // it; every [data-portal-link] control stays out of the DOM while it is empty
+  // rather than shipping a dead cancel link.
+  stripeCustomerPortalUrl: '',
   metaPixelId: '',
   analyticsEnabled: true
 };

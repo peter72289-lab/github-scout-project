@@ -29,6 +29,7 @@ scanning, accounts, entitlements, quotas, saved scans, and a dashboard.
 | `STRIPE_PRICE_OPERATOR` / `STRIPE_PRICE_DIRECTOR` | plan mapping | Stripe price IDs for the two live plans |
 | `STRIPE_PRICE_COMMAND` | nothing — **retired** | The `command` tier was withdrawn (`/checkout-command*` 301s in `netlify.toml`). No code reads this var; delete it if it is set |
 | `STRIPE_SECRET_KEY` | automatic plan resolution (optional) | **Restricted, read-only key** with `checkout_sessions:read` + `prices:read` only. Lets the webhook ask Stripe which price the buyer actually paid, so Director purchases resolve to `director` with no metadata wiring. Never use a full secret key here |
+| `STRIPE_BILLING_KEY` | cancelling billing on account deletion (optional) | **Restricted key, separate from `STRIPE_SECRET_KEY`**, with exactly one permission: **Subscriptions → write** (Stripe grants read alongside write; grant nothing else). Used only by `account-delete.js` to `DELETE /v1/subscriptions/{id}` before erasing rows. Kept apart from the webhook's read-only key on purpose: the webhook is a public, unauthenticated endpoint and must never hold write access to billing. Without this var, an account with a live subscription cannot self-delete — it is refused with a pointer to the Customer Portal (see below) |
 | `RESEND_API_KEY` | sign-in + fulfillment emails | Without it, links are logged to function logs only |
 | `AUTH_EMAIL_FROM` | email sender | e.g. `Scout <login@yourdomain>` (domain must be verified in Resend) |
 | `GHL_WEBHOOK_URL` | lead forwarding (optional) | unchanged from V10 |
@@ -61,6 +62,16 @@ work; accounts/persistence simply stay off.
      copy Payment Link metadata onto the checkout session unless the link is
      configured to, so verify on a real test-mode purchase that the resulting
      `subscriptions` row shows the plan you sold.
+2b. **Stripe Customer Portal** (owner action, Dashboard only): Settings →
+   Billing → Customer portal → enable cancellation and payment-method updates →
+   create a login link. Paste it into `stripeCustomerPortalUrl` in
+   `assets/launch-config.js`. Until it is filled in, the "Manage billing or
+   cancel" controls on `dashboard.html` and `refunds.html` are removed from the
+   page (never rendered as dead links) and a support fallback is shown instead.
+   Selling a subscription online without a working online cancel path is not
+   allowed under California's Automatic Renewal Law, so treat this as required
+   before the first live sale, not optional polish. Set `STRIPE_BILLING_KEY`
+   (table above) at the same time so account deletion can cancel billing itself.
 3. **Resend** (or swap the small `sendMagicEmail` function for your ESP):
    verify your sending domain, set `RESEND_API_KEY` + `AUTH_EMAIL_FROM`.
 4. **Netlify**: set env vars, deploy this directory.
