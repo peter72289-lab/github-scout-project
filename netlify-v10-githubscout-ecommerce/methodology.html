@@ -75,6 +75,10 @@ a{color:var(--amber)}
 
   <h2>Limits we're upfront about</h2>
   <p>Server-side integrations, consent-gated scripts, and tag-manager-injected tools can be invisible to external scanning. When the scan sees little, the report says so and recommends an admin-side audit rather than guessing. The scanner fetches only public pages, respects a strict size/time budget, and never authenticates to your store.</p>
+  <p>Some stores refuse automated traffic outright. When bot protection returns a refusal or a challenge page instead of the store, the report says the store blocked the scan — it does not report that as an empty stack. Nothing is estimated from a scan that saw nothing.</p>
+
+  <h2>How the scanner requests pages</h2>
+  <p>The scanner sends the same request headers a desktop browser sends, and fetches a fixed, small set of pages any logged-out visitor can reach: your homepage, your cart page, one product page, <code>/robots.txt</code>, and <code>/products.json</code>. It reads each response once, caps response size and time, and never logs in, submits a form, or places an order. Contact details for the crawler are published at <a href="/.well-known/security.txt">/.well-known/security.txt</a>.</p>
 
   <p style="margin-top:36px"><a href="/operator-url-analysis.html">Run a scan</a> · <a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a></p>
 </main>

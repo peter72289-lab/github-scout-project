@@ -11,9 +11,33 @@
 
 const https = require('node:https');
 const http = require('node:http');
+const zlib = require('node:zlib');
 const dns = require('node:dns');
 const net = require('node:net');
 const {URL} = require('node:url');
+
+// --- Request identity ------------------------------------------------------
+// We identify ourselves. A browser-shaped User-Agent was tried and measured
+// against five live storefronts (bombas, gymshark, allbirds, brooklinen,
+// ruggable, `/` and `/products.json` each): it changed zero source counts.
+// bombas.com refuses us because it serves a JavaScript security checkpoint that
+// no header set defeats, not because of the UA.
+//
+// So the disguise bought nothing, and it would have cost something real:
+// robots.txt is fetched here as an evidence source but its Disallow rules are
+// NOT evaluated, and Shopify's default robots.txt disallows `/cart`, which the
+// cart adapter fetches. Ignoring Disallow while wearing a browser's UA is
+// evasion. Ignoring it under a name the site operator can read, block, and
+// contact is a disagreement conducted in the open. Until the Disallow question
+// is decided (TASKS_FOR_USER.md; it changes the published live-source count),
+// we stay identifiable.
+//
+// This is also the product's whole differentiator: an integrity-first scanner
+// does not sneak.
+const SCAN_USER_AGENT = `Mozilla/5.0 (compatible; GitHubScoutOperatorScan/2.0; +${process.env.URL || 'https://githubscout.example'})`;
+const ACCEPT_LANGUAGE = 'en-US,en;q=0.9';
+// Only encodings decodeStream() below actually decodes may be advertised.
+const ACCEPT_ENCODING = 'gzip, deflate, br';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX = 12;
@@ -111,6 +135,21 @@ function guardedRequest(url, {headers = {}, timeoutMs = FETCH_TIMEOUT_MS} = {}) 
   });
 }
 
+// Because we advertise gzip/deflate/br we must decode them. `createUnzip`
+// auto-detects gzip vs zlib-deflate framing; an unknown or absent encoding is
+// passed through untouched. Raw (headerless) deflate is not decodable here and
+// fails like any other unreadable body — no CDN in front of a Shopify
+// storefront serves it, and guessing at a body we cannot read would be worse.
+function decodeStream(res) {
+  const encoding = String(res.headers['content-encoding'] || '').toLowerCase().trim();
+  if (encoding === 'gzip' || encoding === 'x-gzip' || encoding === 'deflate') return res.pipe(zlib.createUnzip());
+  if (encoding === 'br') return res.pipe(zlib.createBrotliDecompress());
+  return res;
+}
+
+// The cap is applied to the DECOMPRESSED stream, so it still bounds memory for
+// a compression bomb exactly as it does for an oversized plain body: the moment
+// the decoded text reaches maxChars both streams are destroyed.
 function readLimitedBody(res, maxChars = MAX_HTML_CHARS) {
   return new Promise((resolve, reject) => {
     const contentLength = Number(res.headers['content-length'] || 0);
@@ -118,15 +157,34 @@ function readLimitedBody(res, maxChars = MAX_HTML_CHARS) {
       res.destroy();
       return reject(new Error('Response too large to scan safely.'));
     }
+    const stream = decodeStream(res);
+    const stop = () => { if (stream !== res) stream.destroy(); res.destroy(); };
     let body = '';
-    res.setEncoding('utf8');
-    res.on('data', (chunk) => {
+    let settled = false;
+    stream.setEncoding('utf8');
+    stream.on('data', (chunk) => {
       body += chunk;
-      if (body.length >= maxChars) { res.destroy(); resolve(body.slice(0, maxChars)); }
+      if (body.length >= maxChars && !settled) { settled = true; stop(); resolve(body.slice(0, maxChars)); }
     });
-    res.on('end', () => resolve(body.slice(0, maxChars)));
-    res.on('error', reject);
+    stream.on('end', () => { if (!settled) { settled = true; resolve(body.slice(0, maxChars)); } });
+    stream.on('error', (e) => { if (!settled) { settled = true; stop(); reject(e); } });
+    if (stream !== res) res.on('error', (e) => { if (!settled) { settled = true; stop(); reject(e); } });
   });
+}
+
+// Headers sent on every outbound storefront fetch. `From` is only added when a
+// contact mailbox is configured; we never fabricate an address that would
+// bounce.
+function requestHeaders(accept) {
+  const headers = {
+    'User-Agent': SCAN_USER_AGENT,
+    'Accept': accept,
+    'Accept-Language': ACCEPT_LANGUAGE,
+    'Accept-Encoding': ACCEPT_ENCODING
+  };
+  const contact = String(process.env.SCAN_CONTACT_EMAIL || '').trim();
+  if (contact) headers['From'] = contact;
+  return headers;
 }
 
 /**
@@ -136,12 +194,7 @@ function readLimitedBody(res, maxChars = MAX_HTML_CHARS) {
 async function fetchPublic(target, {accept = 'text/html,application/xhtml+xml,application/json,text/plain', maxChars = MAX_HTML_CHARS, allowTypes = null} = {}) {
   let url = target instanceof URL ? target : normalizeUrl(target);
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const {res} = await guardedRequest(url, {
-      headers: {
-        'User-Agent': `Mozilla/5.0 (compatible; GitHubScoutOperatorScan/2.0; +${process.env.URL || 'https://githubscout.example'})`,
-        'Accept': accept
-      }
-    });
+    const {res} = await guardedRequest(url, {headers: requestHeaders(accept)});
     if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
       res.resume();
       const location = res.headers.location;
@@ -193,6 +246,7 @@ async function checkRateLimitShared(ip, supabase) {
 
 module.exports = {
   normalizeUrl, assertPublicHostname, isPrivateIpv4, isPrivateIpv6,
-  guardedLookup, fetchPublic, clientIp, checkRateLimit, checkRateLimitShared,
-  rateBuckets, RATE_LIMIT_MAX, MAX_HTML_CHARS
+  guardedLookup, fetchPublic, requestHeaders, readLimitedBody, clientIp,
+  checkRateLimit, checkRateLimitShared,
+  rateBuckets, RATE_LIMIT_MAX, MAX_HTML_CHARS, SCAN_USER_AGENT
 };

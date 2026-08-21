@@ -36,6 +36,8 @@
     .metric p{font-size:14px;color:var(--muted);line-height:1.45;margin:9px 0 0}
     .status-strip{margin-top:22px;border:1px solid rgba(80,216,160,.35);background:rgba(80,216,160,.09);padding:16px 18px;color:var(--body);font-size:15px;line-height:1.55}
     .status-strip strong{color:var(--green)}
+    .status-strip.blocked{border-color:rgba(245,176,48,.45);background:rgba(245,176,48,.09)}
+    .status-strip.blocked strong{color:var(--amber)}
     .tool-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
     .mini-btn{border:1px solid var(--blt);background:rgba(22,40,64,.88);color:var(--body);padding:11px 13px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:900;cursor:pointer}
     .mini-btn.primary{background:var(--amber);border-color:var(--amber);color:var(--black)}
@@ -221,10 +223,17 @@
 
     // lib/aggregate.js summary.savingsSuppressedReason.
     const SUPPRESSION_COPY = {
+      'crawl-blocked': 'This store blocked our automated requests, so no page of it was read. Nothing here is a finding about the store.',
       'not-shopify': 'This does not look like a Shopify storefront, so no savings estimate is shown.',
       'no-pages-fetched': 'We could not fetch any page from this storefront, so no savings estimate is shown. It may be blocking automated requests.',
       'no-paid-detections': 'No paid app signatures were detected, so there is nothing to estimate.'
     };
+
+    // lib/aggregate.js crawl.blocked. A blocked crawl and a clean stack are not
+    // the same answer and must never share a rendering.
+    function isBlocked(analysis) {
+      return Boolean(analysis && !analysis.pending && analysis.crawl && analysis.crawl.blocked);
+    }
 
     function domainFromUrl(value) {
       try {
@@ -271,6 +280,7 @@
 
     function statusPrefix(analysis) {
       if (analysis.pending) return analysis.state === 'failed' ? 'Scan unavailable: ' : 'Scanning: ';
+      if (isBlocked(analysis)) return 'Store blocked the scan: ';
       return analysis.crawl?.ok ? 'Live crawl complete: ' : 'Crawl incomplete: ';
     }
 
@@ -298,13 +308,20 @@
 
       if (typeof summary.evidenceScore === 'number') {
         setText('#priorityScore', String(summary.evidenceScore));
-        setText('#evidenceNote', 'How much this scan actually saw, out of 100. Not a savings figure.');
+        setText('#evidenceNote', isBlocked(analysis)
+          ? 'Low because the store refused the scan, not because the store is lean.'
+          : 'How much this scan actually saw, out of 100. Not a savings figure.');
       } else {
         setText('#priorityScore', 'Not scored');
         setText('#evidenceNote', 'The scan did not return an evidence score.');
       }
 
-      if (typeof summary.detectedCount === 'number') {
+      if (isBlocked(analysis)) {
+        // A blocked crawl saw nothing, so a count of 0 is not a measurement of
+        // the store. Say what happened instead of printing a number.
+        setText('#detectedCount', 'Not visible');
+        setText('#detectedNote', 'The store blocked the scan, so no signal count was measured. This is not a count of zero.');
+      } else if (typeof summary.detectedCount === 'number') {
         setText('#detectedCount', String(summary.detectedCount));
         const counts = summary.strengthCounts;
         setText('#detectedNote', counts && summary.detectedCount > 0
@@ -323,6 +340,7 @@
       const status = document.querySelector('#scanStatus');
       if (status) {
         status.innerHTML = '';
+        status.classList.toggle('blocked', isBlocked(analysis));
         const strong = document.createElement('strong');
         strong.textContent = statusPrefix(analysis);
         status.append(strong, document.createTextNode(analysis.crawl?.statusLabel || 'No status was returned for this scan.'));
@@ -334,6 +352,8 @@
       trackEvent('analysis_rendered', {
         detectedCount: analysis.detectedApps?.length || 0,
         crawlOk: Boolean(analysis.crawl?.ok),
+        crawlBlocked: isBlocked(analysis),
+        blockedBy: analysis.crawl?.blockedBy ?? null,
         score: analysis.summary?.evidenceScore ?? null
       });
     }
@@ -360,6 +380,8 @@
           list.appendChild(analysis.state === 'failed'
             ? emptyCard('No recommendations', 'The scan did not finish, so there is nothing to compare yet. Try the URL again, or run the audit from inside the Shopify admin.')
             : emptyCard('Waiting for the crawl', 'Recommendations appear once the live crawl returns. Nothing is shown before then.'));
+        } else if (isBlocked(analysis)) {
+          list.appendChild(emptyCard('The store blocked the scan', 'No storefront page was read, so there is nothing to compare. Export the installed app list from Shopify admin > Settings > Apps and sales channels and review that instead.'));
         } else {
           list.appendChild(emptyCard('No recommendations', 'This scan produced no recommendation the evidence supports.'));
         }
@@ -491,6 +513,9 @@
           span.textContent = analysis.state === 'failed'
             ? 'The crawl did not finish, so no signal is reported. This is not a finding about the store.'
             : 'Public app signatures appear here once the crawl returns.';
+        } else if (isBlocked(analysis)) {
+          strong.textContent = 'The store blocked the scan';
+          span.textContent = `${analysis.crawl.blockedBy ? analysis.crawl.blockedBy + ' bot protection' : 'Bot protection'} refused our requests, so no storefront page was read and nothing could be detected. An empty list here means we could not look, not that the stack is clean. Export the installed app list from Shopify admin > Settings > Apps and sales channels and review that instead.`;
         } else {
           strong.textContent = 'No public app signatures confirmed';
           span.textContent = 'The store may still use apps behind a tag manager, bundled theme script, customer account flow, checkout extension, or server-side integration.';

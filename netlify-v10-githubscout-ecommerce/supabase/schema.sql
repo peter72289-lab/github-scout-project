@@ -87,6 +87,25 @@ begin
   return json_build_object('allowed', true, 'used', v_used);
 end $$;
 
+-- Release a reservation taken by usage_increment for a scan that produced no
+-- evidence (blocked or failed crawl). See netlify/functions/operator-url-scan.js
+-- reserveQuota() for why the credit is taken up front and released here rather
+-- than checked first: usage_increment must stay the single atomic gate.
+-- Floored at zero so a replayed or duplicated release can never mint credits.
+-- Returns {released, used}.
+create or replace function usage_decrement(p_account_id uuid, p_period text)
+returns json language plpgsql as $$
+declare v_used int;
+begin
+  update usage set used = greatest(0, used - 1)
+  where account_id = p_account_id and period = p_period
+  returning used into v_used;
+  if v_used is null then
+    return json_build_object('released', false, 'used', 0);
+  end if;
+  return json_build_object('released', true, 'used', v_used);
+end $$;
+
 -- Atomic shared rate limit (fixed window). Returns {allowed, remaining}.
 create or replace function rate_limit_hit(p_key text, p_window_seconds int, p_max int)
 returns json language plpgsql as $$

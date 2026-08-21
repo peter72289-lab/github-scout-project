@@ -127,11 +127,22 @@ function moneyRange(low, high, unit = '/mo') {
   return `${money.format(Math.round(low))}-${money.format(Math.round(high))}${unit}`;
 }
 
+// True when the crawl was refused by bot protection (lib/adapters.js
+// summarizeBlock). Kept separate from "nothing found" everywhere it is used.
+function crawlBlocked(scan) {
+  return Boolean(scan && scan.crawlBlock && scan.crawlBlock.blocked);
+}
+
 // The crawl gate: dollars require that the scan actually reached the thing it
 // is pricing. A domain that is not a Shopify storefront, or a storefront no
 // page of which was fetched, yields no estimate — never a smaller one.
+// `crawl-blocked` is checked first because it is the *cause* of the other two:
+// a store that refuses us is also unconfirmable as Shopify, and telling a
+// merchant "this is not a Shopify store" when their edge simply refused us
+// would be a false statement about their store.
 // Returns null when the gate passes, otherwise the machine-readable reason.
 function savingsGateReason(scan) {
+  if (crawlBlocked(scan)) return 'crawl-blocked';
   if (!scan || !scan.shopifyConfirmed) return 'not-shopify';
   if (((scan && scan.pages) || []).length < 1) return 'no-pages-fetched';
   return null;
@@ -143,7 +154,8 @@ function billableDetections(detectedApps) {
 }
 
 const SUPPRESSION_BASIS = {
-  'not-shopify': 'No savings estimate: this URL was not confirmed as a Shopify storefront, so app costs cannot be attributed to a store.',
+  'crawl-blocked': 'No savings estimate: the store refused our automated requests, so no page of it was seen. This says nothing about which apps the store runs.',
+  'not-shopify':'No savings estimate: this URL was not confirmed as a Shopify storefront, so app costs cannot be attributed to a store.',
   'no-pages-fetched': 'No savings estimate: no storefront page could be fetched, so nothing was observed running on the site.',
   'no-paid-detections': 'No paid app signatures were seen on the storefront; no savings estimate is made. Possible-strength signals (DNS or robots.txt only) are reported but never priced.'
 };
@@ -206,7 +218,26 @@ function evidenceScore(scan, detectedApps) {
   return src + det + corr;
 }
 
-function buildRecommendations(detectedApps, overlaps, goal) {
+// The only recommendation a blocked crawl may produce. It replaces the whole
+// list rather than joining it, because every other recommendation on this page
+// is a statement about what was observed on the storefront and nothing was.
+function blockedRecommendation(scan) {
+  const block = (scan && scan.crawlBlock) || {};
+  const who = block.vendor ? `${block.vendor} bot protection` : 'bot protection on the store';
+  return {
+    category: 'Access',
+    title: 'The store blocked the scan',
+    severity: 'High',
+    current: `${who} refused our requests, so no storefront page was read. No conclusion about this store's apps can be drawn from this scan, in either direction.`,
+    recommend: 'Run the audit from inside the Shopify admin instead: the app list there is the complete, authoritative version of what external scanning was prevented from seeing.',
+    monthly: null,
+    confidence: 'No detection was possible',
+    action: 'Open Shopify admin > Settings > Apps and sales channels, export the installed app list, and re-run the review against that list.'
+  };
+}
+
+function buildRecommendations(detectedApps, overlaps, goal, scan) {
+  if (crawlBlocked(scan)) return [blockedRecommendation(scan)];
   const recs = [];
   overlaps.forEach((o) => recs.push({
     category: o.category, title: `Consolidate ${o.category}`, severity: 'High',
@@ -247,6 +278,19 @@ function buildActionPlan(urgency) {
   ];
 }
 
+// The one sentence a merchant reads first when their store refused us. It has
+// to say three things and no more: they blocked us, this is not a finding about
+// their stack, and here is the way to get the answer anyway.
+function crawlBlockedLabel(block) {
+  const who = block.vendor ? `${block.vendor} bot protection` : 'Bot protection on this store';
+  const how = block.reason === 'http-status'
+    ? `refused our requests (HTTP ${block.signals.find((s) => typeof s.status === 'number')?.status ?? 'error'})`
+    : block.reason === 'challenge-page'
+      ? 'answered with an automated-traffic challenge instead of the store pages'
+      : 'answered every request without ever returning a store page';
+  return `${who} ${how}, so no page of the storefront was read. This is not a finding about the store's apps — a blocked scan and a clean stack look identical from outside, and we will not report one as the other. Export the installed app list from Shopify admin > Settings > Apps and sales channels and review that instead.`;
+}
+
 /**
  * Build the full report. depth: 'full' | 'teaser' (free tier sees teaser).
  */
@@ -261,7 +305,8 @@ function buildReport(scan, submission, depth = 'full') {
     possible: detected.filter((a) => a.strength === STRENGTH.POSSIBLE).length
   };
   const score = evidenceScore(scan, detected);
-  const recommendations = buildRecommendations(detected, overlaps, submission.primary_goal || '');
+  const recommendations = buildRecommendations(detected, overlaps, submission.primary_goal || '', scan);
+  const block = (scan.crawlBlock && scan.crawlBlock.blocked) ? scan.crawlBlock : null;
 
   const full = {
     rulesVersion: RULES_VERSION,
@@ -270,9 +315,17 @@ function buildReport(scan, submission, depth = 'full') {
       ok: (scan.pages || []).length > 0,
       shopifyConfirmed: Boolean(scan.shopifyConfirmed),
       pagesFetched: (scan.pages || []).map((p) => p.url),
-      statusLabel: (scan.pages || []).length
-        ? `Checked ${scan.sourcesSucceeded} of ${scan.sourcesLive} live sources; fetched ${(scan.pages || []).length} page(s).`
-        : 'Live crawl unavailable. No savings estimate is shown without evidence.'
+      // Machine-readable blocked state. `blocked` is what the client branches
+      // on; the rest is for the evidence trail and support triage.
+      blocked: Boolean(block),
+      blockedBy: block ? (block.vendor || null) : null,
+      blockedReason: block ? block.reason : null,
+      blockedSignals: block ? block.signals.map((s) => ({status: s.status, reason: s.reason, vendor: s.vendor || null})) : [],
+      statusLabel: block
+        ? crawlBlockedLabel(block)
+        : ((scan.pages || []).length
+          ? `Checked ${scan.sourcesSucceeded} of ${scan.sourcesLive} live sources; fetched ${(scan.pages || []).length} page(s).`
+          : 'Live crawl unavailable. No savings estimate is shown without evidence.')
     },
     sources: {
       live: scan.sourcesLive, succeeded: scan.sourcesSucceeded,
@@ -318,5 +371,6 @@ function buildReport(scan, submission, depth = 'full') {
 module.exports = {
   spendContext, detectFromEvidence, savingsFromDetected, findOverlaps,
   evidenceScore, buildRecommendations, buildReport, moneyRange,
-  STRENGTH, DOLLAR_STRENGTHS, savingsGateReason, classifyStrength
+  STRENGTH, DOLLAR_STRENGTHS, savingsGateReason, classifyStrength,
+  crawlBlocked, crawlBlockedLabel, SUPPRESSION_BASIS
 };

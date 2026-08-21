@@ -34,15 +34,63 @@ async function sendWebhook(submission, summary) {
   } catch (e) { return {sent: false, reason: e.message}; }
 }
 
+const usagePeriod = () => new Date().toISOString().slice(0, 7); // YYYY-MM
+
+// A scan "produced something" when at least one storefront page was actually
+// read and the crawl was not refused by bot protection. That is deliberately
+// the same bar lib/aggregate.js uses to allow a dollar figure (`no-pages-fetched`
+// / `crawl-blocked` in savingsGateReason): if the report cannot contain a single
+// storefront-derived finding, the customer did not get a scan.
+function producedEvidence(report) {
+  return Boolean(report && report.crawl && report.crawl.ok && !report.crawl.blocked);
+}
+
+// --- Quota: reserve, then release if the scan produced nothing --------------
+// `usage_increment` (supabase/schema.sql) stays the ONE atomic gate. It
+// increments and range-checks inside a single statement, so two concurrent
+// requests for the last credit can never both be allowed: one gets
+// allowed:true, the other gets allowed:false and is refused before any fetch
+// happens. Checking a remaining balance first and incrementing after the crawl
+// would break exactly that property — both requests would read the same
+// remaining count, both would crawl, and the quota would be overrun by the
+// number of requests in flight. So the credit is taken up front as a
+// reservation and released afterwards when there was nothing to charge for.
+//
+// Failure modes, stated plainly:
+//  - Race: unchanged from before this fix. The increment is atomic; over-quota
+//    requests are refused before runAdapters is reached, so forcing crawl
+//    failures cannot buy a scan and an unauthenticated caller never touches
+//    this path at all (they get teaser depth under the IP rate limit).
+//  - Crash between the crawl and the release (lambda killed, DB unreachable):
+//    the reservation stays consumed and the customer is charged for a scan that
+//    returned nothing. This is the one case that errs toward us. It is bounded
+//    to a single credit, needs a process death inside a few milliseconds, and
+//    is the price of keeping the enforcement gate atomic. The release itself is
+//    floored at zero server-side, so a retry or duplicate invocation replaying
+//    it can never mint credits in the other direction.
+//  - Ordinary blocked/failed crawl: released, so the customer keeps the credit
+//    and can retry for free. That is the intended, common outcome.
+//
 // Returns null quota when the plan on the subscription row cannot be resolved
 // (unknown id, or the retired `command` tier). The caller must refuse the scan
 // rather than assume a tier — see the 403 below.
-async function checkQuota(accountId, plan) {
+async function reserveQuota(accountId, plan) {
   const quota = plans.quotaFor(plan);
   if (quota === null) return {allowed: false, used: null, quota: null, unresolved: true};
-  const period = new Date().toISOString().slice(0, 7); // YYYY-MM
-  const result = await db.rpc('usage_increment', {p_account_id: accountId, p_period: period, p_max: quota});
+  const result = await db.rpc('usage_increment', {p_account_id: accountId, p_period: usagePeriod(), p_max: quota});
   return {allowed: Boolean(result?.allowed), used: result?.used ?? null, quota};
+}
+
+// Best-effort: a failed release must never turn a nothing-scan into an error
+// the customer sees, so it is logged and swallowed.
+async function releaseQuota(accountId) {
+  try {
+    const result = await db.rpc('usage_decrement', {p_account_id: accountId, p_period: usagePeriod()});
+    return {released: Boolean(result?.released), used: result?.used ?? null};
+  } catch (e) {
+    console.error('quota-release', `account=${accountId} ${e.message}`);
+    return {released: false, used: null};
+  }
 }
 
 exports.handler = async (event) => {
@@ -76,8 +124,9 @@ exports.handler = async (event) => {
   const session = await auth.currentAccount(event);
   let depth = 'teaser';
   let usage = null;
+  let reserved = false;
   if (session?.subscription) {
-    const q = await checkQuota(session.account.id, session.subscription.plan);
+    const q = await reserveQuota(session.account.id, session.subscription.plan);
     usage = {used: q.used, quota: q.quota};
     if (q.unresolved) {
       // The subscription exists but names a plan we cannot price. Granting the
@@ -90,6 +139,7 @@ exports.handler = async (event) => {
       return {statusCode: 402, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ok: false, error: `Monthly scan quota reached (${q.quota}). Quota resets at the start of next month.`, usage})};
     }
     depth = 'full';
+    reserved = true;
   }
 
   let scan;
@@ -102,6 +152,15 @@ exports.handler = async (event) => {
   }
   const report = buildReport(scan, submission, depth);
   if (scan.error) report.crawl.statusLabel = `Live crawl unavailable: ${scan.error}. No savings estimate is shown without evidence.`;
+
+  // Release the reservation for a scan that produced nothing. See the comment
+  // on reserveQuota for the race and crash analysis.
+  if (reserved && !producedEvidence(report)) {
+    const release = await releaseQuota(session.account.id);
+    if (release.released) {
+      usage = {used: release.used ?? Math.max(0, (usage?.used ?? 1) - 1), quota: usage?.quota ?? null, refunded: true};
+    }
+  }
 
   // Persist for signed-in users (best-effort; scan still returns on DB failure).
   let scanId = null;
