@@ -13,32 +13,32 @@ Legend: DONE · WIP in progress · TODO not started · BLOCKED
 - **Last reconciled:** 2026-08-20 (first reconciliation; repo adopted from
   `peter72289-lab/github-scout-project` at `5761f1e`)
 
-## Where things stand (verified 2026-08-20, not remembered)
+## Where things stand (verified 2026-08-21, not remembered)
 
-- **Code.** The v2 product build (commit `15aaebb`, merged as PR #1) is the canonical app at
-  `netlify-v10-githubscout-ecommerce/`. The scanner runs locally against real stores (10/10
-  sources on a test storefront). 49 unit tests pass under `bun tests/run-tests.js`.
-- **Deployed.** Three Netlify sites answer 200 (v8, v9, old v10). None runs the v2 build:
-  `/.netlify/functions/auth-me`, `/login.html`, `/dashboard.html`, `/subprocessors.html` return
-  404 on the v10 site and `/health` is the pre-v2 handler. Staging `githubscout-v2-staging`
-  is empty. `githubscout.ai` does not resolve, so `support@githubscout.ai` is a dead mailbox.
-- **Money.** Two live Stripe Payment Links exist (Operator $17, Director $37) and are wired from
-  the checkout pages. No webhook endpoint, no Supabase project, no Resend domain, no env vars.
-  A paying customer today receives nothing automated.
-- **Known broken in code.** Webhook maps every purchase to `operator` (metadata mismatch with the
-  Payment Links); Director quota is 100 in code vs 30 in terms; retired `command` plan key still
-  in `PLAN_QUOTAS`; account delete does not cancel the Stripe subscription; quota is consumed
-  before the crawl; present-tense "15 sources" copy survives on five v10 pages ("All 15" on three of
-  them); `[[LEGAL ENTITY]]`
-  placeholders fail preflight; `operator-url-analysis.html` paints `$120-$420/mo` on
-  recommendations the server returned with no figure.
-- **Hygiene.** A 5.3 MB deploy zip, ~55 MB of ad PNGs, duplicated MP4s, and `launch-config.js`
-  (gitignored but tracked) are in history. Repo is public per its own docs. A live Stripe secret
-  key is asserted exposed in the author's own runbooks (`TASKS_FOR_USER.md` item 1 lists them); it
-  is not in this history, rotation unconfirmed.
-- **Unknown.** Whether the Stripe key was rotated; whether anyone has paid; whether the Netlify
-  Forms "backup intake" submissions were ever read; who owns the Netlify and Stripe accounts the
-  user now controls.
+- **Code.** The canonical app is `netlify-v10-githubscout-ecommerce/`. 143 unit tests pass under
+  `bun tests/run-tests.js`. Ten PRs (#2-#10) closed every code-side defect the gap analysis
+  found; what is left needs credentials or a decision, not engineering.
+- **Deployed.** Unchanged, and this is the headline: **the v2 build has still never been
+  deployed anywhere.** Two Netlify sites (v9, old v10) answer 200 with the pre-v2 funnel;
+  `/login.html`, `/dashboard.html`, and the webhook 404, and `/health` is the old handler.
+  Staging is empty. `githubscout.ai` does not resolve, so `support@githubscout.ai` is dead.
+  Nothing in PRs #2-#10 is live. Do not describe any of it as shipped.
+- **Money.** The two live Stripe Payment Links still exist, but no page can reach them:
+  `fulfillmentReady: false` in `assets/launch-config.js` gates every CTA. Flipping that switch is
+  the deliberate launch action, and it should not be flipped until `/health` reports
+  `productionReady: true` on a deploy and a test-mode purchase has been watched end to end.
+- **Fixed since 2026-08-20.** Director buyers no longer get the Operator quota; savings require a
+  confirmed Shopify storefront and a fetched page; the client invents no figures; "15 sources" is
+  gone; a failed crawl costs no credit and reports as blocked; deleting an account cancels billing
+  first; data export and an online cancel path exist; a deploy no longer serves runbooks or the
+  schema; the Stripe signature tests can now actually fail; every scan leaves a PII-free record.
+- **Hygiene.** Working tree 84 MB -> 73 MB. `.git` is still 76 MB: shrinking it needs a history
+  rewrite, which is owner work. `ads/` (57 MB) is 78% of what remains and awaits the purge
+  decision. A live Stripe secret key is asserted exposed in the prior author's runbooks; it is not
+  in this history and rotation is still unconfirmed.
+- **Unknown.** Whether the Stripe key was rotated; whether anyone has ever paid (and therefore
+  received nothing); who owns the Netlify and Stripe accounts; whether the Netlify Forms intake
+  submissions were ever read.
 
 ## Milestones and work streams
 
@@ -46,30 +46,33 @@ Legend: DONE · WIP in progress · TODO not started · BLOCKED
 | --- | --------------------------------------------------------------------------------------------- | ------- |
 | M0  | Repo adopted: agent rules, ledgers, CI, hygiene files, gap analysis                           | DONE    |
 | M1  | Owner access confirmed: Stripe, Netlify, GitHub, domain; key rotation confirmed               | BLOCKED |
-| M2  | Purge: zip, verification PNGs, duplicate media out of tree; repo private; `.gitignore` real   | TODO    |
-| M3  | Code fixes: webhook plan mapping, quota table, "All 15" copy, client placeholder figures      | TODO    |
+| M2  | Deploy surface locked down; dead weight deleted (history rewrite still owner work)            | DONE    |
+| M3  | Code fixes: plan mapping, quotas, evidence gating, client honesty, accounts, telemetry        | DONE    |
 | M4  | Services wired on staging: Supabase schema, Stripe webhook, Resend; `/health` productionReady | BLOCKED |
 | M5  | Legal: entity, jurisdiction, support mailbox, rename decision; preflight green                | BLOCKED |
 | M6  | Proof: 3-5 real store scans logged, beta merchants, ads regenerated per AD-CLAIMS-GUIDE       | TODO    |
-| M7  | v2 deployed to production; v8/v9 retired                                                      | TODO    |
+| M7  | v2 deployed to production; v8 removed, v9 retired                                             | TODO    |
+
+Every remaining milestone is blocked on the owner. There is no unblocked engineering left that is
+worth doing before a deploy proves the assumptions.
 
 ## Streams
 
-| Stream   | Ledger               | Current phase                 | Session note                     |
-| -------- | -------------------- | ----------------------------- | -------------------------------- |
-| platform | `status/platform.md` | M0 done; M2/M3 ready to start | Created 2026-08-20, no owner yet |
+| Stream   | Ledger               | Current phase                           | Session note                     |
+| -------- | -------------------- | --------------------------------------- | -------------------------------- |
+| platform | `status/platform.md` | M0/M2/M3 done; M1, M4, M5 owner-blocked | Created 2026-08-20, no owner yet |
 
 Single stream until there is a reason for more. Blocker prefix `PLT-`. Add a row here when a
 second stream is opened; its ledger is created in the same PR.
 
 ## Next 3 actions
 
-1. User: confirm account access and Stripe key rotation (`TASKS_FOR_USER.md` items 1-3). Nothing
-   downstream is safe to ship until M1 closes.
-2. Platform: M3 code fixes in one branch each, tests first (`docs/GAP-TO-MARKET.md` lists them in
-   order). Zero external dependencies; can start now.
-3. Platform, after the purge decision lands: M2 hygiene PR, then the user runs the history rewrite
-   per `netlify-v10-githubscout-ecommerce/docs/SECRETS-PURGE.md`.
+1. User: `TASKS_FOR_USER.md` items 1-3 (Stripe key rotation, account ownership, purge scope).
+   Nothing downstream is safe until these close.
+2. User: items 4, 12, 13 (legal placeholders, Customer Portal link, restricted billing key). The
+   first makes preflight green; the other two are required before a first live sale.
+3. Platform, once M1/M4 clear: apply `supabase/schema.sql`, deploy to staging, run a test-mode
+   purchase end to end, confirm `/health` `productionReady: true`, then flip `fulfillmentReady`.
 
 ## Blockers index (detail in stream ledgers; protocol in CLAUDE.md)
 
