@@ -32,14 +32,18 @@ works), and `netlify-v10-githubscout-ecommerce/docs/AD-CLAIMS-GUIDE.md` (what co
   DEPLOY-STAGING.md, COMMIT-PLAN.md sit at the v10 root.
 - `docs/` (repo root): project-level docs, the plan of record, and the pre-v2 marketing and
   launch runbooks (Meta campaign, checkout readiness, onboarding email templates).
-- **Legacy, frozen. Do not edit, do not build on:** `netlify-v8-githubscout/` (generic OSS search
-  site), `netlify-v9-githubscout-ecommerce/` (pre-v2 funnel, still deployed, still serves the
-  retracted "15 sources" and ad-spend-derived savings), the four root
+- **Legacy, frozen. Do not edit, do not build on:** `netlify-v9-githubscout-ecommerce/` (pre-v2
+  funnel, still deployed, still serves the retracted "15 sources" and ad-spend-derived savings),
+  `cockpit-v2-demo/`, `ads/`. Touch them only to archive or delete, and only as its own PR.
+- Already cut (do not resurrect): `netlify-v8-githubscout/`, the root
   `github-scout-commerce-launchpad-v11..v14-*.html` mockups and their `v1*-verification.png`
-  screenshots, `servers/commerce_scan_api.py` (orphaned prototype), `cockpit-v2-demo/`, `ads/`.
-  Touch them only to archive or delete, and only as its own PR.
-- Dead code inside v10 that no page loads: `assets/{app,ecommerce,dossiers}.js`, `data/*.json`.
-  Do not extend them; removal is a tracked unit in `docs/GAP-TO-MARKET.md`.
+  screenshots, `servers/commerce_scan_api.py`, v10's `assets/{app,ecommerce,dossiers}.js`,
+  `assets/{dossiers,ecommerce}.css`, `data/*.json`, `scout-demo-video.html`,
+  `checkout-command.html`, and the stale `deploy-*.zip`.
+- `publish = "."` means the v10 folder root is the public document root. Internal paths (`docs/`,
+  `tests/`, `scripts/`, `supabase/`, `netlify/`, the root `*.md`, `netlify.toml`, `package.json`)
+  are denied by forced 404 redirects in `netlify.toml`. Adding an internal file to that folder
+  means adding a deny rule too — section 9 of `scripts/preflight.js` fails the gate otherwise.
 - Read-only ground truth for product decisions: the Stripe dashboard, the Netlify dashboards, and
   the live sites listed in `README.md`. Never assume a deploy happened; check `/health`.
 
@@ -48,7 +52,7 @@ works), and `netlify-v10-githubscout-ecommerce/docs/AD-CLAIMS-GUIDE.md` (what co
 Run from `netlify-v10-githubscout-ecommerce/` unless noted. Bun runs every script here; Node 18+ is
 the fallback only because `netlify dev` executes functions under Node.
 
-- `bun tests/run-tests.js` (or `bun run test`): 49 unit tests, no network. **The gate.** Run
+- `bun tests/run-tests.js` (or `bun run test`): 121 unit tests, no network. **The gate.** Run
   before every commit.
 - `bun scripts/preflight.js` (or `bun run preflight`): launch-readiness gate. Currently exits 1
   on the `[[LEGAL ENTITY]]` placeholders in `terms.html` / `privacy.html`; that is a real blocker,
@@ -187,7 +191,7 @@ for now; the rename is an open user decision, so do not introduce new brand stri
 
 ## Do not
 
-- Do not edit v8, v9, the launchpad HTML, or the Python server except to archive them.
+- Do not edit v9, `ads/`, or `cockpit-v2-demo/` except to archive them.
 - Do not deploy, push, or touch Stripe / Supabase / Netlify / Resend accounts without instruction.
 - Do not add npm dependencies to `netlify/functions/` without an ADR.
 - Do not commit `.env*`, zips, build output, or anything matching the CI secret patterns.
