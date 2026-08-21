@@ -39,6 +39,9 @@ input,select{padding:9px 12px;border-radius:7px;border:1px solid var(--line);bac
 .app-row{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#12151a}
 .app-row .head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
 .evidence{font-size:12.5px;color:var(--dim);margin-top:6px}
+.verdict{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12.5px;color:var(--dim)}
+.verdict button{padding:2px 9px;border-radius:99px;font-size:12px;color:var(--dim)}
+.verdict button[aria-pressed="true"]{border-color:var(--amber);color:var(--amber)}
 .hidden{display:none}
 .cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .delta-add{color:var(--green)} .delta-rem{color:var(--red)}
@@ -200,8 +203,17 @@ async function loadScans(){
     $('#cmpbtn').disabled=n!==2;
   });
 }
-function renderReport(rep){
+// "Was this right?" per detected app. Offered only when we know which saved
+// scan this is and the report was served at full depth — a teaser row carries
+// no signature id (netlify/functions/detection-feedback.js).
+function verdictRow(scanId,app){
+  if(!scanId||!app.id)return '';
+  const btn=(v,label)=>`<button type="button" class="fb" data-scan="${esc(scanId)}" data-sig="${esc(app.id)}" data-verdict="${v}" aria-pressed="false">${label}</button>`;
+  return `<div class="verdict" data-fb-for="${esc(app.id)}">Was this right?${btn('correct','Yes')}${btn('incorrect','No')}${btn('unsure','Not sure')}<span class="fb-status"></span></div>`;
+}
+function renderReport(rep,scanId){
   const s=rep.summary||{};
+  const canRate=Boolean(scanId)&&rep.depth==='full';
   let h=`<p class="muted">${esc(rep.crawl?.statusLabel||'')}</p>`;
   h+=`<div class="grid" style="margin:14px 0">
     <div class="stat"><div class="k">Detected apps</div><div class="v">${esc(s.detectedCount)}</div></div>
@@ -212,6 +224,7 @@ function renderReport(rep){
     h+=`<div class="app-row"><div class="head"><b>${esc(a.name)}</b><span>${esc(a.monthlyCost||'')} · ${esc(a.confidence)}% conf · ${esc(a.corroboratingSources||1)} source(s)</span></div>`;
     if(a.evidence)h+=`<div class="evidence">${a.evidence.map((e)=>esc(e.source+': '+(e.values||[]).join(', '))).join(' · ')}</div>`;
     if(a.pricingUrl)h+=`<div class="evidence">Benchmark source: <a href="${esc(a.pricingUrl)}" rel="noopener">${esc(a.pricingUrl)}</a></div>`;
+    if(canRate)h+=verdictRow(scanId,a);
     h+='</div>';
   });
   if((rep.overlaps||[]).length&&rep.overlaps[0].detail){h+='<h2 style="margin:16px 0 10px">Overlaps</h2>';rep.overlaps.forEach((o)=>h+=`<div class="app-row">${esc(o.detail)}</div>`);}
@@ -225,8 +238,25 @@ document.addEventListener('click',async(e)=>{
   if(v){e.preventDefault();
     const r=await fetch('/.netlify/functions/dashboard-data?id='+encodeURIComponent(v.dataset.id));
     const d=await r.json();
-    if(d.ok){$('#d-title').textContent=d.scan.store_url;$('#d-body').innerHTML=renderReport(d.scan.report);$('#detail').classList.remove('hidden');$('#detail').scrollIntoView({behavior:'smooth'});}
+    if(d.ok){$('#d-title').textContent=d.scan.store_url;$('#d-body').innerHTML=renderReport(d.scan.report,d.scan.id);$('#detail').classList.remove('hidden');$('#detail').scrollIntoView({behavior:'smooth'});}
+    return;
   }
+  const fb=e.target.closest('button.fb');
+  if(!fb)return;
+  const row=fb.closest('.verdict');
+  const status=row.querySelector('.fb-status');
+  const buttons=[...row.querySelectorAll('button.fb')];
+  buttons.forEach((b)=>{b.disabled=true;});
+  status.textContent='Saving…';
+  try{
+    const r=await fetch('/.netlify/functions/detection-feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({scanId:fb.dataset.scan,signatureId:fb.dataset.sig,verdict:fb.dataset.verdict})});
+    const d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.error||'Feedback was not saved.');
+    buttons.forEach((b)=>b.setAttribute('aria-pressed',String(b===fb)));
+    status.textContent='Recorded. You can change this.';
+  }catch(err){status.textContent=err.message;}
+  buttons.forEach((b)=>{b.disabled=false;});
 });
 $('#cmpbtn').addEventListener('click',async()=>{
   const ids=[...document.querySelectorAll('.cmp-check:checked')].map((c)=>c.value);
@@ -248,7 +278,7 @@ $('#scanform').addEventListener('submit',async(e)=>{
   try{
     const r=await fetch('/.netlify/functions/operator-url-scan',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
     const d=await r.json();
-    if(d.ok){$('#scanmsg').textContent=d.entitled?'Done — saved to your dashboard.':'Done (free depth — subscribe for the full report).';$('#d-title').textContent=$('#store_url').value;$('#d-body').innerHTML=renderReport(d.analysis);$('#detail').classList.remove('hidden');await loadScans();await boot();}
+    if(d.ok){$('#scanmsg').textContent=d.entitled?'Done — saved to your dashboard.':'Done (free depth — subscribe for the full report).';$('#d-title').textContent=$('#store_url').value;$('#d-body').innerHTML=renderReport(d.analysis,d.scanId);$('#detail').classList.remove('hidden');await loadScans();await boot();}
     else $('#scanmsg').textContent=d.error||'Scan failed.';
   }catch(err){$('#scanmsg').textContent='Network error.';}
   $('#scanbtn').disabled=false;

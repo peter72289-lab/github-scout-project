@@ -26,7 +26,7 @@ th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06
   <table>
     <tr><th>Provider</th><th>Purpose</th><th>Data processed</th></tr>
     <tr><td>Stripe</td><td>Payments and subscription billing</td><td>Email, payment details (held by Stripe, not by us), subscription status</td></tr>
-    <tr><td>Supabase</td><td>Application database</td><td>Email, hashed auth tokens, subscription status, saved scan reports, usage counters</td></tr>
+    <tr><td>Supabase</td><td>Application database</td><td>Email, hashed auth tokens, subscription status, saved scan reports, usage counters, detection feedback, and a separate identifier-free record of what the detection engine did on each scan</td></tr>
     <tr><td>Netlify</td><td>Hosting and serverless functions</td><td>Request metadata, IP (for rate limiting), function logs</td></tr>
     <tr><td>Resend</td><td>Transactional email (sign-in, receipts)</td><td>Email address, message content</td></tr>
     <tr><td>Meta (optional)</td><td>Ad measurement — only after cookie consent</td><td>Pixel events; loaded only if you accept the cookie banner</td></tr>

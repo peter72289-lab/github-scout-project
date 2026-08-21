@@ -33,6 +33,7 @@ scanning, accounts, entitlements, quotas, saved scans, and a dashboard.
 | `RESEND_API_KEY` | sign-in + fulfillment emails | Without it, links are logged to function logs only |
 | `AUTH_EMAIL_FROM` | email sender | e.g. `Scout <login@yourdomain>` (domain must be verified in Resend) |
 | `GHL_WEBHOOK_URL` | lead forwarding (optional) | unchanged from V10 |
+| `SCAN_TELEMETRY_SALT` | linking a store's scans in `scan_events` (optional) | Long random secret, HMAC key for the storefront hostname digest in `lib/telemetry.js`. **Unset means `store_hash` is stored as null**, never a bare SHA-256 — an unkeyed hostname digest is brute-forceable from a domain list, and `privacy.html` promises better than that. Telemetry is still written without it; only repeat-scan analysis is lost. Rotating it makes old and new rows unlinkable, on purpose. See `docs/DATA-RETENTION.md` |
 
 The site degrades gracefully: with no env vars set, free teaser scans still
 work; accounts/persistence simply stay off.

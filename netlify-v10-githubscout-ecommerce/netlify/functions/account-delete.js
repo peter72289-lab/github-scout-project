@@ -106,6 +106,9 @@ exports.handler = async (event) => {
 
   try {
     // Explicit deletes first (in case cascade isn't configured), then account.
+    // detection_feedback goes before scans: it references both, so deleting it
+    // first is correct with or without the cascades.
+    await db.del('detection_feedback', `account_id=eq.${session.account.id}`);
     await db.del('scans', `account_id=eq.${session.account.id}`);
     await db.del('sessions', `account_id=eq.${session.account.id}`);
     await db.del('magic_links', `account_id=eq.${session.account.id}`);

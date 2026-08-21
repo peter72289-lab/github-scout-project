@@ -73,6 +73,11 @@
     .detected-item{border:1px solid var(--border);background:var(--surface);padding:16px}
     .detected-item strong{display:block;color:var(--white);margin-bottom:6px}
     .detected-item span{display:block;color:var(--muted);font-size:14px;line-height:1.5}
+    .verdict{display:flex;gap:8px;align-items:center;margin-top:10px}
+    .verdict span{display:inline;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+    .verdict button{background:none;border:1px solid var(--border);color:var(--muted);font:inherit;font-size:12px;padding:3px 9px;cursor:pointer}
+    .verdict button:hover{color:var(--white)}
+    .verdict button[aria-pressed="true"]{border-color:var(--amber);color:var(--amber)}
     .action-panel{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;align-items:start}
     .checklist{display:grid;gap:10px;margin:0;padding:0;list-style:none}
     .check{border:1px solid var(--border);background:var(--surf2);padding:14px;color:var(--body);line-height:1.5}
@@ -198,6 +203,10 @@
       notes: stored.notes || ''
     };
     let latestAnalysis = null;
+    // Set from the scan response. A detection verdict is only offered when the
+    // server saved this scan against a signed-in account AND served it at full
+    // depth — a teaser row carries no signature id to be right or wrong about.
+    let feedbackScanId = null;
 
     // Human names for lib/adapters.js SOURCE_CATALOG ids, used to render the
     // server's evidence[] trail. Ids not listed here fall back to the raw id.
@@ -497,6 +506,49 @@
       return 'not priced in this scan';
     }
 
+    // "Was this right?" — the smallest thing that turns a report into ground
+    // truth for lib/rules.js. Two words and two buttons; the answer is stored
+    // against the signature id, and re-answering replaces the previous verdict
+    // rather than adding one (netlify/functions/detection-feedback.js).
+    function verdictControl(app) {
+      const wrap = document.createElement('div');
+      wrap.className = 'verdict';
+      const label = document.createElement('span');
+      label.textContent = 'Was this right?';
+      wrap.append(label);
+
+      const status = document.createElement('span');
+      const buttons = [['correct', 'Yes'], ['incorrect', 'No'], ['unsure', 'Not sure']].map(([verdict, text]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = text;
+        button.setAttribute('aria-pressed', 'false');
+        button.addEventListener('click', async () => {
+          buttons.forEach((b) => { b.disabled = true; });
+          status.textContent = 'Saving…';
+          try {
+            const response = await fetch('/.netlify/functions/detection-feedback', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({scanId: feedbackScanId, signatureId: app.id, verdict})
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.ok) throw new Error(payload.error || 'Feedback was not saved.');
+            buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+            status.textContent = 'Recorded. You can change this.';
+          } catch (error) {
+            status.textContent = error.message;
+          }
+          buttons.forEach((b) => { b.disabled = false; });
+        });
+        wrap.append(button);
+        return button;
+      });
+
+      wrap.append(status);
+      return wrap;
+    }
+
     function renderDetected(apps, analysis) {
       const list = document.querySelector('#detectedList');
       const teaserNote = document.querySelector('#detectedTeaser');
@@ -542,6 +594,7 @@
           evidence.textContent = trail;
           item.append(evidence);
         }
+        if (feedbackScanId && app.id) item.append(verdictControl(app));
         list.appendChild(item);
       });
 
@@ -588,8 +641,10 @@
         });
         const payload = await response.json();
         if (!response.ok || !payload.ok) throw new Error(payload.error || 'Analyzer returned an error.');
+        feedbackScanId = (payload.entitled && payload.scanId) ? payload.scanId : null;
         renderAnalysis(payload.analysis || pendingAnalysis('failed', 'the analyzer returned no report, so nothing is shown.'));
       } catch (error) {
+        feedbackScanId = null;
         renderAnalysis(pendingAnalysis('failed', `${error.message} Nothing is estimated from a scan that did not run.`));
       }
     }

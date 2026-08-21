@@ -6,10 +6,11 @@
 
 const {clientIp, checkRateLimitShared, RATE_LIMIT_MAX} = require('./lib/guard');
 const {runAdapters, liveSourceCount} = require('./lib/adapters');
-const {buildReport} = require('./lib/aggregate');
+const {buildFullReport, toTeaser} = require('./lib/aggregate');
 const db = require('./lib/supabase');
 const auth = require('./lib/auth');
 const plans = require('./lib/plans');
+const telemetry = require('./lib/telemetry');
 
 function publicSubmission(s) {
   return {
@@ -143,6 +144,7 @@ exports.handler = async (event) => {
   }
 
   let scan;
+  const crawlStartedAt = Date.now();
   try {
     scan = await runAdapters(submission.store_url);
   } catch (e) {
@@ -150,7 +152,12 @@ exports.handler = async (event) => {
     // still prints "0 of N live sources" and N must match lib/adapters.js.
     scan = {pages: [], sources: [], sourcesLive: liveSourceCount(), sourcesSucceeded: 0, sourcesPlanned: [], error: e.message};
   }
-  const report = buildReport(scan, submission, depth);
+  const crawlMs = Date.now() - crawlStartedAt;
+  // Built once at full depth: the teaser view is derived from it, and the
+  // telemetry row needs the untrimmed detection list (a free scan's report shows
+  // three apps with no signature ids, which is exactly the data worth keeping).
+  const fullReport = buildFullReport(scan, submission);
+  const report = depth === 'teaser' ? toTeaser(fullReport) : fullReport;
   if (scan.error) report.crawl.statusLabel = `Live crawl unavailable: ${scan.error}. No savings estimate is shown without evidence.`;
 
   // Release the reservation for a scan that produced nothing. See the comment
@@ -161,6 +168,18 @@ exports.handler = async (event) => {
       usage = {used: release.used ?? Math.max(0, (usage?.used ?? 1) - 1), quota: usage?.quota ?? null, refunded: true};
     }
   }
+
+  // PII-free engine telemetry for EVERY scan, signed-in or not (lib/telemetry.js).
+  // Deliberately not awaited: the report is what the customer came for, and a
+  // slow or broken insert must not show up in their latency or their response.
+  // It is fired here rather than after the response is assembled so the insert
+  // is in flight across the sendWebhook await below — network time the handler
+  // was going to spend anyway. `recordScanEvent` never rejects. If the runtime
+  // freezes the container before the insert lands, the row is lost, which is the
+  // accepted price of keeping this off the paid path.
+  telemetry.recordScanEvent(db, telemetry.buildScanEvent({
+    report: fullReport, scan, storeUrl: submission.store_url, depth, durationMs: crawlMs
+  }));
 
   // Persist for signed-in users (best-effort; scan still returns on DB failure).
   let scanId = null;
