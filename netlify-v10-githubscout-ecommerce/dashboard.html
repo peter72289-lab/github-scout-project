@@ -102,9 +102,20 @@ input,select{padding:9px 12px;border-radius:7px;border:1px solid var(--line);bac
     <div id="d-body"></div>
   </div>
 
+  <div class="panel">
+    <h2>Billing and your data</h2>
+    <p class="muted">Cancel or change your subscription, update your card, and download everything we hold about you.</p>
+    <p style="margin-top:12px">
+      <a class="btn" data-portal-link hidden href="#">Manage billing or cancel</a>
+      <a class="btn" href="/.netlify/functions/account-export" download>Export my data</a>
+    </p>
+    <p class="muted" data-portal-missing hidden style="margin-top:10px">The self-serve billing portal is not switched on yet. To cancel or request a refund, email <a href="/support.html">support</a> with the address you paid with — see <a href="/refunds.html">refunds and cancellation</a>.</p>
+    <p class="muted" style="margin-top:10px">The export is a JSON file with your account, subscription status, monthly usage, and every saved scan. Card and invoice records live with Stripe.</p>
+  </div>
+
   <div class="panel" style="border-color:#3a2020">
     <h2 style="color:var(--red)">Danger zone</h2>
-    <p class="muted">Permanently delete your account, saved scans, and all associated data. This cannot be undone.</p>
+    <p class="muted">Permanently delete your account, saved scans, and all associated data. This cannot be undone. If you have an active subscription it is cancelled with Stripe first; if that cancellation fails, nothing is deleted.</p>
     <button id="delbtn" style="border-color:#5b2622;color:var(--red)">Delete my account</button>
     <span id="delmsg" class="muted"></span>
   </div>
@@ -116,6 +127,7 @@ input,select{padding:9px 12px;border-radius:7px;border:1px solid var(--line);bac
   </div>
 </main>
 <script src="/assets/launch-config.js"></script>
+<script src="/assets/launch-checkout.js"></script>
 <script>
 const $=(s)=>document.querySelector(s);
 const esc=(v)=>String(v??'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

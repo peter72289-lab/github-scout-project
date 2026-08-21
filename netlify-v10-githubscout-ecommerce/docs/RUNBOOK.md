@@ -37,6 +37,73 @@ Functions and static assets roll back together.
 - Rotating the Supabase service role invalidates the app's DB access until the
   new key is set in Netlify env — expect brief downtime; do it deliberately.
 
+## Refunds and cancellations (SOP)
+
+`refunds.html` promises a 14-day first-month refund and that cancellation stops
+future renewals. This is how that promise is kept. Budget 10 minutes.
+
+**1. Check, before touching Stripe**
+
+- Stripe → Customers → search the email they paid with. Note the subscription
+  id, the plan, the first charge date, and whether it has already renewed.
+- Is the request inside 14 days of the **first** charge? Later renewals are not
+  covered by the launch guarantee — cancel, and refund only if you choose to or
+  the law requires it.
+- Supabase → `subscriptions` for that `account_id`: `status` and `plan` must
+  match what Stripe says. A mismatch means a webhook was missed; fix the row.
+
+**2. Cancel**
+
+- Preferred: the customer cancels themselves in the Stripe Customer Portal
+  (`stripeCustomerPortalUrl` in `assets/launch-config.js`; the dashboard and
+  `refunds.html` link to it). Self-serve cancellation is what California's ARL
+  requires, so keep that link working.
+- If you cancel for them: Stripe → the subscription → Cancel subscription →
+  immediately (not at period end) when a refund is being issued. The
+  `customer.subscription.deleted` webhook moves the row to `canceled`; confirm
+  it did. If it did not, set `status = 'canceled'` on the row by hand.
+
+**3. Refund**
+
+- Stripe → Payments → the charge → Refund → full amount for a guarantee
+  request. Reason: "requested by customer". Partial refunds only for a
+  pro-rated case you have already agreed in writing.
+- Refunds land in 5-10 business days. Say that, do not say "immediately".
+
+**4. Quota**
+
+- Leave `usage` alone. The scans they ran were delivered, the counter is a
+  record of that, and it resets next period anyway. Deleting rows to "give the
+  quota back" makes the usage history lie for no benefit.
+- Access follows the subscription: once the row is `canceled`,
+  `lib/auth.js:currentAccount` stops returning it and scans drop to free depth.
+  Their saved scans stay readable in the dashboard.
+
+**5. Reply**
+
+Plain, no upsell:
+
+> Your Scout subscription is cancelled — no further charges. I've refunded
+> $17.00 to the card you paid with; Stripe usually shows it in 5-10 business
+> days. Your saved scans stay in your dashboard, and you can export or delete
+> everything from there any time. If something specific missed the mark, I'd
+> like to hear it.
+
+**6. Record**
+
+- Stripe → the customer → add a note: date, reason in the customer's words,
+  refund amount, who approved it.
+- If the reason was a product failure (bad detections, a blocked crawl they were
+  still charged for), open an issue — a refund reason is the cheapest bug report
+  you will get.
+
+**Deletion during an active subscription.** `account-delete.js` cancels with
+Stripe before it removes any row, and aborts the deletion if that cancel fails,
+so a deleted account can never strand a live subscription. If a customer reports
+a failed deletion: check `STRIPE_BILLING_KEY` is set and in the same mode
+(test/live) as the subscription, cancel the subscription by hand, then have them
+retry from the dashboard.
+
 ## Escalation data to capture
 Timestamp, affected function, `health` output, a sample failing request id from
 Netlify logs, and whether a deploy or config change preceded it.

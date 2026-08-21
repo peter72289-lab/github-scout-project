@@ -28,6 +28,8 @@ only do offline code fixes.
 | 9   | Decide pricing direction: keep $17/$37 subscriptions, or the v11-v14 audit/sprint ladder               | ~10 min | Copy, Stripe products, ads             | whenever   |
 | 10  | Give a go/no-go on pushing this session's files and on a first commit                                  | ~1 min  | Anything leaving this machine          | when ready |
 | 11  | Decide whether the scanner honours `robots.txt` Disallow (Shopify disallows `/cart`, a live source)    | ~5 min  | PLT-5; the published live-source count | decision   |
+| 12  | Create the Stripe Customer Portal link and paste it into `stripeCustomerPortalUrl`                     | ~5 min  | Online cancellation (legally required) | blocking   |
+| 13  | Create a restricted `STRIPE_BILLING_KEY` (Subscriptions: write only) and set it in Netlify             | ~5 min  | Subscribers being able to self-delete  | high       |
 
 ## 1. Stripe key rotation (blocking)
 
@@ -140,6 +142,20 @@ Two defensible answers, and it is your call because it changes what we sell:
 - **Keep fetching `/cart`, transparently.** Argument: the merchant submitted their own storefront and asked us to look at it, we fetch one page at low volume, and we identify ourselves by name so any operator can block or contact us. Cost: it is still a norms violation, and a competitor or a blog post could fairly call it one.
 
 What is already decided and shipped: the crawler **stays identifiable**. A browser-shaped User-Agent was tried, measured against five live storefronts, and changed zero source counts (`netlify/functions/lib/guard.js`), so it was reverted — a disguised UA plus unevaluated Disallow rules would have been evasion, and it bought nothing.
+
+## 12. Stripe Customer Portal link (blocking before first sale)
+
+**`refunds.html` promises that cancellation stops future charges, and there is no way for a customer to cancel online. California's Automatic Renewal Law requires one for anything sold online.**
+
+Stripe Dashboard → Settings → Billing → Customer portal → enable cancellation and payment-method updates → create a login link → paste it into `stripeCustomerPortalUrl` in `netlify-v10-githubscout-ecommerce/assets/launch-config.js`.
+
+The code is already wired: the "Manage billing" controls on `dashboard.html` and `refunds.html` are removed from the page entirely while that value is empty, so nothing renders a dead cancel link in the meantime.
+
+## 13. Restricted Stripe billing key (high)
+
+**Without it, a subscriber cannot delete their account — deletion refuses rather than erasing the record of a subscription that would keep charging them.**
+
+Create a _restricted_ key with **Subscriptions: write** and nothing else, and set it in Netlify as `STRIPE_BILLING_KEY`. It is deliberately not the same key as `STRIPE_SECRET_KEY` (read-only, used by the public webhook endpoint) — the webhook should never hold write access to billing.
 
 ## Done — kept for history
 

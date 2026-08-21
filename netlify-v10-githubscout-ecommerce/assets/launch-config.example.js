@@ -5,6 +5,8 @@ window.GITHUB_SCOUT_LAUNCH_CONFIG = {
   operatorAnnualCheckoutUrl: '',
   directorAnnualCheckoutUrl: '',
   pricing: { operatorMonthly: 17, directorMonthly: 37, annualMonthsCharged: 10 },
+  // Stripe Dashboard -> Settings -> Billing -> Customer portal -> login link.
+  stripeCustomerPortalUrl: '',
   agencyContactUrl: 'agency-pricing.html',
   metaPixelId: '',
   analyticsEnabled: true
