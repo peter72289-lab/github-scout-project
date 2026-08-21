@@ -78,6 +78,7 @@
   </main>
   <script src="assets/launch-config.js"></script>
   <script src="assets/source-counts.js"></script>
+  <script src="assets/launch-checkout.js"></script>
   <script src="assets/launch-analytics.js"></script>
 <script src="assets/consent.js"></script>
   <script>
@@ -94,7 +95,9 @@
     if (landingInput) landingInput.value = window.location.href;
     if (referrerInput) referrerInput.value = document.referrer || '';
 
-    const operatorUrl = window.GITHUB_SCOUT_LAUNCH_CONFIG?.operatorCheckoutUrl;
+    // Routed through the shared gate so `fulfillmentReady: false` disables the
+    // live CTA here too, not just on links wired by launch-checkout.js.
+    const operatorUrl = window.githubScoutCheckoutUrl?.('operator');
     const stripeCta = document.querySelector('#operatorStripeCta');
     if (operatorUrl && stripeCta) {
       const link = new URL(operatorUrl, window.location.href);

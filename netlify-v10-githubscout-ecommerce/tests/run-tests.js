@@ -1,9 +1,12 @@
 'use strict';
 const assert = require('node:assert');
+const path = require('node:path');
+const fs = require('node:fs');
 const guard = require('../netlify/functions/lib/guard.js');
 const adapters = require('../netlify/functions/lib/adapters.js');
 const {parseHtmlEvidence, SOURCE_CATALOG, liveSourceCount, sourceCounts, detectCheckoutProviders} = adapters;
 const agg = require('../netlify/functions/lib/aggregate.js');
+const webhook = require('../netlify/functions/stripe-webhook.js');
 const {appSignatures} = require('../netlify/functions/lib/rules.js');
 const costOf = (id) => appSignatures.find((s) => s.id === id).cost;
 
@@ -277,16 +280,10 @@ function signStripe(payload, secret, t0) {
   const sig = crypto.createHmac('sha256', secret).update(`${ts}.${payload}`).digest('hex');
   return `t=${ts},v1=${sig}`;
 }
-// Re-implement the verifier's contract to test the algorithm we ship.
-function verify(payload, header, secret, tol = 300) {
-  if (!header || !secret) return false;
-  const parts = Object.fromEntries(header.split(',').map((kv) => kv.split('=')));
-  const ts = Number(parts.t); const signature = parts.v1;
-  if (!ts || !signature) return false;
-  if (Math.abs(Date.now() / 1000 - ts) > tol) return false;
-  const expected = crypto.createHmac('sha256', secret).update(`${parts.t}.${payload}`).digest('hex');
-  try { return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(signature, 'hex')); } catch (e) { return false; }
-}
+// The verifier under test is the one that ships. This suite used to define its
+// own copy of the algorithm, so these four cases passed no matter what
+// stripe-webhook.js did — a test that cannot fail is not a test.
+const verify = webhook.verifyStripeSignature;
 t('stripe sig: valid passes', () => { const p = '{"id":"evt_1"}'; assert.equal(verify(p, signStripe(p, 'whsec_x'), 'whsec_x'), true); });
 t('stripe sig: wrong secret fails', () => { const p = '{"id":"evt_1"}'; assert.equal(verify(p, signStripe(p, 'whsec_x'), 'whsec_y'), false); });
 t('stripe sig: tampered payload fails', () => { const h = signStripe('{"id":"evt_1"}', 'whsec_x'); assert.equal(verify('{"id":"evt_2"}', h, 'whsec_x'), false); });
@@ -335,7 +332,6 @@ t('planByPriceId ignores the retired command price', () => {
 });
 
 // ---------- Webhook plan resolution (the shipped resolver, not a copy) ----------
-const webhook = require('../netlify/functions/stripe-webhook.js');
 const checkoutSession = (metadata) => ({id: 'cs_test_1', mode: 'subscription', object: 'checkout_session', metadata});
 t('stripe-webhook still exports a handler function', () => assert.equal(typeof webhook.handler, 'function'));
 t('stripe-webhook exports resolvePlanFromSession', () => assert.equal(typeof webhook.resolvePlanFromSession, 'function'));
@@ -370,6 +366,45 @@ ta('resolve: no signal is UNRESOLVED, never a silent operator', async () => {
 ta('resolve: missing metadata object does not throw', async () => {
   const r = await webhook.resolvePlanFromSession({id: 'cs_test_2', mode: 'subscription'});
   assert.equal(r.plan, null);
+});
+
+// ---------- Checkout fulfilment gate ----------
+// A checkout that takes money we cannot fulfil is worse than no checkout, so
+// every CTA is gated on one config flag. These run the real asset in a stub
+// window rather than asserting on the source text.
+function runCheckoutAsset(config) {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'assets', 'launch-checkout.js'), 'utf8');
+  const win = {
+    GITHUB_SCOUT_LAUNCH_CONFIG: config,
+    location: {href: 'https://site/x', search: '?utm_source=meta'},
+    open() {}
+  };
+  const doc = {querySelectorAll: () => [], querySelector: () => null, addEventListener: () => {}, readyState: 'complete'};
+  const ss = {getItem: () => null, setItem: () => {}};
+  new Function('window', 'document', 'sessionStorage', 'URL', 'URLSearchParams', src)(win, doc, ss, URL, URLSearchParams);
+  return win;
+}
+const LIVE_LINKS = {operatorCheckoutUrl: 'https://buy.stripe.com/opX', directorCheckoutUrl: 'https://buy.stripe.com/dirX'};
+
+t('checkout gate: no CTA while fulfilment is not ready, even with live links', () => {
+  const win = runCheckoutAsset({fulfillmentReady: false, ...LIVE_LINKS});
+  assert.equal(win.githubScoutCheckoutUrl('operator'), '');
+  assert.equal(win.githubScoutCheckoutUrl('director'), '');
+  assert.equal(win.githubScoutOpenCheckout('operator'), false);
+});
+t('checkout gate: absent flag fails closed', () => {
+  const win = runCheckoutAsset({...LIVE_LINKS});
+  assert.equal(win.githubScoutCheckoutUrl('operator'), '');
+});
+t('checkout gate: opens when ready, and keeps attribution', () => {
+  const win = runCheckoutAsset({fulfillmentReady: true, ...LIVE_LINKS});
+  const url = win.githubScoutCheckoutUrl('operator');
+  assert.ok(url.startsWith('https://buy.stripe.com/opX'));
+  assert.match(url, /utm_source=meta/);
+});
+t('checkout gate: shipped config has fulfilment off', () => {
+  const cfg = fs.readFileSync(path.join(__dirname, '..', 'assets', 'launch-config.js'), 'utf8');
+  assert.match(cfg, /fulfillmentReady:\s*false/, 'never commit this switched on');
 });
 
 // ---------- M1 Unit 2: request headers ----------

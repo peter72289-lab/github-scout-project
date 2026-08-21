@@ -2,6 +2,12 @@
 // kept out of a public repo (see LAUNCH-CHECKLIST). Annual options activate the
 // pricing toggle automatically when their URLs are filled in.
 window.GITHUB_SCOUT_LAUNCH_CONFIG = {
+  // MASTER SWITCH. False = no page can charge a card, whatever the URLs below
+  // say. Flip to true only when /.netlify/functions/health reports
+  // productionReady: true on the deployed site AND a test-mode purchase has
+  // been observed provisioning an account and sending the sign-in email.
+  // See TASKS_FOR_USER.md and netlify-v10-githubscout-ecommerce/SETUP.md.
+  fulfillmentReady: false,
   operatorCheckoutUrl: 'https://buy.stripe.com/5kQ8wO0H268D5Hqh2zcQU00',
   directorCheckoutUrl: 'https://buy.stripe.com/dRm28q61m2Wrd9SfYvcQU01',
   // Fill these with annual Stripe payment links to enable the annual toggle.

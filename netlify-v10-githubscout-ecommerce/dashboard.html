@@ -174,7 +174,7 @@ function renderUpsell(quota,needsReview){
     const next=me.plan==='operator'?'Director':'a higher tier';
     $('#upsell-title').textContent=`You’ve used ${used} of ${quota} scans this month`;
     $('#upsell-body').textContent=`Running low. ${next} gives you more monthly storefront scans and deeper reporting.`;
-    $('#upsell-cta').textContent=`Upgrade to ${next}`;$('#upsell-cta').href=cfg.directorCheckoutUrl||'/index.html#pricing';
+    $('#upsell-cta').textContent=`Upgrade to ${next}`;$('#upsell-cta').href=window.githubScoutCheckoutUrl?.('director')||'/index.html#pricing';
     box.classList.remove('hidden');
   }
 }
