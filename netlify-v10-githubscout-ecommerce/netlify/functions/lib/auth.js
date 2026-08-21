@@ -86,7 +86,11 @@ async function currentAccount(event) {
     if (!session || new Date(session.expires_at) < new Date()) return null;
     const accounts = await db.select('accounts', `id=eq.${session.account_id}&select=*`);
     if (!accounts.length) return null;
-    const subs = await db.select('subscriptions', `account_id=eq.${session.account_id}&status=in.(active,trialing)&select=*&order=created_at.desc&limit=1`);
+    // `needs_review` is included on purpose: the buyer paid but the webhook
+    // could not resolve their plan (stripe-webhook.js). The row must surface so
+    // the scan function can refuse with a 403 and the dashboard can tell them
+    // to contact support, instead of the account silently looking unsubscribed.
+    const subs = await db.select('subscriptions', `account_id=eq.${session.account_id}&status=in.(active,trialing,needs_review)&select=*&order=created_at.desc&limit=1`);
     return {account: accounts[0], subscription: subs[0] || null, sessionId: session.id};
   } catch (e) {
     console.error('auth-current-account', e.message);

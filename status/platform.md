@@ -8,7 +8,7 @@
 
 ## Current state
 
-**M0 complete: repo adopted, agent rules, ledgers, CI, hygiene files, and gap analysis written. Nothing committed or pushed yet; no code changed. Next is M3 code fixes, which need no credentials.**
+**M0 complete and M3 started: plan quotas and Stripe plan resolution now have one source of truth (`lib/plans.js`), 68 tests pass. Nothing committed or pushed yet.**
 
 > Keep the block above current. Rewrite it as the situation changes; never append a newer bullet
 > above it. New work goes to `## Recently completed`; detail goes under `### History`.
@@ -21,11 +21,12 @@
 
 ## Next steps — M2 / M3
 
-- TODO Fix webhook plan resolution so Director purchases get `director`
-  (`netlify/functions/stripe-webhook.js:80-81`); test against a real `checkout.session.completed`
-  payload shape, not a copy of the verifier.
-- TODO Reconcile `PLAN_QUOTAS` (`operator-url-scan.js:13`) with terms: operator 10, director 30;
-  drop `command`. Update `dashboard.html:132` client copy of the table in the same unit.
+- DONE Fix webhook plan resolution so Director purchases get `director`
+  (`netlify/functions/stripe-webhook.js:74-84,152-170`); tested against a real `checkout.session.completed`
+  payload shape via the exported `resolvePlanFromSession`, not a copy of the verifier.
+- DONE Reconcile `PLAN_QUOTAS` with terms: operator 10, director 30; drop `command`. Quotas now
+  live in `netlify/functions/lib/plans.js`; `dashboard.html:137` reads `quota` from `auth-me.js`
+  instead of keeping its own table.
 - TODO Remove "All 15" / "15 research sources" from `index.html:272`,
   `operator-shopify-savings.html:106`, `checkout-operator.html:46`, `agency-pricing.html:158`,
   `customer-onboarding.html:44`; widen `preflight.js:52` grep.
@@ -58,5 +59,7 @@
 | PLT-4 | 2026-08-20 | decision   | M2                  | User answers `TASKS_FOR_USER.md` item 3                                           | User  | waiting-on-user |
 
 ## Recently completed (append-only, newest first)
+
+- 2026-08-20 — **Plans have one source of truth: Director is 30 scans, not 100, and the webhook no longer resolves every buyer to operator.** New `netlify/functions/lib/plans.js:32` holds the two live plans (operator $17/10, director $37/30, per `terms.html:20-21`), marks `command` retired, and returns `null` for anything unknown instead of falling back. `operator-url-scan.js:41-42,82-87` uses it and returns 403 with a support message when a subscription names a plan it cannot price, rather than silently granting the smallest tier. `stripe-webhook.js:74-84` resolves the plan from `metadata.plan`, `metadata.github_scout_plan` (the key the live Payment Links actually carry — `scripts/create-stripe-githubscout-links.js:75,88,103`), `metadata.price_id`, then an optional restricted read-only Stripe API lookup; with no signal it writes `plan: unresolved` / `status: needs_review`, logs the session id and email domain only, and still sends the sign-in email so the buyer is not stranded. `lib/auth.js:89` now surfaces `needs_review` subscriptions so that 403 can fire, `auth-me.js:25` serves `quota`, and `dashboard.html:131,137` consumes it and shows a "needs manual review" notice instead of "Free". `supabase/schema.sql:37-38` comments updated. 68 tests pass (49 existing + 19 new); `SETUP.md` documents the optional `STRIPE_SECRET_KEY` and the metadata requirement without it. Uncommitted pending user instruction.
 
 - 2026-08-20 — **Repo adopted: CLAUDE.md, STATUS.md, ledgers, TASKS_FOR_USER.md, CI, PR and issue templates, .gitignore, Prettier config written.** No code changed; 49 tests still pass; preflight still fails on known placeholders. Uncommitted pending user instruction.

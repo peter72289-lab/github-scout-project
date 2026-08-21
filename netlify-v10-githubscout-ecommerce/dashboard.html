@@ -126,18 +126,30 @@ async function boot(){
   me=await r.json();
   if(!me.authenticated){location.href='/login.html';return;}
   $('#hello').textContent='Welcome back';
-  $('#planline').textContent=me.email+(me.plan?' · '+me.plan+' plan':' · no active subscription — scans run at free depth');
+  // The buyer paid but the webhook could not resolve which plan; never show
+  // this account as "Free" (see stripe-webhook.js).
+  const needsReview=me.subscriptionStatus==='needs_review'||me.plan==='unresolved';
+  $('#planline').textContent=me.email+(needsReview?' · purchase received — your plan needs manual review':(me.plan?' · '+me.plan+' plan':' · no active subscription — scans run at free depth'));
   $('#stats').style.display='grid';
-  $('#s-plan').textContent=me.plan||'Free';
-  const quota={operator:10,command:30,director:100}[me.plan]||0;
+  $('#s-plan').textContent=needsReview?'Needs review':(me.plan||'Free');
+  // Quota comes from auth-me.js, which reads netlify/functions/lib/plans.js.
+  // Null/0 means "no allowance to show", not "zero scans left".
+  const quota=me.quota||0;
   $('#s-usage').textContent=quota?`${me.usageThisMonth??0} / ${quota}`:'—';
-  if(quota)$('#s-bar').style.width=Math.min(100,100*(me.usageThisMonth||0)/quota)+'%';
-  renderUpsell(quota);
+  $('#s-bar').style.width=(quota?Math.min(100,100*(me.usageThisMonth||0)/quota):0)+'%';
+  renderUpsell(quota,needsReview);
   await loadScans();
 }
-function renderUpsell(quota){
+function renderUpsell(quota,needsReview){
   const cfg=window.GITHUB_SCOUT_LAUNCH_CONFIG||{};
   const box=$('#upsell');
+  // Unresolved purchase → tell them to contact support, do not sell to them.
+  if(needsReview){
+    $('#upsell-title').textContent='Your purchase needs manual review';
+    $('#upsell-body').textContent='We received your payment but could not match it to a plan automatically, so scans are paused. Email support@githubscout.ai and we will activate your account.';
+    $('#upsell-cta').textContent='Contact support';$('#upsell-cta').href='/support.html';
+    box.classList.remove('hidden');return;
+  }
   // No plan → subscribe. Near quota on a non-top plan → upgrade.
   if(!me.plan){
     $('#upsell-title').textContent='You’re on free scans (teaser depth)';

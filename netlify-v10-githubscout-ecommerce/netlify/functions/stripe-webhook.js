@@ -8,16 +8,88 @@
 const crypto = require('node:crypto');
 const db = require('./lib/supabase');
 const auth = require('./lib/auth');
+const plans = require('./lib/plans');
 
+// price id -> plan id, derived from lib/plans.js so the table exists once.
+// `command` is retired (netlify.toml 301s its checkout pages), so
+// STRIPE_PRICE_COMMAND is deliberately not mapped here any more.
 const PLAN_BY_PRICE = () => {
-  // Map your Stripe price IDs to plans via env, e.g.
-  // STRIPE_PRICE_OPERATOR=price_xxx STRIPE_PRICE_COMMAND=price_yyy
   const map = {};
-  if (process.env.STRIPE_PRICE_OPERATOR) map[process.env.STRIPE_PRICE_OPERATOR] = 'operator';
-  if (process.env.STRIPE_PRICE_COMMAND) map[process.env.STRIPE_PRICE_COMMAND] = 'command';
-  if (process.env.STRIPE_PRICE_DIRECTOR) map[process.env.STRIPE_PRICE_DIRECTOR] = 'director';
+  plans.PLANS.forEach((p) => {
+    const priceId = process.env[p.priceIdEnv];
+    if (priceId) map[priceId] = p.id;
+  });
   return map;
 };
+
+// A plan we could not determine. Written to the subscription row so a human can
+// find it; the scan function refuses to run scans for it (403), which is the
+// safe direction to fail when money has already changed hands.
+const UNRESOLVED_PLAN = 'unresolved';
+
+// Asks Stripe what was actually bought. Requires STRIPE_SECRET_KEY to be a
+// RESTRICTED, read-only key (checkout_sessions:read + prices:read) — this
+// function never writes to Stripe, and a live secret key here would be a much
+// larger blast radius than the job needs. Any failure returns null: plan
+// resolution degrades, the webhook never throws.
+async function planFromLineItems(sessionId) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || !sessionId) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const res = await fetch(
+      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}/line_items?limit=10`,
+      {headers: {Authorization: `Bearer ${key}`}, signal: controller.signal}
+    );
+    if (!res.ok) {
+      console.error('stripe-line-items', `status=${res.status} session=${sessionId}`);
+      return null;
+    }
+    const body = await res.json();
+    for (const item of body.data || []) {
+      const plan = plans.planByPriceId(item.price?.id);
+      if (plan) return plan.id;
+    }
+    return null;
+  } catch (e) {
+    console.error('stripe-line-items', e.message);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Resolve which plan a completed checkout session bought. First hit wins:
+//   1. session.metadata.plan / session.metadata.github_scout_plan. The live
+//      Payment Links were created with `metadata[github_scout_plan]`
+//      (scripts/create-stripe-githubscout-links.js:75,88,103), and Stripe only
+//      copies Payment Link metadata onto the session when the link is
+//      configured to; both keys are checked and both are validated against
+//      lib/plans.js so a stale `command` cannot slip through.
+//   2. session.metadata.price_id, if the link was configured to pass one.
+//   3. The Stripe API, using the restricted read-only key (see above).
+//   4. null — UNRESOLVED. Never default to operator: that is how every Director
+//      buyer silently received the 10-scan tier.
+async function resolvePlanFromSession(session) {
+  const meta = session?.metadata || {};
+  for (const key of ['plan', 'github_scout_plan']) {
+    const plan = plans.getPlan(meta[key]);
+    if (plan) return {plan: plan.id, source: `metadata.${key}`};
+  }
+  const byPriceId = plans.planByPriceId(meta.price_id);
+  if (byPriceId) return {plan: byPriceId.id, source: 'metadata.price_id'};
+  const fromApi = await planFromLineItems(session?.id);
+  if (fromApi) return {plan: fromApi, source: 'stripe_line_items'};
+  return {plan: null, source: 'unresolved'};
+}
+
+// Log the buyer's email domain only. The full address is customer data and
+// function logs are not the place for it.
+function emailDomain(email) {
+  const at = String(email || '').lastIndexOf('@');
+  return at === -1 ? 'unknown' : String(email).slice(at + 1);
+}
 
 function verifyStripeSignature(payload, header, secret, toleranceSec = 300) {
   if (!header || !secret) return false;
@@ -77,12 +149,25 @@ exports.handler = async (event) => {
       const email = auth.normEmail(session.customer_details?.email || session.customer_email);
       if (!email) return {statusCode: 200, body: 'No email on session; ignored'};
       const account = await auth.getOrCreateAccount(email);
-      const priceId = session.metadata?.price_id || null;
-      const plan = PLAN_BY_PRICE()[priceId] || session.metadata?.plan || 'operator';
+      const resolved = await resolvePlanFromSession(session);
+      if (!resolved.plan) {
+        console.error('stripe-plan-unresolved', `session=${session.id} mode=${session.mode || 'unknown'} email_domain=${emailDomain(email)}`);
+      }
+      // Subscription id: Payment Links running in one-time (`mode: 'payment'`)
+      // mode produce no subscription, so we keep the session id as the row key
+      // rather than dropping a paid record. Both modes are recorded `active` —
+      // the buyer paid either way and must be able to sign in — but a one-time
+      // purchase is logged so the operator can see it will never renew or emit
+      // invoice.paid / customer.subscription.* events to keep that status
+      // honest. An unresolved plan overrides status with `needs_review`.
+      if (session.mode && session.mode !== 'subscription') {
+        console.error('stripe-one-time-purchase', `session=${session.id} mode=${session.mode} — recorded active but will not renew`);
+      }
       await upsertSubscription(account.id, {
         stripe_customer_id: session.customer || null,
         stripe_subscription_id: session.subscription || session.id,
-        plan, status: 'active'
+        plan: resolved.plan || UNRESOLVED_PLAN,
+        status: resolved.plan ? 'active' : 'needs_review'
       });
       // Fulfillment: send sign-in link so the buyer lands in a real dashboard.
       try {
@@ -115,3 +200,8 @@ exports.handler = async (event) => {
   }
   return {statusCode: 200, body: 'ok'};
 };
+
+// Exported for tests/run-tests.js so the shipped resolver is the one under test.
+exports.resolvePlanFromSession = resolvePlanFromSession;
+exports.PLAN_BY_PRICE = PLAN_BY_PRICE;
+exports.UNRESOLVED_PLAN = UNRESOLVED_PLAN;

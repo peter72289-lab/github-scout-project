@@ -9,8 +9,7 @@ const {runAdapters} = require('./lib/adapters');
 const {buildReport} = require('./lib/aggregate');
 const db = require('./lib/supabase');
 const auth = require('./lib/auth');
-
-const PLAN_QUOTAS = {operator: 10, command: 30, director: 100};
+const plans = require('./lib/plans');
 
 function publicSubmission(s) {
   return {
@@ -35,8 +34,12 @@ async function sendWebhook(submission, summary) {
   } catch (e) { return {sent: false, reason: e.message}; }
 }
 
+// Returns null quota when the plan on the subscription row cannot be resolved
+// (unknown id, or the retired `command` tier). The caller must refuse the scan
+// rather than assume a tier — see the 403 below.
 async function checkQuota(accountId, plan) {
-  const quota = PLAN_QUOTAS[plan] || PLAN_QUOTAS.operator;
+  const quota = plans.quotaFor(plan);
+  if (quota === null) return {allowed: false, used: null, quota: null, unresolved: true};
   const period = new Date().toISOString().slice(0, 7); // YYYY-MM
   const result = await db.rpc('usage_increment', {p_account_id: accountId, p_period: period, p_max: quota});
   return {allowed: Boolean(result?.allowed), used: result?.used ?? null, quota};
@@ -76,6 +79,13 @@ exports.handler = async (event) => {
   if (session?.subscription) {
     const q = await checkQuota(session.account.id, session.subscription.plan);
     usage = {used: q.used, quota: q.quota};
+    if (q.unresolved) {
+      // The subscription exists but names a plan we cannot price. Granting the
+      // smallest tier would be a silent, wrong entitlement decision about money,
+      // so refuse and make a human look at the row.
+      console.error('scan-entitlement-unresolved', `account=${session.account.id} plan=${String(session.subscription.plan)}`);
+      return {statusCode: 403, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ok: false, error: 'Your subscription is on hold pending review, so scans are paused. Contact support@githubscout.ai and we will sort it out.', usage})};
+    }
     if (!q.allowed) {
       return {statusCode: 402, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ok: false, error: `Monthly scan quota reached (${q.quota}). Quota resets at the start of next month.`, usage})};
     }
