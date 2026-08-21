@@ -17,6 +17,21 @@ Tokens are stored as SHA-256 hashes, never in plaintext.
 `cleanup-scheduled.js` runs daily and purges expired magic links, dead sessions,
 and stale rate-limit rows. It does **not** delete scans or accounts.
 
+## Data that leaves our stores: the lead webhook
+`operator-url-scan.js:25` (`sendWebhook`) POSTs the submitted enquiry — email,
+storefront URL, spend ranges, stated goal, UTMs, landing page, referrer, and the
+scan summary — to `GHL_WEBHOOK_URL` or `LEAD_WEBHOOK_URL`. Neither is recorded as
+set on the live sites (`../../docs/ARCHITECTURE.md`, env table); with neither set
+the function returns `not_configured` and forwards nothing. Confirm in the
+Netlify UI before answering a data-subject request either way.
+Setting one makes the receiving CRM a subprocessor, so it is disclosed
+on `subprocessors.html` with that "only when configured" qualifier.
+
+Consequence for erasure: `account-delete.js` clears our Supabase rows, it cannot
+recall a copy already delivered to a CRM. If the webhook is ever switched on,
+an erasure request has to be carried out in that CRM too, by hand, as part of
+the same request. Do not turn it on without adding that step to the SOP.
+
 ## User-initiated export (GDPR/CCPA access)
 Signed-in users can download their own data from the dashboard "Billing and your
 data" panel, which calls `account-export.js` (GET, session cookie, JSON

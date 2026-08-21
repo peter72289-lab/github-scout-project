@@ -3,6 +3,9 @@
 # Local deployment metadata
 .netlify/
 **/.netlify/
+# `netlify dev` writes this while setting up the Edge Functions runtime
+deno.lock
+**/deno.lock
 
 # Generated video frame caches; keep source renderers and finished MP4 exports.
 cockpit-v2-demo/render/frames/

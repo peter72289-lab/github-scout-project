@@ -1,74 +1,72 @@
-# GitHub Scout Project
+# GitHub Scout
 
-GitHub Scout is an ecommerce intelligence project for finding better software, plugins, embeds, widgets, open-source alternatives, and storefront recommendations from public signals.
+A paid Shopify app-stack audit. A merchant submits a public storefront URL; the scanner fetches
+ten keyless public sources (HTML, `/products.json`, robots, headers, DNS, script hosts, JSON-LD,
+checkout fingerprint), matches them against 65 app signatures, and returns a report that ranks
+each detected app keep / replace / remove / test with a savings band derived only from apps it
+actually detected. No detection, no dollar figure.
 
-## Live / Share Links
+Sold as Operator $17/mo (10 scans) and Director $37/mo (30 scans) through Stripe Payment Links.
+"GitHub Scout" is a leftover name from an earlier product; renaming is an open owner decision.
 
-- GitHub repo: https://github.com/peter72289-lab/github-scout-project
-- V10 Netlify site: https://githubscout-ecommerce-v10-20260624.netlify.app
-- V9 Netlify site: https://githubscout-ecommerce-v9-20260609.netlify.app
-- V8 Netlify site: https://githubscout-ecommerce-v8-20260605.netlify.app
+## Current status
 
-## Current Status
+The v2 build — scanner, magic-link auth, Supabase schema, Stripe webhook, dashboard — is merged
+and passes its tests locally, but **it has never been deployed**. The Netlify sites that answer
+today serve the pre-v2 funnel, so nothing described above is live and no URL here should be read
+as running the current code. Checkout is deliberately disarmed: `fulfillmentReady` in
+`assets/launch-config.js` is `false`, which hides the Stripe buttons, because a purchase today
+would be fulfilled by nothing. `scripts/preflight.js` fails on the two `[[LEGAL ENTITY]]`
+placeholders in `terms.html` and `privacy.html`; that is a real launch blocker, not noise.
 
-- V10 ecommerce split-test page is built as a separate Netlify site and does not overwrite V9.
-- V9 ecommerce page is built and includes the clicked-tabs cockpit demo video.
-- Operator Shopify savings funnel is now added at `netlify-v9-githubscout-ecommerce/operator-shopify-savings.html`.
-- Operator URL intake runs through the Netlify Function analyzer flow; checkout pages route to live Stripe Payment Links through `assets/launch-config.js`.
-- Launch support pages are live in both V9 and V10: Privacy, Terms, Data Handling, Refunds, and Support.
-- Paid customer onboarding is available at `customer-onboarding.html` for storefront URL submission after checkout.
-- Static 9:16 ad batches are stored under `ads/`.
-- V9 production deploy is live as of June 10, 2026. V10 production deploy is live as of June 24, 2026.
+`STATUS.md` is the current ledger. Read it before assuming anything here is still true.
 
-## Key Folders
+## Layout
 
-- `netlify-v10-githubscout-ecommerce/` - V10 split-test static Netlify site.
-- `netlify-v9-githubscout-ecommerce/` - current V9 static Netlify site.
-- `netlify-v8-githubscout/` - earlier V8 Netlify site.
-- `ads/v9-static-9x16/` - broad V9 Meta-style ad set.
-- `ads/operator-shopify-savings-9x16/` - Operator Shopify cost-savings ad set.
-- `cockpit-v2-demo/` - cockpit demo capture/render assets and finished MP4s.
-- `docs/` - campaign, checkout, and deployment operating notes.
-- `docs/customer-onboarding-email-templates.md` - launch email copy for paid customer onboarding.
-- `docs/paid-scan-report-template.md` - fulfillment report structure for Operator and Director scans.
-- `docs/weekend-launch-qa-checklist.md` - pre-traffic launch QA checklist.
-- `servers/` - prototype server-side scanner code.
+- `netlify-v10-githubscout-ecommerce/` — **the canonical app.** All product work happens here.
+  Static HTML at the folder root, Netlify Functions in `netlify/functions/` (CommonJS, zero npm
+  dependencies), the engine in `netlify/functions/lib/`, schema in `supabase/schema.sql`.
+- `netlify-v9-githubscout-ecommerce/` — legacy. The pre-v2 funnel that is still deployed. Frozen;
+  its fate is an open owner decision (`TASKS_FOR_USER.md` item 7).
+- `docs/` — project-level docs and the plan of record.
+- `ads/`, `cockpit-v2-demo/`, `fixtures/`, `scripts/` — ad renders, demo capture assets, test
+  fixtures, and repo-level verification scripts.
 
-## Most Important Funnel
+## Running it
 
-The next GTM path is:
-
-1. Run Operator Shopify savings ads.
-2. Send traffic to `operator-shopify-savings.html`.
-3. Capture email, store URL, app spend, and primary goal.
-4. Show sample report to set expectations.
-5. Route high-intent leads to `checkout-operator.html`.
-
-## Deploy Command
-
-To redeploy V9:
+From `netlify-v10-githubscout-ecommerce/`:
 
 ```bash
-cd netlify-v9-githubscout-ecommerce
-npx netlify deploy --prod --dir . --functions netlify/functions --site 3f86b1e7-82aa-4919-8ef7-55289185cc16
+bun tests/run-tests.js     # 121 unit tests, no network. The gate — run before every commit.
+bun scripts/preflight.js   # launch-readiness gate; exits 1 on the legal placeholders above
+bunx netlify dev           # site + functions on :8888; functions degrade with no env vars
 ```
 
-To redeploy V10:
+From the repo root:
 
 ```bash
-cd netlify-v10-githubscout-ecommerce
-npx netlify deploy --prod --dir . --functions netlify/functions --site c7971299-4914-4ef4-863b-ff7880704171
+bunx prettier@3 --check "*.md" "status/**/*.md" ".github/**/*.md" \
+  "docs/{GAP-TO-MARKET,PRODUCT-OVERVIEW,ARCHITECTURE}.md"
 ```
 
-To verify either live site after deploy:
+Deploys are owner-run release events. Do not run `netlify deploy` from an agent session.
 
-```bash
-node scripts/verify-githubscout-launch.js https://githubscout-ecommerce-v9-20260609.netlify.app
-node scripts/verify-githubscout-launch.js https://githubscout-ecommerce-v10-20260624.netlify.app
-```
+## Docs
 
-## Latest Useful Commits
+| Need                                           | Read                                                                          |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| Rules for anyone (human or agent) writing code | `CLAUDE.md`                                                                   |
+| What to do next, in order                      | `docs/GAP-TO-MARKET.md`                                                       |
+| What the product is, pricing, claims           | `docs/PRODUCT-OVERVIEW.md`                                                    |
+| How the build works — flows, env, data         | `docs/ARCHITECTURE.md`                                                        |
+| Where things stand today                       | `STATUS.md`, `status/<stream>.md`                                             |
+| Things only the owner can do                   | `TASKS_FOR_USER.md`                                                           |
+| Deploy and env wiring                          | `netlify-v10-githubscout-ecommerce/SETUP.md`                                  |
+| What copy may claim                            | `netlify-v10-githubscout-ecommerce/docs/AD-CLAIMS-GUIDE.md`                   |
+| Incident, refund, and retention procedures     | `netlify-v10-githubscout-ecommerce/docs/RUNBOOK.md`, `docs/DATA-RETENTION.md` |
 
-- `e9a10ef` - Operator Shopify savings ad set.
-- `aa117a9` - V9 static ad image set.
-- `21b17ed` - Cockpit demo video added to V9.
+## Ground rules
+
+Numbers in this repo are cited or they do not ship. Ten live sources, not fifteen. Savings come
+only from detected paid apps. Confidence is a corroboration score capped at 95, not a probability.
+Nothing is "live" until someone has run it and watched it work.

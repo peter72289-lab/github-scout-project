@@ -6,7 +6,7 @@ Orientation for a new engineer or agent. Paths are relative to `/Users/mbergvins
 
 A paid Shopify app-stack audit. A merchant pastes a public storefront URL; the scanner fetches public pages and DNS, matches 65 app signatures (`v10/netlify/functions/lib/rules.js`), benchmarks the detected paid apps against published pricing, and returns a savings band plus a keep/replace/remove/test action plan. The pitch is that it "pays for itself if it kills one bad app" (`v10/index.html:528`).
 
-The product started (v8) as a generic 15-source "Open Intelligence Engine" searching GitHub, Product Hunt, HN and similar for open-source SaaS alternatives (`netlify-v8-githubscout/index.html`). It was narrowed to Shopify cost savings because that was the only angle with an ad-able pain (`docs/meta-campaign-structure.md`). The name "GitHub Scout" is a leftover; the product no longer touches GitHub, and the author's own checklist flags the name as a trademark exposure to rename off (`v10/LAUNCH-CHECKLIST.md`).
+The product started (v8) as a generic 15-source "Open Intelligence Engine" searching GitHub, Product Hunt, HN and similar for open-source SaaS alternatives (the `netlify-v8-githubscout/` tree, since deleted). It was narrowed to Shopify cost savings because that was the only angle with an ad-able pain (`docs/meta-campaign-structure.md`). The name "GitHub Scout" is a leftover; the product no longer touches GitHub, and the author's own checklist flags the name as a trademark exposure to rename off (`v10/LAUNCH-CHECKLIST.md`).
 
 Design stance of the current build (v2, merged 2026-07-08): "the machine works and is honest". Savings are computed only from detected apps, never from the ad-spend dropdown; confidence is capped at 95%; costs are labeled benchmarks (`v10/README.md`, `v10/methodology.html`).
 
@@ -35,7 +35,7 @@ Live ladder (wired to Stripe Payment Links in `v10/assets/launch-config.js:5-6`)
 
 Guarantee: 14-day first-month refund on Operator and Director (`v10/refunds.html:19`). Annual toggle exists in the homepage but stays inert until annual Payment Links are filled in (`v10/assets/launch-config.js:8-9`). Price IDs and links are also listed in `docs/checkout-readiness.md`.
 
-Exploratory ladder (root `github-scout-commerce-launchpad-v11..v14-*.html`, not wired to anything): $149 one-off "App Waste Audit Sprint" (v11-v13), then in v14 a four-rung ladder of $0 scan, $149 self-serve report, $950+ replacement sprint, $2.5k+ implementation. The author's own note in `v10/LAUNCH-CHECKLIST.md` says a single $17/mo plan cannot sustain paid CAC.
+Exploratory ladder, recorded here because the mockups that held it have been deleted (they were never wired to anything): $149 one-off "App Waste Audit Sprint" (v11-v13), then in v14 a four-rung ladder of $0 scan, $149 self-serve report, $950+ replacement sprint, $2.5k+ implementation. The author's own note in `v10/LAUNCH-CHECKLIST.md` says a single $17/mo plan cannot sustain paid CAC.
 
 ## Funnels
 
@@ -53,7 +53,7 @@ Secondary: homepage pricing cards (`v10/index.html`), agency contact form (Netli
 
 ## Canonical folder and live URLs
 
-Canonical code: `netlify-v10-githubscout-ecommerce/`. It is the only tree with the v2 scanner, auth, webhook, tests, and the corrected copy. `netlify-v8-githubscout/` and `netlify-v9-githubscout-ecommerce/` are superseded copies that share byte-identical dead assets with v10. Root-level v11-v14 HTML files are standalone mockups.
+Canonical code: `netlify-v10-githubscout-ecommerce/`. It is the only tree with the v2 scanner, auth, webhook, tests, and the corrected copy. `netlify-v9-githubscout-ecommerce/` is a superseded copy, still deployed, frozen. The v8 tree and the root v11-v14 mockups have been deleted.
 
 | Site           | URL                                                           | State (2026-08-20)                                                                           |
 | -------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -99,10 +99,10 @@ Known breaks in Gen 2 as wired: the webhook resolves every buyer to `operator` b
 - **Savings band**: 15-40% of the summed benchmark cost of detected paid apps; null when nothing paid is detected.
 - **Overlap**: two or more paid apps in the same category; the consolidation line item.
 - **Cockpit**: the v8/v9 name for the old GitHub-opportunity dashboard UI; survives as a 60-second demo MP4 (`v10/assets/githubscout-cockpit-v2-clicked-tabs-demo-60s.mp4`) and a homepage section.
-- **Dossier**: a per-repo detail panel in that old dashboard (`v10/assets/dossiers.js`, `dossiers.css`); dead code, loaded by no v10 page.
-- **opportunities.json / ecommerce_opportunities.json**: `v10/data/*.json`, v8-era seed data (GitHub repo metrics from May 2026 and hand-typed ecommerce ideas). Not read by any v10 page or function.
+- **Dossier**: a per-repo detail panel in that old dashboard; the code (`v10/assets/dossiers.js`, `dossiers.css`) was dead and has been deleted.
+- **opportunities.json / ecommerce_opportunities.json**: `v10/data/*.json`, v8-era seed data (GitHub repo metrics from May 2026 and hand-typed ecommerce ideas). Read by nothing; deleted.
 - **Magic link**: passwordless sign-in; 32-byte token, sha256-hashed in `magic_links`, 15-minute TTL, 5 per hour per email.
 - **`gs_session`**: the HttpOnly session cookie, 30 days.
 - **GHL**: GoHighLevel, the CRM that receives lead webhooks when configured.
 - **Preflight**: `bun scripts/preflight.js` (`v10/scripts/preflight.js`), fails on legal placeholders and banned "15 sources" phrasing; currently exits 1.
-- **v11-v14 launchpads**: root HTML mockups exploring the $149 audit offer; not wired to checkout or the v10 scanner (they call the `servers/commerce_scan_api.py` prototype on `127.0.0.1:8767`).
+- **v11-v14 launchpads**: root HTML mockups exploring the $149 audit offer; never wired to checkout or the v10 scanner (they called the `servers/commerce_scan_api.py` prototype on `127.0.0.1:8767`). Both are deleted; the ladder they proposed survives above and in `docs/GAP-TO-MARKET.md`, and their evidence taxonomy shipped as `detected` / `likely` / `possible` in `lib/aggregate.js`.

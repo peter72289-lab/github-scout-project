@@ -8,10 +8,12 @@
 
 ## Current state
 
-**M3 closed and M4 with it: the money path, the scan's honesty, and the customer's ability to leave all work in code. 117 tests pass. PRs #2-#7. Everything left needs owner credentials or a decision.**
+**M2, M3 and M4 closed: the money path, the scan's honesty, the customer's ability to leave, and the deploy surface all hold up in code. 121 tests pass. PRs #2-#9. Everything left needs owner credentials or a decision.**
 
 > Keep the block above current. Rewrite it as the situation changes; never append a newer bullet
 > above it. New work goes to `## Recently completed
+
+- 2026-08-20 — **M2 closed: a deploy no longer serves runbooks, schema, tests, or a 5.2 MB build zip, and 20k lines of dead weight are gone.** `netlify.toml` gained 14 forced-404 deny rules (extension globs do not work in Netlify's matcher — directories need a splat, root files are listed individually), validated by running `netlify dev --offline` and curling 31 paths. New preflight section 9 is default-deny over the publish root and was negative-tested three ways, so the exposure cannot regress. Deleted: the deploy zip, five dead v8-era assets, both `data/*.json`, `scout-demo-video.html`, `checkout-command.html` (the 301s still resolve), `netlify-v8-githubscout/`, `servers/commerce_scan_api.py`, and the four launchpad prototypes with their 12 verification PNGs — each grep-verified unreferenced first, and one live dangling `ecommerce.css` link in `checkout-director.html` found and fixed. `subprocessors.html` now discloses the CRM lead-forwarding processor; `support.html` states a one-business-day first reply; `README.md` rewritten to say plainly that v2 has never been deployed. Working tree 84 MB -> 73 MB; `.git` unchanged at 76 MB (history rewrite is owner work, PLT-4). Kept: `netlify-v9-*` (deployed), `ads/` (57 MB) and `cockpit-v2-demo/` — all await the owner's purge decision.
 
 - 2026-08-20 — **Checkout cannot charge a card until `fulfillmentReady` is flipped, and the Stripe signature tests can now fail.** `assets/launch-config.js` gains a master switch defaulting to false; `launch-checkout.js` gates every CTA on it, and `checkout-operator.html`, `checkout-director.html`, and the dashboard upsell were rerouted through the shared gate (the two checkout pages were reading config directly and did not even load the asset). A test asserts the committed config ships with the switch off. Separately, `tests/run-tests.js` carried its own copy of the Stripe HMAC verifier, so the four signature tests passed whatever `stripe-webhook.js` did; they now import the shipped `verifyStripeSignature`. Verified by mutation: stubbing the verifier to `return true` fails three of them, where before it failed none.
 

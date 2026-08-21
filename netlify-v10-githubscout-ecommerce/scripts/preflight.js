@@ -124,6 +124,72 @@ const toml = read('netlify.toml') || '';
 if (!/\[functions\]/.test(toml)) fail('netlify.toml missing [functions] block');
 if (!/Content-Security-Policy/.test(toml)) warn('netlify.toml has no CSP header');
 
+// 9. Nothing internal is publicly served.
+// `publish = "."` makes this whole folder the document root, so every runbook,
+// the Supabase schema, the test suite, and the function sources would be
+// fetchable at guessable URLs. netlify.toml denies them with forced 404
+// redirects; this check is the thing that stops the deny list from drifting
+// behind the file tree. It is default-deny: a file is allowed to reach the
+// public web only if its extension is a site asset type, otherwise a matching
+// deny rule must exist. Adding an internal file without a rule fails the gate.
+const PUBLIC_EXT = new Set([
+  '.html', '.css', '.js', '.txt', '.xml', '.ico', '.webmanifest',
+  '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif',
+  '.mp4', '.webm', '.woff', '.woff2'
+]);
+
+// Minimal [[redirects]] reader — enough for `from`/`status`/`force`, and no
+// TOML dependency (functions and scripts here stay dependency-free).
+function parseRedirects(src) {
+  return src.split(/\[\[redirects\]\]/).slice(1).map((block) => {
+    const stop = block.search(/^\s*\[/m);
+    const body = stop === -1 ? block : block.slice(0, stop);
+    const grab = (key) => (body.match(new RegExp(`^\\s*${key}\\s*=\\s*"?([^"\\n]+)"?`, 'm')) || [])[1];
+    return {from: grab('from'), status: grab('status'), force: /^\s*force\s*=\s*true/m.test(body)};
+  });
+}
+
+// A rule denies a path when it returns 404 and forces past the real file.
+// `from = "/dir/*"` covers everything under `dir/`; anything else is exact.
+const denyRules = parseRedirects(toml).filter((r) => r.from && r.status === '404');
+const isDenied = (relPath) => denyRules.some((r) => {
+  const pattern = r.from.replace(/^\//, '');
+  const hit = pattern.endsWith('/*')
+    ? relPath === pattern.slice(0, -2) || relPath.startsWith(pattern.slice(0, -1))
+    : relPath === pattern;
+  if (!hit) return false;
+  // An unforced rule loses to the file that actually exists at that path, so it
+  // is not protection. Treat it as a miss and report it below.
+  if (!r.force) fail(`netlify.toml denies "${r.from}" without force = true — the real file wins and is still served`);
+  return r.force;
+});
+
+const publishRoot = root; // publish = "." in netlify.toml
+const SKIP_DIRS = new Set(['node_modules', '.git', '.netlify']);
+const walk = (dir, prefix = '') => fs.readdirSync(dir, {withFileTypes: true}).flatMap((e) => {
+  const relPath = prefix ? `${prefix}/${e.name}` : e.name;
+  if (e.isDirectory()) return SKIP_DIRS.has(e.name) ? [] : walk(path.join(dir, e.name), relPath);
+  return [relPath];
+});
+
+const publishTomlValue = (toml.match(/^\s*publish\s*=\s*"([^"]*)"/m) || [])[1];
+if (publishTomlValue !== '.') {
+  warn(`netlify.toml publish = "${publishTomlValue}" — the exposure check assumes the folder root; update scripts/preflight.js section 9`);
+} else {
+  const exposed = walk(publishRoot).filter((f) => !PUBLIC_EXT.has(path.extname(f).toLowerCase()) && !isDenied(f));
+  if (exposed.length) {
+    fail(`${exposed.length} internal file(s) would be served publicly (publish = "."): ${exposed.slice(0, 12).join(', ')}${exposed.length > 12 ? ', …' : ''} — add a forced 404 redirect in netlify.toml`);
+  } else {
+    pass(`no internal files publicly served (${denyRules.length} deny rule(s) cover docs, tests, scripts, supabase, functions, and root notes)`);
+  }
+  // The deny list must not rot the other way either: a rule for a path that no
+  // longer exists is dead weight that hides which files are actually covered.
+  const stale = denyRules
+    .map((r) => r.from.replace(/^\//, '').replace(/\/\*$/, ''))
+    .filter((p) => !fs.existsSync(path.join(publishRoot, p)));
+  if (stale.length) warn(`netlify.toml denies path(s) that no longer exist: ${stale.join(', ')}`);
+}
+
 // Report
 const line = '─'.repeat(52);
 console.log('\nPREFLIGHT LAUNCH GATE\n' + line);

@@ -42,6 +42,13 @@ Functions and static assets roll back together.
 `refunds.html` promises a 14-day first-month refund and that cancellation stops
 future renewals. This is how that promise is kept. Budget 10 minutes.
 
+**0. The clock you published**
+
+`support.html` promises a first reply within one business day, Monday to Friday,
+and says a refund decision comes in that first reply. That is the commitment;
+this SOP has to fit inside it. If the queue ever cannot, change the page first
+rather than quietly missing it.
+
 **1. Check, before touching Stripe**
 
 - Stripe → Customers → search the email they paid with. Note the subscription

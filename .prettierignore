@@ -3,18 +3,10 @@ coverage
 *.zip
 bun.lock
 bun.lockb
-# Legacy, frozen trees: never reformatted (see CLAUDE.md "Architecture")
-netlify-v8-githubscout
+# Legacy, frozen tree: never reformatted (see CLAUDE.md "Architecture")
 netlify-v9-githubscout-ecommerce
-github-scout-commerce-launchpad-v1*.html
 cockpit-v2-demo
 ads
-servers
-# Carried-over v8/v9 code inside v10 that no page loads; removal is a tracked unit
-netlify-v10-githubscout-ecommerce/assets/app.js
-netlify-v10-githubscout-ecommerce/assets/ecommerce.js
-netlify-v10-githubscout-ecommerce/assets/dossiers.js
-netlify-v10-githubscout-ecommerce/data
 # Pre-adoption runbooks, kept verbatim for history
 docs/checkout-readiness.md
 docs/customer-onboarding-email-templates.md
