@@ -33,7 +33,7 @@ a{color:var(--amber)}
   <p class="lead">No black box. This page lists every source we check, how confidence is scored, and how savings estimates are grounded — including what we refuse to estimate.</p>
 
   <h2>Detection sources</h2>
-  <p>Each scan checks up to 10 live sources. We say "up to" because some stores block some endpoints; your report shows a per-source pass/fail. Planned sources ship as they clear reliability testing — we don't count a source until it's live.</p>
+  <p>Each scan checks up to <span data-source-count="live">10</span> live sources; the roadmap is <span data-source-count="total">15</span>. We say "up to" because some stores block some endpoints; your report shows a per-source pass/fail. Planned sources ship as they clear reliability testing — we don't count a source until it's live.</p>
   <table>
     <tr><th>Source</th><th>What it reveals</th><th>Status</th></tr>
     <tr><td>Storefront homepage HTML</td><td>App scripts, widgets, pixels</td><td class="live">Live</td></tr>
@@ -51,25 +51,33 @@ a{color:var(--amber)}
     <tr><td>Historical stack changes (web archive)</td><td>What was tried and removed</td><td class="planned">Planned</td></tr>
     <tr><td>Ad library creative fingerprints</td><td>Which tools power your competitors' ads</td><td class="planned">Planned</td></tr>
     <tr><td>Signup flow / ESP fingerprint</td><td>Email platform behind the capture form</td><td class="planned">Planned</td></tr>
-    <tr><td>Checkout provider fingerprint</td><td>Payment/checkout stack</td><td class="planned">Planned</td></tr>
   </table>
 
   <h2>Confidence scoring</h2>
-  <p>An app's confidence reflects <b>corroboration</b>: how many independent sources saw it. One HTML substring match starts at 62%. A script served from the vendor's own CDN adds weight. A DNS verification record adds more. Confidence caps at 95% — external scanning can never be 100% certain, and we won't pretend otherwise.</p>
+  <p>Confidence is a <b>corroboration</b> score, not a probability. It is set by the <i>kind</i> of evidence and how independent the sources are — never by how many substrings happened to match. Every detection lands in one of three bands:</p>
+  <table>
+    <tr><th>Band</th><th>What it takes</th><th>Score</th></tr>
+    <tr><td class="live">Detected</td><td>Two or more independent sources agree, or a third-party script host was parsed off a page we actually fetched — direct evidence the app's code loads on the storefront.</td><td>70–95</td></tr>
+    <tr><td>Likely</td><td>Exactly one storefront page matched a pattern and nothing else corroborates it.</td><td>60</td></tr>
+    <tr><td class="planned">Possible</td><td>The only evidence is a DNS record, a robots.txt reference, or a lone substring. That proves a domain relationship, not that the app runs on the store.</td><td>25</td></tr>
+  </table>
+  <p><b>Possible-strength signals never produce dollars.</b> They are listed in the report so you can see what we saw, but they are excluded from the savings band, the overlap costing, and every other dollar figure. Confidence caps at 95% — external scanning can never be 100% certain, and we won't pretend otherwise.</p>
 
   <h2>Cost benchmarks — what they are and aren't</h2>
   <div class="box">Every dollar figure in a report is a <b>benchmark</b>: typical published mid-tier pricing from the vendor's own pricing page (cited in the full report). It is <b>not</b> your invoice. Your actual bill may be higher or lower. Free and native tools are marked $0 and never counted toward savings.</div>
 
   <h2>Savings estimates — grounded or absent</h2>
-  <p>The savings band is <b>15–40% of the benchmarked cost of paid apps we actually detected</b> — the typical consolidation/downgrade outcome when a stack has overlap. Three rules we enforce in code:</p>
-  <p>1. <b>No detections, no estimate.</b> If the scan finds no paid apps, the report says "no estimate" instead of inventing a number.<br>
-  2. <b>Your ad-spend answer never changes the dollars.</b> It only sets urgency framing.<br>
-  3. <b>Overlaps are itemized.</b> Two paid review tools? The report names both, shows both benchmarks, and prices the consolidation explicitly.</p>
+  <p>The savings band is <b>15–40% of the benchmarked cost of paid apps we actually detected</b> — the typical consolidation/downgrade outcome when a stack has overlap. Four rules we enforce in code:</p>
+  <p>1. <b>No crawl, no estimate.</b> A savings figure is produced only if the scan confirmed the URL is a Shopify storefront <i>and</i> fetched at least one page from it. Fail either and the report explains why the number is withheld — it never shows a smaller one instead.<br>
+  2. <b>No detections, no estimate.</b> If the scan finds no paid apps on the storefront, the report says "no estimate" instead of inventing a number.<br>
+  3. <b>Your ad-spend answer never changes the dollars.</b> It only sets urgency framing.<br>
+  4. <b>Overlaps are itemized.</b> Two paid review tools? The report names both, shows both benchmarks, and prices the consolidation explicitly.</p>
 
   <h2>Limits we're upfront about</h2>
   <p>Server-side integrations, consent-gated scripts, and tag-manager-injected tools can be invisible to external scanning. When the scan sees little, the report says so and recommends an admin-side audit rather than guessing. The scanner fetches only public pages, respects a strict size/time budget, and never authenticates to your store.</p>
 
   <p style="margin-top:36px"><a href="/operator-url-analysis.html">Run a scan</a> · <a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a></p>
 </main>
+<script src="assets/source-counts.js"></script>
 </body>
 </html>

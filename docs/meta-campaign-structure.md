@@ -93,7 +93,7 @@ Audience:
 Creative angles:
 
 - 10 storefront analyses per month
-- All 15 sources included
+- All 10 live sources included (15 planned)
 - $17/month Operator plan
 - URL to action plan
 
@@ -105,7 +105,7 @@ Recommended ads:
 
 Sample primary text:
 
-Operator gives solo ecommerce teams 10 storefront analyses per month, all 15 sources, and practical recommendations for plugin swaps, widgets, embeds, and conversion tips.
+Operator gives solo ecommerce teams 10 storefront analyses per month, all 10 live detection sources (15 planned), and practical recommendations for plugin swaps, widgets, embeds, and conversion tips.
 
 Headline:
 

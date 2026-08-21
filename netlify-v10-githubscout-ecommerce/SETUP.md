@@ -8,7 +8,7 @@ scanning, accounts, entitlements, quotas, saved scans, and a dashboard.
 - **Integrity**: savings computed only from detected apps (never the ad-spend
   dropdown); spend-tier `includes()` bug fixed in server AND client; PayPal's
   invented $80/mo cost removed; "all 15 sources" replaced everywhere with the
-  honest "9 live / 15 planned" and a public methodology page.
+  honest "10 live / 15 planned" and a public methodology page.
 - **Security**: DNS-rebinding closed via connect-time lookup guard; redirects
   re-validated per hop; rate limit keyed on IP only, with optional shared
   store; non-http(s) schemes rejected; magic-link tokens stored hashed.
@@ -87,7 +87,7 @@ Browser ──► operator-url-analysis.html / dashboard.html
                 │ (form POST / fetch)
                 ▼
  operator-url-scan.js ──► lib/guard.js      (SSRF-pinned fetch, rate limit)
-                │        lib/adapters.js    (9 live sources)
+                │        lib/adapters.js    (10 live sources)
                 │        lib/aggregate.js   (detect → corroborate → report)
                 │        lib/rules.js       (versioned signatures + cited benchmarks)
                 ▼

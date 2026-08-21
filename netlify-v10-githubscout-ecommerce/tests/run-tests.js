@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert');
 const guard = require('../netlify/functions/lib/guard.js');
-const {parseHtmlEvidence, SOURCE_CATALOG, liveSourceCount, detectCheckoutProviders} = require('../netlify/functions/lib/adapters.js');
+const {parseHtmlEvidence, SOURCE_CATALOG, liveSourceCount, sourceCounts, detectCheckoutProviders} = require('../netlify/functions/lib/adapters.js');
 const agg = require('../netlify/functions/lib/aggregate.js');
 const {appSignatures} = require('../netlify/functions/lib/rules.js');
 const costOf = (id) => appSignatures.find((s) => s.id === id).cost;
@@ -44,6 +44,10 @@ t('savings = 15-40% of detected benchmark', () => {
   assert.equal(s.suppressedReason, null);
 });
 t('moneyRange null on zero', () => assert.equal(agg.moneyRange(0, 0), null));
+t('moneyRange labels the unit it was given', () => {
+  assert.ok(agg.moneyRange(10, 20).endsWith('/mo'));
+  assert.ok(agg.moneyRange(120, 240, '/yr').endsWith('/yr'));
+});
 
 // ---------- Multi-source detection + corroboration confidence ----------
 function fakeScan({html = '', hosts = [], txt = [], mx = [], robots = '', shopify = false} = {}) {
@@ -149,6 +153,7 @@ t('B3 positive: page pattern plus script host is detected-strength with savings'
   assert.equal(r.summary.detectedMonthlyBenchmark, costOf('klaviyo'));
   assert.equal(r.summary.monthlySavings, agg.moneyRange(costOf('klaviyo') * 0.15, costOf('klaviyo') * 0.40));
   assert.ok(r.summary.annualSavings);
+  assert.ok(r.summary.annualSavings.endsWith('/yr'), 'annual figure must not be labelled per month');
 });
 t('B3 mixed: a possible app adds zero dollars to the band', () => {
   // Klaviyo on the page + Mailchimp in DNS only (rules.js mailchimp dns: mcsv.net).
@@ -231,6 +236,27 @@ t('source catalog: 10 live, honestly labeled', () => {
   assert.ok(SOURCE_CATALOG.length >= liveSourceCount());
   assert.ok(SOURCE_CATALOG.every((s) => ['live', 'planned'].includes(s.status)));
   assert.equal(new Set(SOURCE_CATALOG.map((s) => s.id)).size, SOURCE_CATALOG.length, 'source ids unique');
+});
+t('source catalog: 10 live + 5 planned = 15 total, no duplicate checkout entry', () => {
+  const c = sourceCounts();
+  assert.equal(c.live, 10); assert.equal(c.planned, 5); assert.equal(c.total, 15);
+  assert.equal(c.live + c.planned, SOURCE_CATALOG.length);
+  // 'checkout-fingerprint-plan' duplicated the live checkout source and pushed
+  // the catalog to 16; every published count is derived from this list.
+  assert.equal(SOURCE_CATALOG.filter((s) => /checkout/.test(s.id)).length, 1);
+});
+ta('sources endpoint reports the catalog, not a literal', async () => {
+  const res = await require('../netlify/functions/sources.js').handler();
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const c = sourceCounts();
+  assert.equal(body.live, c.live); assert.equal(body.planned, c.planned); assert.equal(body.total, c.total);
+  assert.equal(body.catalog.length, SOURCE_CATALOG.length);
+});
+t('crawl-failure fallback derives its source count from the catalog', () => {
+  const src = require('node:fs').readFileSync(require('node:path').join(__dirname, '../netlify/functions/operator-url-scan.js'), 'utf8');
+  assert.ok(/sourcesLive: liveSourceCount\(\)/.test(src), 'sourcesLive must come from lib/adapters.js');
+  assert.ok(!/sourcesLive: \d/.test(src), 'no hardcoded sourcesLive literal');
 });
 t('checkout fingerprint: detects Stripe by host', () => {
   const found = detectCheckoutProviders([{evidence: {haystack: '<script src="https://js.stripe.com/v3"></script>'.toLowerCase()}}], new Set(['js.stripe.com']));

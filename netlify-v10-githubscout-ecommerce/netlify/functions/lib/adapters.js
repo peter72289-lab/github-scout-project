@@ -22,9 +22,12 @@ const SOURCE_CATALOG = [
   {id: 'page-speed', name: 'Script weight / performance impact', status: 'planned'},
   {id: 'wayback-history', name: 'Historical stack changes (web archive)', status: 'planned'},
   {id: 'ad-library', name: 'Ad library creative fingerprints', status: 'planned'},
-  {id: 'email-capture-flow', name: 'Signup flow / ESP fingerprint', status: 'planned'},
-  {id: 'checkout-fingerprint-plan', name: 'Deeper checkout flow trace', status: 'planned'}
+  {id: 'email-capture-flow', name: 'Signup flow / ESP fingerprint', status: 'planned'}
 ];
+// Removed: 'checkout-fingerprint-plan' ("Deeper checkout flow trace"). It
+// duplicated the live 'checkout-fingerprint' source, which inflated the catalog
+// to 16 and made the roadmap read as 10 live + 6 planned. The catalog is the one
+// source of truth for every published count: 10 live, 15 total.
 
 // Payment/checkout provider fingerprints for the checkout-fingerprint source.
 // Providers are informational (they inform recommendations, not savings).
@@ -50,6 +53,18 @@ function detectCheckoutProviders(pages, hostSet) {
 }
 
 function liveSourceCount() { return SOURCE_CATALOG.filter((s) => s.status === 'live').length; }
+function plannedSourceCount() { return SOURCE_CATALOG.filter((s) => s.status === 'planned').length; }
+
+/**
+ * The only numbers any page, doc, or receipt may quote.
+ * `total` is the whole roadmap (live + planned), which is what "planned" means
+ * in customer copy: "10 live, 15 planned", not "15 more on top of 10".
+ */
+function sourceCounts() {
+  const live = liveSourceCount();
+  const planned = plannedSourceCount();
+  return {live, planned, total: live + planned};
+}
 
 // --- HTML evidence extraction (structure-aware, not just substring soup) ---
 function parseHtmlEvidence(html) {
@@ -199,4 +214,4 @@ async function runAdapters(storeUrl) {
   };
 }
 
-module.exports = {SOURCE_CATALOG, CHECKOUT_PROVIDERS, liveSourceCount, parseHtmlEvidence, detectCheckoutProviders, runAdapters, headerEvidence, adapterDns};
+module.exports = {SOURCE_CATALOG, CHECKOUT_PROVIDERS, liveSourceCount, plannedSourceCount, sourceCounts, parseHtmlEvidence, detectCheckoutProviders, runAdapters, headerEvidence, adapterDns};

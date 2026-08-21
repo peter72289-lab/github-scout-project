@@ -5,7 +5,7 @@
 // server-side, scan persisted to the dashboard.
 
 const {clientIp, checkRateLimitShared, RATE_LIMIT_MAX} = require('./lib/guard');
-const {runAdapters} = require('./lib/adapters');
+const {runAdapters, liveSourceCount} = require('./lib/adapters');
 const {buildReport} = require('./lib/aggregate');
 const db = require('./lib/supabase');
 const auth = require('./lib/auth');
@@ -96,7 +96,9 @@ exports.handler = async (event) => {
   try {
     scan = await runAdapters(submission.store_url);
   } catch (e) {
-    scan = {pages: [], sources: [], sourcesLive: 9, sourcesSucceeded: 0, sourcesPlanned: [], error: e.message};
+    // Count comes from the catalog, never a literal: the crawl-failure report
+    // still prints "0 of N live sources" and N must match lib/adapters.js.
+    scan = {pages: [], sources: [], sourcesLive: liveSourceCount(), sourcesSucceeded: 0, sourcesPlanned: [], error: e.message};
   }
   const report = buildReport(scan, submission, depth);
   if (scan.error) report.crawl.statusLabel = `Live crawl unavailable: ${scan.error}. No savings estimate is shown without evidence.`;

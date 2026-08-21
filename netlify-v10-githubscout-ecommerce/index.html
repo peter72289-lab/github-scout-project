@@ -267,25 +267,25 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
         <a class="btn primary" href="checkout-operator.html" data-checkout-plan="operator">Start Operator - $17/mo</a>
         <a class="btn ghost" href="#pricing">Compare Plans</a>
       </div>
-      <p class="mini-note">Operator includes 10 storefront analyses/month. Director includes 30. Both use every live detection source (10 today, 15 planned — see methodology).</p>
+      <p class="mini-note">Operator includes 10 storefront analyses/month. Director includes 30. Both use every live detection source (<span data-source-count="live">10</span> today, <span data-source-count="total">15</span> planned — see methodology).</p>
       <div class="proof-row">
-        <div class="proof"><strong>15</strong><span>research sources</span></div>
+        <div class="proof"><strong data-source-count="live">10</strong><span>live research sources</span></div>
         <div class="proof"><strong>10-30</strong><span>stores per month</span></div>
         <div class="proof"><strong>$17+</strong><span>monthly entry</span></div>
       </div>
     </div>
     <div class="hero-card" aria-label="GitHub Scout scan preview">
       <div class="scan-window">
-        <div class="scan-top"><span>Live Storefront Stack Scan</span><span>V10</span></div>
+        <div class="scan-top"><span>Example report layout</span><span>V10</span></div>
         <div class="scan-body">
           <div class="scan-score">
             <div class="dial"><span>78</span></div>
             <div><h3>High savings upside before next billing cycle.</h3><p>Visible overlap in reviews, capture, analytics, subscriptions, and paid traffic widgets.</p></div>
           </div>
           <div class="stack-list">
-            <div class="stack-item"><div><strong>Review proof layer</strong><br><span>Keep if it improves PDP trust</span></div><span class="save-pill">$40-$180/mo</span></div>
-            <div class="stack-item"><div><strong>Popup and capture tools</strong><br><span>Replace duplicate scripts first</span></div><span class="save-pill">$60-$300/mo</span></div>
-            <div class="stack-item"><div><strong>Analytics stack</strong><br><span>Measure only what changes decisions</span></div><span class="save-pill">$0-$120/mo</span></div>
+            <div class="stack-item"><div><strong>Review proof layer</strong><br><span>Keep if it improves PDP trust</span></div><span class="save-pill">Keep</span></div>
+            <div class="stack-item"><div><strong>Popup and capture tools</strong><br><span>Replace duplicate scripts first</span></div><span class="save-pill">Replace</span></div>
+            <div class="stack-item"><div><strong>Analytics stack</strong><br><span>Measure only what changes decisions</span></div><span class="save-pill">Test</span></div>
           </div>
         </div>
       </div>
@@ -303,7 +303,7 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
     <div class="problem-grid">
       <article class="problem-card"><div class="num">Leak 01</div><h3>Recurring app bloat</h3><p>Small subscriptions stack into a silent margin tax.</p><div class="why">Scout frames each app as keep, replace, consolidate, or test.</div></article>
       <article class="problem-card"><div class="num">Leak 02</div><h3>Conversion drag</h3><p>Slow scripts and unfocused widgets can tax paid traffic.</p><div class="why">Scout prioritizes the tools touching PDPs, cart, capture, trust, and checkout.</div></article>
-      <article class="problem-card"><div class="num">Leak 03</div><h3>Bad research loops</h3><p>Teams jump between app stores, forums, repos, and ads without a scorecard.</p><div class="why">Scout pulls from 10 live sources (15 planned) and turns the noise into a ranked action list.</div></article>
+      <article class="problem-card"><div class="num">Leak 03</div><h3>Bad research loops</h3><p>Teams jump between app stores, forums, repos, and ads without a scorecard.</p><div class="why">Scout pulls from <span data-source-count="live">10</span> live sources (<span data-source-count="total">15</span> planned) and turns the noise into a ranked action list.</div></article>
     </div>
   </div>
 </section>
@@ -380,7 +380,7 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
       <div class="top"><div class="eyebrow">With Scout</div><h3>Every tool gets a reason to stay or go.</h3></div>
       <div class="compare-list">
         <div class="compare-row"><div><b>Current state</b><p>Public stack signals become a structured audit queue.</p></div><div><b>Savings</b><p>Replace, consolidate, or monitor before renewal.</p></div></div>
-        <div class="compare-row"><div><b>Research</b><p>10 live sources (15 planned) feed one ranked recommendation layer.</p></div><div><b>Outcome</b><p>A weekly software action plan tied to cost and conversion.</p></div></div>
+        <div class="compare-row"><div><b>Research</b><p><span data-source-count="live">10</span> live sources (<span data-source-count="total">15</span> planned) feed one ranked recommendation layer.</p></div><div><b>Outcome</b><p>A weekly software action plan tied to cost and conversion.</p></div></div>
       </div>
     </div>
   </div>
@@ -459,7 +459,7 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
   <div class="shell">
     <div class="section-head">
       <div><div class="eyebrow">Why the pricing section exists</div><h2>Two clean plans. Agency volume when you outgrow them.</h2></div>
-      <p>No Command tier. Operator and Director both include every live detection source (10 today, 15 planned); the difference is monthly storefront volume and reporting depth.</p>
+      <p>No Command tier. Operator and Director both include every live detection source (<span data-source-count="live">10</span> today, <span data-source-count="total">15</span> planned); the difference is monthly storefront volume and reporting depth.</p>
     </div>
     <div id="billing-toggle" class="hidden" style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:18px">
       <button type="button" id="bt-monthly" class="btn ghost" aria-pressed="true">Monthly</button>
@@ -472,7 +472,7 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
         <div class="price"><strong data-price="operator">$17</strong><span data-per="operator">/mo</span></div>
         <p>For solo operators who want a monthly software savings and conversion recommendation workflow.</p>
         <div class="features">
-          <div><span class="check">✓</span><span>All live detection sources included (10 today, 15 planned)</span></div>
+          <div><span class="check">✓</span><span>All live detection sources included (<span data-source-count="live">10</span> today, <span data-source-count="total">15</span> planned)</span></div>
           <div><span class="check">✓</span><span>10 storefront analyses/month</span></div>
           <div><span class="check">✓</span><span>Search, recommendations, and tips</span></div>
           <div><span class="check">✓</span><span>Great for Shopify app-stack savings</span></div>
@@ -485,7 +485,7 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
         <div class="price"><strong data-price="director">$37</strong><span data-per="director">/mo</span></div>
         <p>For higher-volume operators who want deeper review cadence, stronger reporting, and more room to explore.</p>
         <div class="features">
-          <div><span class="check">✓</span><span>All live detection sources included (10 today, 15 planned)</span></div>
+          <div><span class="check">✓</span><span>All live detection sources included (<span data-source-count="live">10</span> today, <span data-source-count="total">15</span> planned)</span></div>
           <div><span class="check">✓</span><span>30 storefront analyses/month</span></div>
           <div><span class="check">✓</span><span>Full scoring, alerts, and stack audit view</span></div>
           <div><span class="check">✓</span><span>Best for teams running ongoing paid traffic</span></div>
@@ -524,7 +524,7 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
     </div>
     <div class="faq-list">
       <div class="faq-item open"><div class="faq-q">Do I need technical knowledge?<span>+</span></div><div class="faq-a">No. Scout is written for operators. You paste the URL or query the need; Scout turns public signals into practical software recommendations.</div></div>
-      <div class="faq-item"><div class="faq-q">What is different from manually searching GitHub?<span>+</span></div><div class="faq-a">GitHub is one source. Scout blends 10 live sources today (15 planned) with commercial framing: cost, maturity, adoption, replacement value, and action priority.</div></div>
+      <div class="faq-item"><div class="faq-q">What is different from manually searching GitHub?<span>+</span></div><div class="faq-a">GitHub is one source. Scout blends <span data-source-count="live">10</span> live sources today (<span data-source-count="total">15</span> planned) with commercial framing: cost, maturity, adoption, replacement value, and action priority.</div></div>
       <div class="faq-item"><div class="faq-q">Why would this pay for itself?<span>+</span></div><div class="faq-a">One replaced app, consolidated widget, or avoided bad subscription can cover the monthly cost. Conversion lift is the upside beyond savings.</div></div>
       <div class="faq-item"><div class="faq-q">Which plan should I choose?<span>+</span></div><div class="faq-a">Operator is best for 10 storefront scans/month. Director is best if you want 30 scans/month, deeper recurring reporting, and higher volume.</div></div>
     </div>
@@ -570,6 +570,7 @@ footer{padding:28px 0;border-top:1px solid var(--line);background:var(--paper)}
 </footer>
 
 <script src="assets/launch-config.js"></script>
+<script src="assets/source-counts.js"></script>
 <script src="assets/launch-analytics.js"></script>
 <script src="assets/consent.js"></script>
 <script src="assets/launch-checkout.js"></script>

@@ -14,7 +14,7 @@ Next step: submit the storefront URLs you want analyzed here:
 
 {{ customer_onboarding_url }}
 
-Operator includes up to 10 storefront analyses per month. Director includes up to 30. Both use all 15 sources.
+Operator includes up to 10 storefront analyses per month. Director includes up to 30. Both use every live detection source (10 today, 15 planned).
 
 For the strongest first report, include:
 

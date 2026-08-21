@@ -33,7 +33,7 @@ Use one of:
 - Name: GitHub Scout Operator
 - Price: `$17/month`
 - Monthly capacity: `10 storefront URL analyses`
-- Included sources: `All 15`
+- Included sources: `Every live source (10 today, 15 planned)`
 - Promise: Shopify/ecommerce software recommendations for savings and conversion.
 
 Fastest payment route:
@@ -47,7 +47,7 @@ checkout-operator.html -> Stripe Payment Link -> operator-thank-you.html
 - Name: GitHub Scout Director
 - Price: `$37/month`
 - Monthly capacity: `30 storefront URL analyses`
-- Included sources: `All 15`
+- Included sources: `Every live source (10 today, 15 planned)`
 - Promise: higher-volume storefront intelligence and reporting.
 
 ## Environment / Link Names
