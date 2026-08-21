@@ -3,6 +3,8 @@ const assert = require('node:assert');
 const guard = require('../netlify/functions/lib/guard.js');
 const {parseHtmlEvidence, SOURCE_CATALOG, liveSourceCount, detectCheckoutProviders} = require('../netlify/functions/lib/adapters.js');
 const agg = require('../netlify/functions/lib/aggregate.js');
+const {appSignatures} = require('../netlify/functions/lib/rules.js');
+const costOf = (id) => appSignatures.find((s) => s.id === id).cost;
 
 let pass = 0; const fail = [];
 const t = (name, fn) => { try { fn(); pass++; } catch (e) { fail.push(`${name}: ${e.message}`); } };
@@ -22,27 +24,33 @@ t('tier: empty defaults to under-10k, Medium urgency', () => {
 });
 
 // ---------- Integrity: savings derive ONLY from detected apps ----------
+// A scan context that cleared the crawl gate: Shopify confirmed and at least
+// one storefront page actually fetched.
+const reachedScan = {shopifyConfirmed: true, pages: [{sourceId: 'home-html', url: 'https://x.example/'}]};
 t('savings null when nothing detected', () => {
-  const s = agg.savingsFromDetected([]);
+  const s = agg.savingsFromDetected([], reachedScan);
   assert.equal(s.monthly, null); assert.equal(s.annual, null); assert.equal(s.detectedMonthly, 0);
+  assert.equal(s.suppressedReason, 'no-paid-detections');
 });
 t('savings null when only free apps detected', () => {
-  const s = agg.savingsFromDetected([{cost: 0}, {cost: 0}]);
+  const s = agg.savingsFromDetected([{cost: 0, strength: 'detected'}, {cost: 0, strength: 'detected'}], reachedScan);
   assert.equal(s.monthly, null);
 });
 t('savings = 15-40% of detected benchmark', () => {
-  const s = agg.savingsFromDetected([{cost: 200}, {cost: 100}]);
+  const s = agg.savingsFromDetected([{cost: 200, strength: 'detected'}, {cost: 100, strength: 'likely'}], reachedScan);
   assert.equal(s.detectedMonthly, 300);
   assert.match(s.monthly, /\$45-\$120\/mo/);
   assert.match(s.basis, /benchmark/i);
+  assert.equal(s.suppressedReason, null);
 });
 t('moneyRange null on zero', () => assert.equal(agg.moneyRange(0, 0), null));
 
 // ---------- Multi-source detection + corroboration confidence ----------
-function fakeScan({html = '', hosts = [], txt = [], mx = [], robots = ''} = {}) {
+function fakeScan({html = '', hosts = [], txt = [], mx = [], robots = '', shopify = false} = {}) {
   return {
     pages: html ? [{sourceId: 'home-html', url: 'https://x.example/', evidence: parseHtmlEvidence(html)}] : [],
     scriptHosts: hosts, dnsInfo: {txt, mx}, robots: robots ? {haystack: robots} : null,
+    shopifyConfirmed: shopify,
     sourcesLive: 9, sourcesSucceeded: html ? 5 : 0, sourcesPlanned: [], sources: []
   };
 }
@@ -74,8 +82,9 @@ t('PayPal carries no fabricated monthly cost', () => {
 
 // ---------- Overlaps ----------
 t('two paid review apps flag consolidation', () => {
-  const d = agg.detectFromEvidence(fakeScan({html: 'staticw2.yotpo.com cdn.judge.me judgeme yotpo-widget'}));
-  const overlaps = agg.findOverlaps(d);
+  const scan = fakeScan({html: 'staticw2.yotpo.com cdn.judge.me judgeme yotpo-widget', shopify: true});
+  const d = agg.detectFromEvidence(scan);
+  const overlaps = agg.findOverlaps(d, scan);
   const reviews = overlaps.find((o) => o.category === 'Reviews');
   assert.ok(reviews, 'expected Reviews overlap'); assert.ok(reviews.apps.length >= 2);
 });
@@ -97,6 +106,98 @@ t('no-crawl report shows no invented numbers', () => {
   assert.equal(r.summary.monthlySavings, null);
   assert.equal(r.summary.annualSavings, null);
   assert.match(r.crawl.statusLabel, /No savings estimate/i);
+});
+
+// ---------- B3: evidence strength gates every dollar figure ----------
+// The nytimes.com case: not a Shopify store, zero pages fetched, one DNS TXT
+// substring. The old engine answered "Klaviyo, 62% confidence, $27-$72/mo".
+const nytimesLikeScan = fakeScan({txt: ['klaviyo-site-verification=9f2c1', 'v=spf1 include:_spf.google.com ~all']});
+t('B3 negative: DNS-only match on a non-Shopify domain is possible-strength', () => {
+  const d = agg.detectFromEvidence(nytimesLikeScan);
+  const klaviyo = d.find((a) => a.id === 'klaviyo');
+  assert.ok(klaviyo, 'the DNS signal is still reported');
+  assert.equal(klaviyo.strength, 'possible');
+  assert.equal(klaviyo.countsTowardSavings, false);
+  assert.ok(klaviyo.confidence < 50, `possible must read as weak, got ${klaviyo.confidence}`);
+});
+t('B3 negative: non-Shopify, zero pages produces no savings and says why', () => {
+  const r = agg.buildReport(nytimesLikeScan, {monthly_ad_spend: '$10,000 to $100,000 a month'}, 'full');
+  assert.equal(r.summary.monthlySavings, null);
+  assert.equal(r.summary.annualSavings, null);
+  assert.equal(r.summary.detectedMonthlyBenchmark, 0);
+  assert.equal(r.summary.savingsSuppressedReason, 'not-shopify');
+  assert.equal(r.summary.strengthCounts.possible, r.summary.detectedCount);
+  assert.equal(r.overlaps.length, 0);
+  assert.ok(!JSON.stringify(r.recommendations).includes('$'), 'no benchmark dollars from possible-only evidence');
+});
+t('B3: Shopify confirmed but no page fetched is no-pages-fetched', () => {
+  const scan = {...nytimesLikeScan, shopifyConfirmed: true};
+  assert.equal(agg.savingsGateReason(scan), 'no-pages-fetched');
+  assert.equal(agg.buildReport(scan, {}, 'full').summary.savingsSuppressedReason, 'no-pages-fetched');
+});
+t('B3 positive: page pattern plus script host is detected-strength with savings', () => {
+  const scan = fakeScan({
+    html: '<script src="https://static.klaviyo.com/onsite/js/klaviyo.js"></script>',
+    hosts: ['static.klaviyo.com'], shopify: true
+  });
+  const r = agg.buildReport(scan, {monthly_ad_spend: '$10,000 to $100,000 a month'}, 'full');
+  const klaviyo = r.detectedApps.find((a) => a.id === 'klaviyo');
+  assert.equal(klaviyo.strength, 'detected');
+  assert.equal(klaviyo.countsTowardSavings, true);
+  assert.ok(klaviyo.confidence >= 70);
+  assert.equal(r.summary.savingsSuppressedReason, null);
+  assert.equal(r.summary.detectedMonthlyBenchmark, costOf('klaviyo'));
+  assert.equal(r.summary.monthlySavings, agg.moneyRange(costOf('klaviyo') * 0.15, costOf('klaviyo') * 0.40));
+  assert.ok(r.summary.annualSavings);
+});
+t('B3 mixed: a possible app adds zero dollars to the band', () => {
+  // Klaviyo on the page + Mailchimp in DNS only (rules.js mailchimp dns: mcsv.net).
+  const scan = fakeScan({
+    html: '<script src="https://static.klaviyo.com/onsite/js/klaviyo.js"></script>',
+    hosts: ['static.klaviyo.com'], txt: ['v=spf1 include:servers.mcsv.net ~all'], shopify: true
+  });
+  const r = agg.buildReport(scan, {}, 'full');
+  const mailchimp = r.detectedApps.find((a) => a.id === 'mailchimp');
+  assert.ok(mailchimp, 'the DNS-only app is still reported');
+  assert.equal(mailchimp.strength, 'possible');
+  assert.ok(costOf('mailchimp') > 0, 'fixture needs a paid DNS-only app to be meaningful');
+  assert.equal(r.summary.detectedMonthlyBenchmark, costOf('klaviyo'));
+  assert.equal(r.summary.monthlySavings, agg.moneyRange(costOf('klaviyo') * 0.15, costOf('klaviyo') * 0.40));
+  assert.equal(r.summary.strengthCounts.possible, 1);
+  assert.equal(r.summary.detectedCount, r.detectedApps.length);
+});
+t('B3 overlap: two possible apps in one category are not a consolidation finding', () => {
+  // Storefront reached (clean page fetched), but both review apps are named
+  // only in robots.txt — an index reference, not an observed page load.
+  const scan = fakeScan({html: '<html><body>hello</body></html>', robots: 'sitemap: /judgeme.xml yotpo-widget', shopify: true});
+  const d = agg.detectFromEvidence(scan);
+  const reviews = d.filter((a) => a.category === 'Reviews');
+  assert.equal(reviews.length, 2, 'both review apps are reported');
+  reviews.forEach((a) => assert.equal(a.strength, 'possible'));
+  assert.equal(agg.findOverlaps(d, scan).length, 0);
+  assert.equal(agg.savingsFromDetected(d, scan).monthly, null);
+});
+t('B3: strength bands never overlap (possible < likely < detected)', () => {
+  const possible = agg.detectFromEvidence(fakeScan({txt: ['klaviyo']})).find((a) => a.id === 'klaviyo');
+  const likely = agg.detectFromEvidence(fakeScan({html: '<script>var _learnq=[]</script>'})).find((a) => a.id === 'klaviyo');
+  const detected = agg.detectFromEvidence(fakeScan({html: 'klaviyo', hosts: ['static.klaviyo.com']})).find((a) => a.id === 'klaviyo');
+  assert.equal(likely.strength, 'likely');
+  assert.equal(detected.strength, 'detected');
+  assert.ok(possible.confidence < likely.confidence, 'possible must sit below likely');
+  assert.ok(likely.confidence < detected.confidence, 'likely must sit below detected');
+  assert.ok(detected.confidence <= 95);
+});
+t('B3: teaser carries strength but still hides evidence trails', () => {
+  const scan = fakeScan({html: 'klaviyo staticw2.yotpo.com yotpo-widget cdn.judge.me judgeme gorgias.chat rebuyengine', shopify: true});
+  const teaser = agg.buildReport(scan, {}, 'teaser');
+  assert.ok(teaser.detectedApps.length <= 3);
+  teaser.detectedApps.forEach((a) => {
+    assert.ok(['detected', 'likely', 'possible'].includes(a.strength));
+    assert.ok(!a.evidence, 'teaser must not leak evidence trails');
+    assert.equal(a.cost, undefined, 'teaser must not leak raw benchmark costs');
+  });
+  assert.equal(teaser.summary.savingsSuppressedReason, null);
+  assert.equal(teaser.summary.strengthCounts.detected + teaser.summary.strengthCounts.likely + teaser.summary.strengthCounts.possible, teaser.summary.detectedCount);
 });
 
 // ---------- Rate limiting (IP-keyed, intent cannot mint buckets) ----------

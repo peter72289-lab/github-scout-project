@@ -8,7 +8,7 @@
 
 ## Current state
 
-**M0 complete and M3 started: plan quotas and Stripe plan resolution now have one source of truth (`lib/plans.js`), 68 tests pass. Nothing committed or pushed yet.**
+**M0 complete and M3 started: plan quotas resolve from one source of truth and B3 is closed — savings now require a reached storefront. 76 tests pass. Nothing committed or pushed yet.**
 
 > Keep the block above current. Rewrite it as the situation changes; never append a newer bullet
 > above it. New work goes to `## Recently completed`; detail goes under `### History`.
@@ -27,6 +27,12 @@
 - DONE Reconcile `PLAN_QUOTAS` with terms: operator 10, director 30; drop `command`. Quotas now
   live in `netlify/functions/lib/plans.js`; `dashboard.html:137` reads `quota` from `auth-me.js`
   instead of keeping its own table.
+- DONE Gate savings on evidence quality (B3): `lib/aggregate.js:15-59` classifies every detection
+  `detected` / `likely` / `possible`; `:130-190` withholds every dollar unless
+  `shopifyConfirmed && pages.length >= 1` and the detection was seen on the storefront.
+- TODO Wire the client to `summary.savingsSuppressedReason`, `summary.strengthCounts`, and the
+  per-detection `strength` / `countsTowardSavings` fields (`operator-url-analysis.html:346`,
+  `dashboard.html:195-198`).
 - TODO Remove "All 15" / "15 research sources" from `index.html:272`,
   `operator-shopify-savings.html:106`, `checkout-operator.html:46`, `agency-pricing.html:158`,
   `customer-onboarding.html:44`; widen `preflight.js:52` grep.
@@ -59,6 +65,8 @@
 | PLT-4 | 2026-08-20 | decision   | M2                  | User answers `TASKS_FOR_USER.md` item 3                                           | User  | waiting-on-user |
 
 ## Recently completed (append-only, newest first)
+
+- 2026-08-20 — **B3 closed: the scanner no longer prices a store it never reached. nytimes.com now returns a possible-strength signal and no dollars.** `netlify/functions/lib/aggregate.js:15-59` adds an evidence-strength taxonomy computed from the kind and independence of evidence, not the match count: `detected` (2+ distinct sources, or a third-party script host parsed off a fetched page; confidence 70-95), `likely` (a single storefront page pattern; 60), `possible` (DNS records, a robots.txt reference, or a lone substring with no page and no host; 25). Bands are contiguous and non-overlapping, the 95 cap is unchanged, and the old `50 + 12*sources + hostBoost` floor of 62 for one DNS TXT substring is gone (`:110-116`). `:130-135` adds the crawl gate — savings exist only when `scan.shopifyConfirmed` is true and `scan.pages.length >= 1`, otherwise `savingsFromDetected(detected, scan)` (`:151`, signature changed to take the scan) returns the existing null shape with `suppressedReason` of `not-shopify`, `no-pages-fetched`, or `no-paid-detections` and a basis string that says so in plain words. `findOverlaps(detected, scan)` (`:175`) takes the same gate, and both it and the benchmark recommendations (`:216`) count only `detected` / `likely` paid apps, so a `possible` match is reported but never priced. `buildReport` surfaces `summary.savingsSuppressedReason` (`:281`, null when a range is shown) and `summary.strengthCounts` (`:285`); `summary.detectedCount` keeps its existing meaning (every signal at any strength) for `operator-url-analysis.html:346` and `dashboard.html:195`. Teaser depth carries `strength` and `countsTowardSavings` but still no evidence trails or raw costs (`:296-299`). 76 tests pass under both Bun and Node (68 existing + 8 new: a nytimes-shaped negative fixture, a page-plus-host positive, a mixed fixture proving a DNS-only paid app adds zero dollars, a two-`possible` overlap case, band ordering, and teaser depth); the three existing `savingsFromDetected` tests and the overlap test were updated to pass a scan context because the function now requires one. Client wiring is a separate unit. Uncommitted pending user instruction.
 
 - 2026-08-20 — **Plans have one source of truth: Director is 30 scans, not 100, and the webhook no longer resolves every buyer to operator.** New `netlify/functions/lib/plans.js:32` holds the two live plans (operator $17/10, director $37/30, per `terms.html:20-21`), marks `command` retired, and returns `null` for anything unknown instead of falling back. `operator-url-scan.js:41-42,82-87` uses it and returns 403 with a support message when a subscription names a plan it cannot price, rather than silently granting the smallest tier. `stripe-webhook.js:74-84` resolves the plan from `metadata.plan`, `metadata.github_scout_plan` (the key the live Payment Links actually carry — `scripts/create-stripe-githubscout-links.js:75,88,103`), `metadata.price_id`, then an optional restricted read-only Stripe API lookup; with no signal it writes `plan: unresolved` / `status: needs_review`, logs the session id and email domain only, and still sends the sign-in email so the buyer is not stranded. `lib/auth.js:89` now surfaces `needs_review` subscriptions so that 403 can fire, `auth-me.js:25` serves `quota`, and `dashboard.html:131,137` consumes it and shows a "needs manual review" notice instead of "Free". `supabase/schema.sql:37-38` comments updated. 68 tests pass (49 existing + 19 new); `SETUP.md` documents the optional `STRIPE_SECRET_KEY` and the metadata requirement without it. Uncommitted pending user instruction.
 
