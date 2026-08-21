@@ -42,4 +42,4 @@ Track these events:
 - Add logged-in Operator dashboard with saved scans and 10-storefront monthly usage.
 - Add PDF export once the report format stabilizes.
 - Add before/after comparison between saved scans.
-- Add payment-gated full report depth for all 15 sources.
+- Add payment-gated full report depth across every live source.

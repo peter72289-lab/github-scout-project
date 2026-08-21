@@ -8,10 +8,12 @@
 
 ## Current state
 
-**M0 complete and M3 started: plan quotas resolve from one source of truth and B3 is closed — savings now require a reached storefront. 76 tests pass. Nothing committed or pushed yet.**
+**M3 well underway: plans resolve from one source, savings require a reached storefront, and the client no longer paints invented dollars over honest server nulls. 80 tests pass. Merged to main via PRs #2-#5.**
 
 > Keep the block above current. Rewrite it as the situation changes; never append a newer bullet
-> above it. New work goes to `## Recently completed`; detail goes under `### History`.
+> above it. New work goes to `## Recently completed
+
+- 2026-08-20 — **B5 closed: every fabricated client-side figure and every present-tense "15 sources" claim is gone; source counts now derive from the adapter catalog.** `operator-url-analysis.html` lost its ~120-line second copy of the savings engine, which invented `$120-$420` bands, `72%` confidence, and two percentage claims, and rendered a phantom `matched` field. It now renders `strength`, real `evidence[]`, and `savingsSuppressedReason` from the server, with honest empty and loading states. New `netlify/functions/sources.js` + `assets/source-counts.js` fill every `[data-source-count]` element from `lib/adapters.js`; the duplicate planned `checkout-fingerprint-plan` entry is deleted, settling the catalog at 10 live / 15 total. `methodology.html` confidence scoring rewritten to match `classifyStrength`/`scoreConfidence`, and the crawl gate stated publicly. `preflight.js` now fails on `all 15`, bare `15 ... sources`, unlabelled dollar ranges outside sample pages, and any `data-source-count` fallback that disagrees with the catalog (33 checked). Also fixed `moneyRange`, which suffixed the annual figure `/mo`.`; detail goes under `### History`.
 
 ### History
 

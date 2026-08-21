@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 const fs = require('node:fs');
+// Product descriptions appear on the customer's Stripe receipt, so they are
+// customer-facing copy and obey the same claims rule as the site: the source
+// count comes from the engine catalog, never a literal.
+const {sourceCounts} = require('../netlify-v10-githubscout-ecommerce/netlify/functions/lib/adapters.js');
+
+const SOURCES = sourceCounts();
 
 function readKey() {
   if (process.env.STRIPE_SECRET_KEY) return process.env.STRIPE_SECRET_KEY.trim();
@@ -28,7 +34,7 @@ const plans = [
     paymentLinkKey: 'github_scout_operator_monthly_payment_link',
     name: 'GitHub Scout Operator',
     amount: 1700,
-    description: '10 storefront URL analyses per month across all 15 GitHub Scout sources.'
+    description: `10 storefront URL analyses per month across all ${SOURCES.live} live GitHub Scout detection sources (${SOURCES.total} planned).`
   },
   {
     id: 'github_scout_director',
@@ -36,7 +42,7 @@ const plans = [
     paymentLinkKey: 'github_scout_director_monthly_payment_link',
     name: 'GitHub Scout Director',
     amount: 3700,
-    description: '30 storefront URL analyses per month across all 15 GitHub Scout sources.'
+    description: `30 storefront URL analyses per month across all ${SOURCES.live} live GitHub Scout detection sources (${SOURCES.total} planned).`
   }
 ];
 

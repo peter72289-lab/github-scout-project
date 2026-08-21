@@ -105,10 +105,10 @@
         <a class="btn secondary" href="checkout-operator.html" data-checkout-plan="operator">Unlock 10 Monthly Storefronts</a>
       </div>
       <div class="summary">
-        <div class="metric"><strong id="savingsBand">$120-$420</strong><span>Monthly waste to inspect</span><p>Estimated recurring software drag worth challenging.</p></div>
-        <div class="metric"><strong id="annualSavings">$1.4k-$5k</strong><span>Annual savings glimpse</span><p>Conservative target before conversion lift.</p></div>
-        <div class="metric"><strong id="priorityScore">76</strong><span>Stack urgency score</span><p>Higher means action should happen before the next app billing cycle.</p></div>
-        <div class="metric"><strong id="detectedCount">Scanning</strong><span>Public app signals</span><p>Detected from crawlable storefront HTML.</p></div>
+        <div class="metric"><strong id="savingsBand">Scanning</strong><span>Monthly savings estimate</span><p id="savingsNote">Shown only when paid apps are detected on the storefront.</p></div>
+        <div class="metric"><strong id="annualSavings">Scanning</strong><span>Annual savings estimate</span><p id="annualNote">Twelve months of the monthly band, when there is one.</p></div>
+        <div class="metric"><strong id="priorityScore">Scanning</strong><span>Evidence score</span><p id="evidenceNote">How much this scan actually saw. Not a savings figure.</p></div>
+        <div class="metric"><strong id="detectedCount">Scanning</strong><span>Public app signals</span><p id="detectedNote">Counted from crawlable storefront signals.</p></div>
       </div>
       <div class="status-strip" id="scanStatus" role="status" aria-live="polite"><strong>Scanning:</strong> fetching public storefront HTML and checking common Shopify app signatures.</div>
       <div class="tool-row" aria-label="Report actions">
@@ -140,9 +140,10 @@
       <div class="section-head">
         <div class="kicker">Detected public signals</div>
         <h2>What the URL crawl could <em>actually see.</em></h2>
-        <p class="lead">Some apps hide behind tag managers, theme bundles, or server-side integrations. The paid Operator workflow combines URL scans, source research, and repeat monitoring across 10 live sources today (5 more on the roadmap — see the methodology page).</p>
+        <p class="lead">Some apps hide behind tag managers, theme bundles, or server-side integrations. The paid Operator workflow combines URL scans, source research, and repeat monitoring across <span data-source-count="live">10</span> live sources today (<span data-source-count="planned">5</span> more on the roadmap — see the methodology page). Confidence is a corroboration score across those sources, not a probability.</p>
       </div>
       <div class="detected-grid" id="detectedList"></div>
+      <p class="fine" id="detectedTeaser" hidden></p>
     </div>
   </section>
 
@@ -165,7 +166,7 @@
     <div class="inner">
       <div class="kicker">Operator plan</div>
       <h2>Run this for <em>10 storefronts a month.</em></h2>
-      <p class="lead">Operator gives you 10 live detection sources (6 more on the roadmap), 10 storefront analyses per month, search, recommendations, and tips. This quick analyzer is just the appetite-builder.</p>
+      <p class="lead">Operator gives you <span data-source-count="live">10</span> live detection sources (<span data-source-count="planned">5</span> more on the roadmap), 10 storefront analyses per month, search, recommendations, and tips. This quick analyzer is just the appetite-builder.</p>
       <div class="actions">
         <a class="btn primary" href="checkout-operator.html" data-checkout-plan="operator">Start Operator</a>
         <a class="btn secondary" href="operator-sample-reports.html">View Sample Reports</a>
@@ -182,6 +183,7 @@
   <script src="assets/launch-analytics.js"></script>
 <script src="assets/consent.js"></script>
   <script src="assets/launch-checkout.js"></script>
+  <script src="assets/source-counts.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     let stored = {};
@@ -195,7 +197,34 @@
     };
     let latestAnalysis = null;
 
-    const money = new Intl.NumberFormat('en-US', {style:'currency', currency:'USD', maximumFractionDigits:0});
+    // Human names for lib/adapters.js SOURCE_CATALOG ids, used to render the
+    // server's evidence[] trail. Ids not listed here fall back to the raw id.
+    const SOURCE_NAMES = {
+      'home-html': 'storefront homepage HTML',
+      'product-html': 'product page HTML',
+      'cart-html': 'cart page HTML',
+      'products-json': 'Shopify /products.json catalog',
+      'robots-sitemap': 'robots.txt + sitemap',
+      'http-headers': 'HTTP response headers',
+      'dns-records': 'DNS TXT/MX records',
+      'script-hosts': 'third-party script host census',
+      'structured-data': 'JSON-LD / meta generator tags',
+      'checkout-fingerprint': 'checkout / payment provider fingerprint'
+    };
+
+    // lib/aggregate.js detectedApps[].strength.
+    const STRENGTH_LABELS = {
+      detected: 'Detected',
+      likely: 'Likely',
+      possible: 'Possible, unconfirmed'
+    };
+
+    // lib/aggregate.js summary.savingsSuppressedReason.
+    const SUPPRESSION_COPY = {
+      'not-shopify': 'This does not look like a Shopify storefront, so no savings estimate is shown.',
+      'no-pages-fetched': 'We could not fetch any page from this storefront, so no savings estimate is shown. It may be blocking automated requests.',
+      'no-paid-detections': 'No paid app signatures were detected, so there is nothing to estimate.'
+    };
 
     function domainFromUrl(value) {
       try {
@@ -204,125 +233,6 @@
       } catch (error) {
         return value.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] || 'your storefront';
       }
-    }
-
-    // Tier is messaging-only. Savings are NEVER derived from this dropdown;
-    // they come exclusively from apps the server actually detects.
-    function spendProfile(range) {
-      const r = String(range || '');
-      if (/more than\s*\$?\s*250,?000/i.test(r)) return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'Critical', note:'At this traffic level, slow scripts and weak widgets compound quickly.'};
-      if (/100,?000\s*to\s*\$?\s*250,?000/i.test(r)) return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'High', note:'Your app stack should be conversion-accountable, not just feature-rich.'};
-      if (/10,?000\s*to\s*\$?\s*100,?000/i.test(r)) return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'High', note:'This is the sweet spot for consolidation and better CRO tooling.'};
-      return {monthly:null, annual:null, low:0, high:0, score:null, urgency:'Medium', note:'Lean software choices matter most when every paid click has to work.'};
-    }
-
-    function fallbackAnalysis(reason) {
-      const profile = spendProfile(scan.monthly_ad_spend);
-      return {
-        ok: false,
-        crawl: {ok:false, statusLabel: reason || 'Live crawl unavailable. Showing a conservative preview from your submitted context.'},
-        summary: {monthlySavings: null, annualSavings: null, score: null, urgency: profile.urgency, detectedCount: 0},
-        detectedApps: [],
-        recommendations: buildRecommendations([], profile, scan.primary_goal),
-        actionPlan: buildActionPlan(profile)
-      };
-    }
-
-    function buildRecommendations(detectedApps, profile, goal) {
-      const byCategory = detectedApps.reduce((acc, app) => {
-        acc[app.category] = acc[app.category] || [];
-        acc[app.category].push(app);
-        return acc;
-      }, {});
-      const has = (category) => byCategory[category]?.map(app => app.name).join(', ');
-      const detectedLine = (category, fallback) => has(category) ? `Detected ${has(category)} in public storefront HTML.` : fallback;
-      const categories = [
-        {
-          category:'Reviews + UGC',
-          title:'Consolidate the proof surface',
-          severity: has('Reviews') ? 'High' : 'Medium',
-          current: detectedLine('Reviews', 'No review-platform signature was visible in the initial crawl. Proof may be missing, bundled, or hidden behind a tag manager.'),
-          currentDetail:'If reviews, Q&A, UGC, and product proof are split across multiple widgets, shoppers see noise while you pay for overlap.',
-          recommend:'Use one review platform that supports photo reviews, Q&A, product-level placement, and import/export control.',
-          recommendDetail:'The paid Operator scan compares review tools by cost, proof depth, speed impact, and whether the widget actually supports the products getting paid traffic.',
-          monthly:`${money.format(Math.round(profile.low * .16))}-${money.format(Math.round(profile.high * .22))}/mo`,
-          percent:'12-18% waste risk',
-          confidence: has('Reviews') ? 'Detected' : 'Check first',
-          why:'Review proof affects every paid click. Waiting means another billing cycle passes before you know whether the proof layer is helping conversion or just adding script weight.',
-          action:'Export current review volume, check product-page placement, and compare one lighter alternative before renewing another paid review tier.'
-        },
-        {
-          category:'Email/SMS capture',
-          title:'Replace blunt popups with intent capture',
-          severity: has('Email/SMS') ? 'High' : 'Medium',
-          current: detectedLine('Email/SMS', 'No email/SMS platform signature was visible in the first crawl. Capture may be absent or injected through a tag manager.'),
-          currentDetail:'Generic popups often collect low-intent emails while interrupting shoppers who came from expensive paid traffic.',
-          recommend:'Use behavior-based capture that changes by traffic source, returning visitor state, cart value, and product category.',
-          recommendDetail:'Scout looks for leaner capture tools, lower-cost tiers, and open alternatives when the current platform is too heavy for the store stage.',
-          monthly:`${money.format(Math.round(profile.low * .18))}-${money.format(Math.round(profile.high * .28))}/mo`,
-          percent:'15-24% spend leverage',
-          confidence: has('Email/SMS') ? 'Detected' : 'Check first',
-          why:'If capture is weak, every ad dollar has a shorter payback window. Fixing the capture surface today gives the next campaign a better chance to create owned traffic.',
-          action:'Segment capture by paid source, suppress repeat annoyance, and compare your current platform tier against one lower-cost alternative.'
-        },
-        {
-          category:'Upsell + AOV',
-          title:'Test AOV lift before buying more traffic',
-          severity: has('Upsell') ? 'High' : goal === 'Improve conversion' ? 'High' : 'Medium',
-          current: detectedLine('Upsell', 'No upsell or bundle signature was visible in the first crawl. The store may be missing an AOV lever on paid-traffic products.'),
-          currentDetail:'Many stores pay for traffic before product pages have bundles, quantity breaks, post-purchase offers, or cart-level lift.',
-          recommend:'Start with one bundle, quantity break, or post-purchase offer on the products already receiving paid clicks.',
-          recommendDetail:'Operator compares native Shopify options, lighter widgets, and conversion-focused third-party tools before recommending another broad CRO app.',
-          monthly:`${money.format(Math.round(profile.low * .22))}-${money.format(Math.round(profile.high * .34))}/mo`,
-          percent:'8-15% AOV upside target',
-          confidence: has('Upsell') ? 'Detected' : 'Opportunity',
-          why:'AOV improvements can pay back faster than new traffic. If you wait, you keep sending expensive visitors into the same under-monetized cart path.',
-          action:'Choose the top paid-traffic product, add one offer test, and measure add-to-cart, checkout progression, and revenue per visitor for seven days.'
-        },
-        {
-          category:'Script bloat',
-          title:'Remove inactive third-party scripts',
-          severity: 'High',
-          current: detectedApps.length ? `The crawl found ${detectedApps.length} public software signal${detectedApps.length === 1 ? '' : 's'} that may add scripts, pixels, or embeds.` : 'The crawl did not expose many app signatures, which often means scripts are bundled, tag-managed, or loaded after consent.',
-          currentDetail:'Old promo apps, inactive widgets, duplicate analytics, and abandoned experiments can keep loading after the team stops using them.',
-          recommend:'Audit every script touching product pages, cart, checkout, analytics, reviews, popups, chat, and post-purchase.',
-          recommendDetail:'Scout prioritizes the scripts most likely to hurt speed or duplicate another tool, then turns that into a keep, replace, remove, or test list.',
-          monthly:`${money.format(Math.round(profile.low * .20))}-${money.format(Math.round(profile.high * .30))}/mo`,
-          percent:'18-30% cleanup target',
-          confidence:'Always inspect',
-          why:'Script bloat taxes every session. The longer it stays live, the more paid clicks get routed through a slower and harder-to-measure storefront.',
-          action:'Pull the theme/app embed list today, remove one inactive script, and document the owner for every remaining third-party tool.'
-        },
-        {
-          category:'Measurement',
-          title:'Make every app prove revenue impact',
-          severity: goal === 'Cut app costs' ? 'High' : 'Medium',
-          current: detectedLine('Analytics', 'No analytics signature was visible in the first crawl. Attribution may be missing, server-side, or tag-managed.'),
-          currentDetail:'Without clean event tracking, the team cannot tell whether a paid app helps conversion or simply feels useful.',
-          recommend:'Tie app decisions to app cost, site speed, conversion rate, add-to-cart rate, AOV, and checkout progression.',
-          recommendDetail:'Operator turns the scan into a monthly review cadence so software decisions happen before renewal, not after the invoice hits.',
-          monthly:`${money.format(Math.round(profile.low * .12))}-${money.format(Math.round(profile.high * .20))}/mo`,
-          percent:'7-day proof window',
-          confidence: has('Analytics') ? 'Detected' : 'Check first',
-          why:'If measurement is vague, the safest default becomes keeping every app. That is exactly how stack cost creeps up.',
-          action:'Mark each tool as revenue, support, compliance, or convenience. Cancel, downgrade, or replace anything with no weekly owner.'
-        }
-      ];
-
-      if (goal === 'Cut app costs') return [categories[3], categories[4], categories[0], categories[1], categories[2]];
-      if (goal === 'Improve conversion') return [categories[2], categories[1], categories[0], categories[4], categories[3]];
-      if (goal === 'Speed up storefront') return [categories[3], categories[4], categories[0], categories[1], categories[2]];
-      if (goal === 'Find better widgets') return [categories[0], categories[1], categories[2], categories[4], categories[3]];
-      return categories;
-    }
-
-    function buildActionPlan(profile) {
-      return [
-        ['Today', 'Save the current app list and identify every script, widget, embed, pixel, popup, review tool, cart tool, and analytics tag touching the storefront.'],
-        ['24 hours', `Challenge at least ${profile.urgency === 'Critical' ? 'three paid app renewals' : 'one paid app renewal'} before the next billing cycle. Start with the tool with the weakest owner or least measurable revenue impact.`],
-        ['48 hours', 'Pick one compare-and-contrast test: current widget versus lower-cost replacement, or current popup versus intent-based capture.'],
-        ['7 days', 'Measure app cost, speed, add-to-cart rate, checkout progression, AOV, and revenue per visitor before making the next software purchase.']
-      ];
     }
 
     function setText(selector, value) {
@@ -336,36 +246,125 @@
       return 'good';
     }
 
-    function renderAnalysis(analysis) {
-      latestAnalysis = analysis;
-      const profile = spendProfile(scan.monthly_ad_spend);
+    // A placeholder report used only while the scan is in flight or after it
+    // failed. It asserts no finding and carries no number: every figure on this
+    // page comes from the server or is not shown at all.
+    function pendingAnalysis(state, statusLabel) {
+      return {
+        pending: true,
+        state,
+        crawl: {ok: false, statusLabel},
+        summary: {},
+        detectedApps: [],
+        recommendations: [],
+        actionPlan: []
+      };
+    }
+
+    // Why a savings figure is absent, in the customer's language. Falls back to
+    // the server's own basis string so an unmapped reason still explains itself.
+    function suppressionCopy(summary) {
+      return SUPPRESSION_COPY[summary.savingsSuppressedReason]
+        || summary.savingsBasis
+        || 'No savings estimate is shown for this scan.';
+    }
+
+    function statusPrefix(analysis) {
+      if (analysis.pending) return analysis.state === 'failed' ? 'Scan unavailable: ' : 'Scanning: ';
+      return analysis.crawl?.ok ? 'Live crawl complete: ' : 'Crawl incomplete: ';
+    }
+
+    function renderSummary(analysis) {
       const summary = analysis.summary || {};
-      setText('#savingsBand', summary.monthlySavings || 'No estimate yet — no paid apps detected');
-      setText('#annualSavings', summary.annualSavings || 'Shown once paid apps are detected');
-      setText('#priorityScore', String(summary.evidenceScore ?? summary.score ?? 0));
-      setText('#detectedCount', summary.detectedCount ? String(summary.detectedCount) : '0');
+      if (analysis.pending) {
+        const placeholder = analysis.state === 'failed' ? 'Unavailable' : 'Scanning';
+        const note = analysis.state === 'failed'
+          ? 'The scan did not finish, so nothing is reported here.'
+          : 'Waiting for the live crawl to finish.';
+        ['#savingsBand', '#annualSavings', '#priorityScore', '#detectedCount'].forEach((id) => setText(id, placeholder));
+        ['#savingsNote', '#annualNote', '#evidenceNote', '#detectedNote'].forEach((id) => setText(id, note));
+        return;
+      }
+
+      const withheld = suppressionCopy(summary);
+      setText('#savingsBand', summary.monthlySavings || 'No estimate');
+      setText('#savingsNote', summary.monthlySavings
+        ? (summary.savingsBasis || 'Derived from paid apps detected on this storefront.')
+        : withheld);
+      setText('#annualSavings', summary.annualSavings || 'No estimate');
+      setText('#annualNote', summary.annualSavings
+        ? 'Twelve months of the monthly band above.'
+        : 'Shown only alongside a monthly estimate.');
+
+      if (typeof summary.evidenceScore === 'number') {
+        setText('#priorityScore', String(summary.evidenceScore));
+        setText('#evidenceNote', 'How much this scan actually saw, out of 100. Not a savings figure.');
+      } else {
+        setText('#priorityScore', 'Not scored');
+        setText('#evidenceNote', 'The scan did not return an evidence score.');
+      }
+
+      if (typeof summary.detectedCount === 'number') {
+        setText('#detectedCount', String(summary.detectedCount));
+        const counts = summary.strengthCounts;
+        setText('#detectedNote', counts && summary.detectedCount > 0
+          ? `${counts.detected} detected, ${counts.likely} likely, ${counts.possible} possible. Possible means off-storefront evidence only.`
+          : 'Counted from crawlable storefront signals.');
+      } else {
+        setText('#detectedCount', 'Not counted');
+        setText('#detectedNote', 'The scan did not return a signal count.');
+      }
+    }
+
+    function renderAnalysis(analysis) {
+      latestAnalysis = analysis.pending ? null : analysis;
+      renderSummary(analysis);
 
       const status = document.querySelector('#scanStatus');
       if (status) {
         status.innerHTML = '';
         const strong = document.createElement('strong');
-        strong.textContent = analysis.crawl?.ok ? 'Live crawl complete: ' : 'Preview mode: ';
-        status.append(strong, document.createTextNode(analysis.crawl?.statusLabel || 'Showing conservative recommendations from submitted context.'));
+        strong.textContent = statusPrefix(analysis);
+        status.append(strong, document.createTextNode(analysis.crawl?.statusLabel || 'No status was returned for this scan.'));
       }
 
-      renderRecommendations(analysis.recommendations || buildRecommendations([], profile, scan.primary_goal));
-      renderDetected(analysis.detectedApps || []);
-      renderActionPlan(analysis.actionPlan || buildActionPlan(profile));
+      renderRecommendations(analysis.recommendations || [], analysis);
+      renderDetected(analysis.detectedApps || [], analysis);
+      renderActionPlan(analysis.actionPlan || []);
       trackEvent('analysis_rendered', {
         detectedCount: analysis.detectedApps?.length || 0,
         crawlOk: Boolean(analysis.crawl?.ok),
-        score: summary.score || profile.score
+        score: analysis.summary?.evidenceScore ?? null
       });
     }
 
-    function renderRecommendations(items) {
+    function emptyCard(headline, detail) {
+      const card = document.createElement('article');
+      card.className = 'rec-card';
+      const body = document.createElement('div');
+      body.className = 'rec-body';
+      const h3 = document.createElement('h3');
+      h3.textContent = headline;
+      const p = document.createElement('p');
+      p.textContent = detail;
+      body.append(h3, p);
+      card.appendChild(body);
+      return card;
+    }
+
+    function renderRecommendations(items, analysis) {
       const list = document.querySelector('#recommendationList');
       list.innerHTML = '';
+      if (!items.length) {
+        if (analysis?.pending) {
+          list.appendChild(analysis.state === 'failed'
+            ? emptyCard('No recommendations', 'The scan did not finish, so there is nothing to compare yet. Try the URL again, or run the audit from inside the Shopify admin.')
+            : emptyCard('Waiting for the crawl', 'Recommendations appear once the live crawl returns. Nothing is shown before then.'));
+        } else {
+          list.appendChild(emptyCard('No recommendations', 'This scan produced no recommendation the evidence supports.'));
+        }
+        return;
+      }
       items.forEach((item, index) => {
         const card = document.createElement('article');
         card.className = 'rec-card';
@@ -386,13 +385,14 @@
         titleText.append(kicker, h3);
         titleWrap.append(rank, titleText);
 
+        // Only pills the server actually sent. A missing figure gets no pill.
         const meta = document.createElement('div');
         meta.className = 'rec-meta';
         [
-          [item.severity || 'Medium', tagClass(item.severity || 'Medium')],
-          [item.monthly || '$120-$420/mo', 'warn'],
-          [item.confidence || 'Preview', 'good']
-        ].forEach(([text, klass]) => {
+          [item.severity, tagClass(item.severity)],
+          [item.monthly, 'warn'],
+          [item.confidence, 'good']
+        ].filter(([text]) => Boolean(text)).forEach(([text, klass]) => {
           const pill = document.createElement('span');
           pill.className = `pill ${klass}`;
           pill.textContent = text;
@@ -404,16 +404,18 @@
         body.className = 'rec-body';
         const compare = document.createElement('div');
         compare.className = 'compare-grid';
-        compare.append(compareBox('What you appear to have', item.current, item.currentDetail), compareBox('What Scout recommends', item.recommend, item.recommendDetail));
+        compare.append(
+          compareBox('What Scout found', item.current, item.currentDetail),
+          compareBox('What Scout recommends', item.recommend, item.recommendDetail)
+        );
 
         const values = document.createElement('div');
         values.className = 'value-row';
         [
-          ['Savings glimpse', item.monthly],
-          ['Impact signal', item.percent],
+          ['Savings estimate', item.monthly],
           ['Severity', item.severity],
           ['Next move', item.action]
-        ].forEach(([label, value]) => {
+        ].filter(([, value]) => Boolean(value)).forEach(([label, value]) => {
           const chip = document.createElement('div');
           chip.className = 'value-chip';
           const span = document.createElement('span');
@@ -424,13 +426,16 @@
           values.appendChild(chip);
         });
 
-        const why = document.createElement('div');
-        why.className = 'why-now';
-        const whyStrong = document.createElement('strong');
-        whyStrong.textContent = 'Why take action today: ';
-        why.append(whyStrong, document.createTextNode(item.why));
-
-        body.append(compare, values, why);
+        body.append(compare);
+        if (values.childElementCount) body.append(values);
+        if (item.why) {
+          const why = document.createElement('div');
+          why.className = 'why-now';
+          const whyStrong = document.createElement('strong');
+          whyStrong.textContent = 'Why take action today: ';
+          why.append(whyStrong, document.createTextNode(item.why));
+          body.append(why);
+        }
         card.append(top, body);
         list.appendChild(card);
       });
@@ -441,39 +446,102 @@
       box.className = 'compare-box';
       const span = document.createElement('span');
       span.textContent = label;
-      const strong = document.createElement('strong');
-      strong.textContent = headline;
-      const p = document.createElement('p');
-      p.textContent = detail;
-      box.append(span, strong, p);
+      box.append(span);
+      if (headline) {
+        const strong = document.createElement('strong');
+        strong.textContent = headline;
+        box.append(strong);
+      }
+      if (detail) {
+        const p = document.createElement('p');
+        p.textContent = detail;
+        box.append(p);
+      }
       return box;
     }
 
-    function renderDetected(apps) {
+    // Human-readable evidence trail from the server's evidence[] array.
+    function evidenceLine(app) {
+      const sources = [...new Set((app.evidence || []).map((e) => SOURCE_NAMES[e.source] || e.source))];
+      return sources.length ? `Seen in: ${sources.join(', ')}.` : '';
+    }
+
+    // A row may only show a dollar figure when the server says it counts toward
+    // savings, and then only labelled as a published-pricing benchmark.
+    function costLine(app) {
+      if (app.countsTowardSavings) return `benchmark ${app.monthlyCost}/mo`;
+      if (app.monthlyCost === 'Free/native') return 'free or native';
+      if (app.strength === 'possible') return 'not priced, evidence is off-storefront only';
+      return 'not priced in this scan';
+    }
+
+    function renderDetected(apps, analysis) {
       const list = document.querySelector('#detectedList');
+      const teaserNote = document.querySelector('#detectedTeaser');
       list.innerHTML = '';
+      if (teaserNote) { teaserNote.hidden = true; teaserNote.textContent = ''; }
+
       if (!apps.length) {
         const empty = document.createElement('div');
         empty.className = 'detected-item';
-        empty.innerHTML = '<strong>No public app signatures confirmed</strong><span>The store may still use apps behind a tag manager, bundled theme script, customer account flow, checkout extension, or server-side integration.</span>';
+        const strong = document.createElement('strong');
+        const span = document.createElement('span');
+        if (analysis?.pending) {
+          strong.textContent = analysis.state === 'failed' ? 'Nothing was crawled' : 'Crawl in progress';
+          span.textContent = analysis.state === 'failed'
+            ? 'The crawl did not finish, so no signal is reported. This is not a finding about the store.'
+            : 'Public app signatures appear here once the crawl returns.';
+        } else {
+          strong.textContent = 'No public app signatures confirmed';
+          span.textContent = 'The store may still use apps behind a tag manager, bundled theme script, customer account flow, checkout extension, or server-side integration.';
+        }
+        empty.append(strong, span);
         list.appendChild(empty);
         return;
       }
+
       apps.forEach((app) => {
         const item = document.createElement('div');
         item.className = 'detected-item';
         const strong = document.createElement('strong');
         strong.textContent = app.name;
+        const parts = [app.category, STRENGTH_LABELS[app.strength] || 'Strength not reported'];
+        if (typeof app.confidence === 'number') parts.push(`${app.confidence}% corroboration`);
+        parts.push(costLine(app));
         const span = document.createElement('span');
-        span.textContent = `${app.category} · ${app.confidence || 72}% confidence · estimated ${app.monthlyCost || '$0'}/mo · matched ${app.matched?.join(', ') || 'public signal'}`;
+        span.textContent = parts.join(' · ');
         item.append(strong, span);
+        const trail = evidenceLine(app);
+        if (trail) {
+          const evidence = document.createElement('span');
+          evidence.textContent = trail;
+          item.append(evidence);
+        }
         list.appendChild(item);
       });
+
+      // Teaser depth truncates the list. Both hidden counts come from the same
+      // server object, so the page cannot quote two different numbers.
+      const teaser = analysis?.teaser;
+      if (teaserNote && teaser && (teaser.hiddenApps > 0 || teaser.hiddenRecommendations > 0)) {
+        const bits = [];
+        if (teaser.hiddenApps > 0) bits.push(`${teaser.hiddenApps} more detected app${teaser.hiddenApps === 1 ? '' : 's'}`);
+        if (teaser.hiddenRecommendations > 0) bits.push(`${teaser.hiddenRecommendations} more recommendation${teaser.hiddenRecommendations === 1 ? '' : 's'}`);
+        teaserNote.textContent = `${bits.join(' and ')}, plus the full evidence trail, are in the paid report.`;
+        teaserNote.hidden = false;
+      }
     }
 
     function renderActionPlan(items) {
       const list = document.querySelector('#actionPlan');
       list.innerHTML = '';
+      if (!items.length) {
+        const li = document.createElement('li');
+        li.className = 'check';
+        li.textContent = 'The action plan appears once the scan returns one.';
+        list.appendChild(li);
+        return;
+      }
       items.forEach(([label, text]) => {
         const li = document.createElement('li');
         li.className = 'check';
@@ -485,8 +553,7 @@
     }
 
     async function runLiveAnalysis() {
-      const profile = spendProfile(scan.monthly_ad_spend);
-      renderAnalysis(fallbackAnalysis('Starting with a conservative preview while the live crawl runs.'));
+      renderAnalysis(pendingAnalysis('loading', 'fetching public storefront pages and checking app signatures. No figure is shown until the crawl returns one.'));
       try {
         const body = new URLSearchParams({...scan, intent:'analyze'}).toString();
         const response = await fetch('/.netlify/functions/operator-url-scan', {
@@ -496,9 +563,9 @@
         });
         const payload = await response.json();
         if (!response.ok || !payload.ok) throw new Error(payload.error || 'Analyzer returned an error.');
-        renderAnalysis(payload.analysis || fallbackAnalysis('The crawler returned no analysis payload.'));
+        renderAnalysis(payload.analysis || pendingAnalysis('failed', 'the analyzer returned no report, so nothing is shown.'));
       } catch (error) {
-        renderAnalysis(fallbackAnalysis(`Live crawl could not finish: ${error.message}`));
+        renderAnalysis(pendingAnalysis('failed', `${error.message} Nothing is estimated from a scan that did not run.`));
       }
     }
 
@@ -571,10 +638,9 @@
     });
 
     const domain = domainFromUrl(scan.store_url);
-    const profile = spendProfile(scan.monthly_ad_spend);
     document.title = `GitHub Scout - ${domain} URL Analysis`;
     setText('#domainName', domain);
-    setText('#scanIntro', `${domain} is being checked for visible app signatures, stack bloat, conversion widgets, and software swaps. ${profile.note}`);
+    setText('#scanIntro', `${domain} is being checked for visible app signatures, stack bloat, conversion widgets, and software swaps. Everything below stays blank until the crawl returns it.`);
     setText('#submittedUrl', scan.store_url || 'Not provided');
     setText('#spendRange', scan.monthly_ad_spend || 'Not provided');
     setText('#primaryGoal', scan.primary_goal || 'Not provided');

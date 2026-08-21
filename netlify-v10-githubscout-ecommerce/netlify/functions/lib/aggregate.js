@@ -118,9 +118,13 @@ function detectFromEvidence(scan) {
   return detections.sort((a, b) => (b.confidence - a.confidence) || (b.cost - a.cost));
 }
 
-function moneyRange(low, high) {
+// `unit` is part of the returned string because the client renders these
+// verbatim: it must never have to string-patch a server value to fix a label.
+// The annual figure was previously suffixed "/mo", so a correct annual number
+// was displayed as a monthly one.
+function moneyRange(low, high, unit = '/mo') {
   if (!high || high <= 0) return null;
-  return `${money.format(Math.round(low))}-${money.format(Math.round(high))}/mo`;
+  return `${money.format(Math.round(low))}-${money.format(Math.round(high))}${unit}`;
 }
 
 // The crawl gate: dollars require that the scan actually reached the thing it
@@ -162,7 +166,7 @@ function savingsFromDetected(detectedApps, scan) {
   const high = detectedMonthly * 0.40;
   return {
     monthly: moneyRange(low, high),
-    annual: moneyRange(low * 12, high * 12),
+    annual: moneyRange(low * 12, high * 12, '/yr'),
     detectedMonthly,
     suppressedReason: null,
     basis: `15-40% consolidation/downgrade band applied to ${money.format(detectedMonthly)}/mo of benchmarked cost across ${paid.length} detected paid app(s). Benchmarks are typical published pricing, not this store's invoices.`
