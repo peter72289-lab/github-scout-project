@@ -79,3 +79,4 @@ second stream is opened; its ledger is created in the same PR.
 | [PLT-2](status/platform.md) | platform | No Supabase / Resend / webhook credentials; M4 cannot start         | waiting-on-user |
 | [PLT-3](status/platform.md) | platform | Legal entity, jurisdiction, and support mailbox undecided           | waiting-on-user |
 | [PLT-4](status/platform.md) | platform | Purge scope (zip, PNGs, v8/v9, repo visibility) needs a decision    | waiting-on-user |
+| [PLT-5](status/platform.md) | platform | robots.txt Disallow vs the `/cart` live source needs a decision     | waiting-on-user |

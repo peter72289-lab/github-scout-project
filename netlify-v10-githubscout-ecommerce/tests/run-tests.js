@@ -1,7 +1,8 @@
 'use strict';
 const assert = require('node:assert');
 const guard = require('../netlify/functions/lib/guard.js');
-const {parseHtmlEvidence, SOURCE_CATALOG, liveSourceCount, sourceCounts, detectCheckoutProviders} = require('../netlify/functions/lib/adapters.js');
+const adapters = require('../netlify/functions/lib/adapters.js');
+const {parseHtmlEvidence, SOURCE_CATALOG, liveSourceCount, sourceCounts, detectCheckoutProviders} = adapters;
 const agg = require('../netlify/functions/lib/aggregate.js');
 const {appSignatures} = require('../netlify/functions/lib/rules.js');
 const costOf = (id) => appSignatures.find((s) => s.id === id).cost;
@@ -369,6 +370,251 @@ ta('resolve: no signal is UNRESOLVED, never a silent operator', async () => {
 ta('resolve: missing metadata object does not throw', async () => {
   const r = await webhook.resolvePlanFromSession({id: 'cs_test_2', mode: 'subscription'});
   assert.equal(r.plan, null);
+});
+
+// ---------- M1 Unit 2: request headers ----------
+// The crawler must stay identifiable. A browser-shaped UA was measured against
+// five live storefronts and changed zero source counts, while making our
+// unevaluated robots.txt Disallow rules indefensible. See lib/guard.js.
+t('request headers: the crawler identifies itself', () => {
+  const h = guard.requestHeaders('text/html');
+  assert.match(h['User-Agent'], /GitHubScoutOperatorScan/, 'the scanner must name itself');
+  assert.ok(!/Chrome\/[\d.]+ Safari/.test(h['User-Agent']), 'must not impersonate a browser');
+});
+t('request headers: only advertise encodings guard.js decodes', () => {
+  const advertised = guard.requestHeaders('text/html')['Accept-Encoding'].split(',').map((s) => s.trim());
+  const decoded = new Set(['gzip', 'deflate', 'br']); // decodeStream() in lib/guard.js
+  advertised.forEach((enc) => assert.ok(decoded.has(enc), `advertised ${enc} but nothing decodes it`));
+  assert.ok(advertised.length > 0);
+});
+t('request headers: Accept-Language sent, Accept passed through', () => {
+  const h = guard.requestHeaders('application/json');
+  assert.equal(h['Accept'], 'application/json');
+  assert.match(h['Accept-Language'], /^en-US,en;q=/);
+});
+t('request headers: From only when a real mailbox is configured', () => {
+  delete process.env.SCAN_CONTACT_EMAIL;
+  assert.equal(guard.requestHeaders('text/html').From, undefined, 'never invent a contact address');
+  process.env.SCAN_CONTACT_EMAIL = 'scans@example.com';
+  assert.equal(guard.requestHeaders('text/html').From, 'scans@example.com');
+  delete process.env.SCAN_CONTACT_EMAIL;
+});
+ta('guard decodes a gzip body it asked for, and still honours the char cap', async () => {
+  const zlib = require('node:zlib');
+  const {Readable} = require('node:stream');
+  const make = (buf, headers) => Object.assign(Readable.from([buf]), {headers});
+  const plain = await guard.readLimitedBody(make(zlib.gzipSync(Buffer.from('<title>hello</title>')), {'content-encoding': 'gzip'}));
+  assert.equal(plain, '<title>hello</title>');
+  // Compression bomb: 2MB of one byte gzips small, but the cap is applied to the
+  // DECOMPRESSED text, so memory stays bounded exactly as for a plain body.
+  const bomb = await guard.readLimitedBody(make(zlib.gzipSync(Buffer.alloc(2000000, 0x61)), {'content-encoding': 'gzip'}), 500);
+  assert.equal(bomb.length, 500);
+});
+
+// ---------- M1 Unit 3: blocked is not "nothing found" ----------
+t('block: HTTP 403 is a block on its own', () => {
+  const b = adapters.classifyBlock({status: 403, body: 'nope'});
+  assert.ok(b && b.blocked);
+  assert.equal(b.reason, 'http-status');
+  assert.equal(b.status, 403);
+});
+t('block: HTTP 429 is a block on its own (the measured bombas.com case)', () => {
+  assert.equal(adapters.classifyBlock({status: 429, body: ''}).reason, 'http-status');
+});
+t('block: challenge-page body names the vendor', () => {
+  const b = adapters.classifyBlock({status: 503, body: '<html><head><title>Just a moment...</title></head><body><script src="/cdn-cgi/challenge-platform/h/b/orchestrate/jsd/v1"></script></body></html>'});
+  assert.ok(b && b.blocked);
+  assert.equal(b.reason, 'challenge-page');
+  assert.equal(b.vendor, 'Cloudflare');
+});
+t('block: a 200 challenge interstitial is not a storefront page', () => {
+  const b = adapters.classifyBlock({status: 200, body: '<html><head><title>Access to this page has been denied</title></head><body>press &amp; hold</body></html>'});
+  assert.ok(b && b.blocked);
+  assert.equal(b.reason, 'challenge-page');
+});
+t('block: a healthy 200 page with Cloudflare bot-fight JS is NOT blocked', () => {
+  // Cloudflare injects challenge-platform scripts into perfectly normal pages;
+  // matching body markers on a 2xx would label healthy stores as blocked.
+  const b = adapters.classifyBlock({status: 200, body: '<html><head><title>Shop socks</title></head><body><script src="/cdn-cgi/challenge-platform/h/b/scripts/jsd/main.js"></script></body></html>'});
+  assert.equal(b, null);
+});
+t('block: a plain 404 with no challenge marker is not a block', () => {
+  assert.equal(adapters.classifyBlock({status: 404, body: '<title>Not found</title>'}), null);
+});
+t('block rollup: signals with zero pages fetched is a blocked crawl', () => {
+  const s = adapters.summarizeBlock({signals: [{blocked: true, status: 403, reason: 'http-status', vendor: 'Cloudflare'}], pagesFetched: 0, domainResolves: true, httpResponses: 4});
+  assert.equal(s.blocked, true); assert.equal(s.vendor, 'Cloudflare'); assert.equal(s.reason, 'http-status');
+});
+t('block rollup: one refused source but pages returned is not a blocked crawl', () => {
+  const s = adapters.summarizeBlock({signals: [{blocked: true, status: 403, reason: 'http-status', vendor: null}], pagesFetched: 2, domainResolves: true, httpResponses: 5});
+  assert.equal(s.blocked, false);
+});
+t('block rollup: domain resolves, edge answers, no page ever comes back', () => {
+  const s = adapters.summarizeBlock({signals: [], pagesFetched: 0, domainResolves: true, httpResponses: 3});
+  assert.equal(s.blocked, true); assert.equal(s.reason, 'low-success-ratio');
+});
+t('block rollup: dead domain (no DNS, no responses) is not reported as blocked', () => {
+  const s = adapters.summarizeBlock({signals: [], pagesFetched: 0, domainResolves: false, httpResponses: 0});
+  assert.equal(s.blocked, false);
+});
+
+const blockedScan = {
+  pages: [], scriptHosts: [], dnsInfo: {txt: [], mx: []}, robots: null, shopifyConfirmed: false,
+  sourcesLive: liveSourceCount(), sourcesSucceeded: 1, sourcesPlanned: [], sources: [],
+  crawlBlock: {blocked: true, reason: 'http-status', vendor: 'Cloudflare', signals: [{status: 403, reason: 'http-status', vendor: 'Cloudflare'}]}
+};
+t('blocked: savings gate reports crawl-blocked, not not-shopify', () => {
+  assert.equal(agg.savingsGateReason(blockedScan), 'crawl-blocked');
+  assert.equal(agg.savingsFromDetected([{cost: 200, strength: 'detected'}], blockedScan).monthly, null);
+});
+t('blocked: report carries the machine-readable state and no savings', () => {
+  const r = agg.buildReport(blockedScan, {monthly_ad_spend: 'More than $250,000 a month'}, 'full');
+  assert.equal(r.crawl.blocked, true);
+  assert.equal(r.crawl.blockedBy, 'Cloudflare');
+  assert.equal(r.crawl.blockedReason, 'http-status');
+  assert.equal(r.crawl.blockedSignals[0].status, 403);
+  assert.equal(r.summary.savingsSuppressedReason, 'crawl-blocked');
+  assert.equal(r.summary.monthlySavings, null);
+  assert.equal(r.summary.annualSavings, null);
+  assert.equal(r.summary.detectedMonthlyBenchmark, 0);
+});
+t('blocked: statusLabel tells the truth and points at the Shopify admin', () => {
+  const label = agg.buildReport(blockedScan, {}, 'full').crawl.statusLabel;
+  assert.match(label, /Cloudflare bot protection/);
+  assert.match(label, /not a finding about the store/i);
+  assert.match(label, /Shopify admin/);
+  assert.ok(!/No savings estimate is shown without evidence/.test(label), 'the generic no-crawl label must not be reused');
+});
+t('blocked: no recommendation claims the stack is clean or quiet', () => {
+  const r = agg.buildReport(blockedScan, {}, 'full');
+  const text = JSON.stringify(r.recommendations);
+  assert.equal(r.recommendations.length, 1);
+  assert.equal(r.recommendations[0].category, 'Access');
+  assert.ok(!/quiet from the outside|Stack is quiet/i.test(text), 'a blocked scan must never read as a clean stack');
+  assert.ok(!/\$/.test(text), 'a blocked scan produces no dollar figure');
+  assert.equal(r.recommendations[0].monthly, null);
+});
+t('blocked: an unblocked clean store still gets the honest quiet-stack card', () => {
+  const clean = fakeScan({html: '<html><body>hello</body></html>', shopify: true});
+  const r = agg.buildReport(clean, {}, 'full');
+  assert.equal(r.crawl.blocked, false);
+  assert.match(JSON.stringify(r.recommendations), /quiet from the outside/);
+});
+
+// ---------- M1 Unit 1: quota is a reservation, released when nothing came back ----------
+// The shipped handler is exercised, with only its two external edges stubbed:
+// the crawl (no network in tests) and Supabase.
+const dbMod = require('../netlify/functions/lib/supabase.js');
+const authMod = require('../netlify/functions/lib/auth.js');
+const realRunAdapters = adapters.runAdapters;
+let stubCrawl = null;
+adapters.runAdapters = (url) => (stubCrawl ? stubCrawl(url) : realRunAdapters(url));
+const scanHandler = require('../netlify/functions/operator-url-scan.js').handler;
+
+let rpcCalls = [];
+let crawlRuns = 0;
+function stubQuota({allowed, used}) {
+  rpcCalls = [];
+  dbMod.enabled = false; // no persistence, no shared rate limiter, no network
+  dbMod.rpc = async (fn, args) => {
+    rpcCalls.push({fn, args});
+    if (fn === 'usage_increment') return {allowed, used};
+    if (fn === 'usage_decrement') return {released: true, used: Math.max(0, used - 1)};
+    return null;
+  };
+  authMod.currentAccount = async () => ({account: {id: 'acct-test'}, subscription: {plan: 'director'}});
+}
+const scanEvent = (ip) => ({httpMethod: 'POST', headers: {'client-ip': ip}, body: 'intent=analyze&store_url=https://store.example'});
+const crawlOf = (extra) => {
+  crawlRuns = 0;
+  stubCrawl = async () => {
+    crawlRuns++;
+    return {pages: [], scriptHosts: [], dnsInfo: {txt: [], mx: []}, robots: null, shopifyConfirmed: false,
+      sourcesLive: liveSourceCount(), sourcesSucceeded: 0, sourcesPlanned: [], sources: [], ...extra};
+  };
+};
+const calledFns = () => rpcCalls.map((c) => c.fn);
+
+ta('quota: over the monthly limit is refused BEFORE the crawl runs', async () => {
+  guard.rateBuckets.clear();
+  stubQuota({allowed: false, used: 30});
+  crawlOf({});
+  const res = await scanHandler(scanEvent('198.51.100.11'));
+  assert.equal(res.statusCode, 402);
+  assert.equal(crawlRuns, 0, 'an over-quota account must never reach the crawler');
+  assert.deepEqual(calledFns(), ['usage_increment'], 'no release for a reservation that was never granted');
+  assert.match(JSON.parse(res.body).error, /quota reached \(30\)/);
+});
+ta('quota: a blocked crawl releases the credit', async () => {
+  guard.rateBuckets.clear();
+  stubQuota({allowed: true, used: 5});
+  crawlOf({crawlBlock: {blocked: true, reason: 'http-status', vendor: 'Cloudflare', signals: [{status: 403, reason: 'http-status', vendor: 'Cloudflare'}]}});
+  const res = await scanHandler(scanEvent('198.51.100.12'));
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 200);
+  assert.equal(crawlRuns, 1);
+  assert.deepEqual(calledFns(), ['usage_increment', 'usage_decrement']);
+  assert.equal(body.usage.used, 4, 'the reserved credit is given back');
+  assert.equal(body.usage.refunded, true);
+  assert.equal(body.analysis.crawl.blocked, true);
+  assert.equal(body.analysis.summary.savingsSuppressedReason, 'crawl-blocked');
+});
+ta('quota: a crawl that fetched nothing releases the credit', async () => {
+  guard.rateBuckets.clear();
+  stubQuota({allowed: true, used: 5});
+  crawlOf({});
+  const res = await scanHandler(scanEvent('198.51.100.13'));
+  assert.deepEqual(calledFns(), ['usage_increment', 'usage_decrement']);
+  assert.equal(JSON.parse(res.body).usage.used, 4);
+});
+ta('quota: a crawl that threw releases the credit', async () => {
+  guard.rateBuckets.clear();
+  stubQuota({allowed: true, used: 5});
+  crawlRuns = 0;
+  stubCrawl = async () => { crawlRuns++; throw new Error('Storefront request timed out.'); };
+  const res = await scanHandler(scanEvent('198.51.100.14'));
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(calledFns(), ['usage_increment', 'usage_decrement']);
+});
+ta('quota: a scan that fetched a page KEEPS the credit', async () => {
+  guard.rateBuckets.clear();
+  stubQuota({allowed: true, used: 5});
+  crawlOf({
+    shopifyConfirmed: true, sourcesSucceeded: 10,
+    pages: [{sourceId: 'home-html', url: 'https://store.example/', evidence: parseHtmlEvidence('<script src="https://static.klaviyo.com/x.js"></script>')}],
+    scriptHosts: ['static.klaviyo.com'],
+    crawlBlock: {blocked: false, reason: null, vendor: null, signals: []}
+  });
+  const res = await scanHandler(scanEvent('198.51.100.15'));
+  const body = JSON.parse(res.body);
+  assert.deepEqual(calledFns(), ['usage_increment'], 'a scan that produced evidence must not be refunded');
+  assert.equal(body.usage.used, 5);
+  assert.equal(body.usage.refunded, undefined);
+  assert.equal(body.analysis.crawl.blocked, false);
+  assert.ok(body.analysis.summary.monthlySavings, 'a real scan still prices its detections');
+});
+ta('quota: an unresolved plan is refused before the crawl and takes no credit', async () => {
+  guard.rateBuckets.clear();
+  stubQuota({allowed: true, used: 0});
+  crawlOf({});
+  authMod.currentAccount = async () => ({account: {id: 'acct-test'}, subscription: {plan: 'command'}});
+  const res = await scanHandler(scanEvent('198.51.100.16'));
+  assert.equal(res.statusCode, 403);
+  assert.equal(crawlRuns, 0);
+  assert.deepEqual(calledFns(), [], 'the retired plan never reaches the counter');
+});
+ta('quota: a release that fails does not break the response', async () => {
+  guard.rateBuckets.clear();
+  stubQuota({allowed: true, used: 5});
+  dbMod.rpc = async (fn, args) => {
+    rpcCalls.push({fn, args});
+    if (fn === 'usage_increment') return {allowed: true, used: 5};
+    throw new Error('Supabase rpc usage_decrement -> 500');
+  };
+  crawlOf({});
+  const res = await scanHandler(scanEvent('198.51.100.17'));
+  assert.equal(res.statusCode, 200);
+  assert.equal(JSON.parse(res.body).usage.used, 5, 'an unreleased reservation is reported honestly, not guessed at');
 });
 
 (async () => {

@@ -8,10 +8,13 @@
 
 ## Current state
 
-**M3 well underway: plans resolve from one source, savings require a reached storefront, and the client no longer paints invented dollars over honest server nulls. 80 tests pass. Merged to main via PRs #2-#5.**
+**M3 nearly closed: plans resolve from one source, savings require a reached storefront, the client invents nothing, and a blocked crawl no longer reads as a clean stack. 107 tests pass. PRs #2-#6.**
 
 > Keep the block above current. Rewrite it as the situation changes; never append a newer bullet
 > above it. New work goes to `## Recently completed
+
+- 2026-08-20 — **M1 closed: a failed scan no longer costs a credit, and a bot-blocked store is reported as blocked instead of clean.** `usage_increment` is now a reservation released by a new `usage_decrement` when the crawl produced no storefront page (`operator-url-scan.js`, `supabase/schema.sql` — serialized zone, schema not yet deployed anywhere so the addition is safe). Blocked detection lives in `lib/adapters.js` (`scan.crawlBlock`) and surfaces as `crawl.blocked` / `crawl.blockedBy` / `savingsSuppressedReason: 'crawl-blocked'`, rendered by `operator-url-analysis.html` as "Not visible" rather than a count of zero, with a single `Access` recommendation replacing the "stack is quiet" card. `guard.js` gained gzip/deflate/br decoding with the size cap applied to the decompressed stream. Measured live: bombas.com now reports Vercel bot protection (HTTP 429) instead of an empty stack; allbirds and gymshark unchanged at 10/10.
+- 2026-08-20 — **Reverted the browser User-Agent an agent proposed: measured against five storefronts it changed zero source counts, and it would have made our unevaluated robots.txt Disallow rules indefensible.** The scanner stays identifiable as `GitHubScoutOperatorScan/2.0`, with a test asserting it does not impersonate a browser. Opened PLT-5 for the Disallow decision itself (`TASKS_FOR_USER.md` item 11).
 
 - 2026-08-20 — **B5 closed: every fabricated client-side figure and every present-tense "15 sources" claim is gone; source counts now derive from the adapter catalog.** `operator-url-analysis.html` lost its ~120-line second copy of the savings engine, which invented `$120-$420` bands, `72%` confidence, and two percentage claims, and rendered a phantom `matched` field. It now renders `strength`, real `evidence[]`, and `savingsSuppressedReason` from the server, with honest empty and loading states. New `netlify/functions/sources.js` + `assets/source-counts.js` fill every `[data-source-count]` element from `lib/adapters.js`; the duplicate planned `checkout-fingerprint-plan` entry is deleted, settling the catalog at 10 live / 15 total. `methodology.html` confidence scoring rewritten to match `classifyStrength`/`scoreConfidence`, and the crawl gate stated publicly. `preflight.js` now fails on `all 15`, bare `15 ... sources`, unlabelled dollar ranges outside sample pages, and any `data-source-count` fallback that disagrees with the catalog (33 checked). Also fixed `moneyRange`, which suffixed the annual figure `/mo`.`; detail goes under `### History`.
 
@@ -59,12 +62,15 @@
 
 **PLT-4 — Purge scope is undecided: deploy zip, PNGs, duplicate media, v8/v9 sites, and repo visibility all need the owner's call.**
 
-| ID    | Opened     | Type       | Blocks              | What unblocks it                                                                  | Owner | State           |
-| ----- | ---------- | ---------- | ------------------- | --------------------------------------------------------------------------------- | ----- | --------------- |
-| PLT-1 | 2026-08-20 | permission | M1, M4, any billing | User confirms in Stripe that the key was rolled, or rolls it                      | User  | waiting-on-user |
-| PLT-2 | 2026-08-20 | dependency | M4                  | User creates Supabase project, Resend domain, webhook; adds keys to `~/.api-keys` | User  | waiting-on-user |
-| PLT-3 | 2026-08-20 | decision   | M5, preflight green | User supplies entity, jurisdiction, support address; rename decision              | User  | waiting-on-user |
-| PLT-4 | 2026-08-20 | decision   | M2                  | User answers `TASKS_FOR_USER.md` item 3                                           | User  | waiting-on-user |
+**PLT-5 — The scanner does not evaluate robots.txt Disallow, and Shopify disallows `/cart`, which is a live source; honouring it drops the published count from 10 to 9.**
+
+| ID    | Opened     | Type       | Blocks                 | What unblocks it                                                                  | Owner | State           |
+| ----- | ---------- | ---------- | ---------------------- | --------------------------------------------------------------------------------- | ----- | --------------- |
+| PLT-1 | 2026-08-20 | permission | M1, M4, any billing    | User confirms in Stripe that the key was rolled, or rolls it                      | User  | waiting-on-user |
+| PLT-2 | 2026-08-20 | dependency | M4                     | User creates Supabase project, Resend domain, webhook; adds keys to `~/.api-keys` | User  | waiting-on-user |
+| PLT-3 | 2026-08-20 | decision   | M5, preflight green    | User supplies entity, jurisdiction, support address; rename decision              | User  | waiting-on-user |
+| PLT-4 | 2026-08-20 | decision   | M2                     | User answers `TASKS_FOR_USER.md` item 3                                           | User  | waiting-on-user |
+| PLT-5 | 2026-08-20 | decision   | Published source count | User decides: honour Disallow (9 live sources) or keep fetching `/cart` openly    | User  | waiting-on-user |
 
 ## Recently completed (append-only, newest first)
 

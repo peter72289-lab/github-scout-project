@@ -15,18 +15,19 @@ need to edit this file yourself.
 confirmed rotated, the accounts are confirmed yours, and the purge scope is decided, agents can
 only do offline code fixes.
 
-| #   | Do this                                                                                                | Effort  | Unblocks                              | Priority   |
-| --- | ------------------------------------------------------------------------------------------------------ | ------- | ------------------------------------- | ---------- |
-| 1   | Confirm in the Stripe dashboard that the unrestricted live secret key was rolled; roll it if unsure    | ~5 min  | PLT-1, any billing work, M4           | blocking   |
-| 2   | Confirm which accounts you control: Stripe, Netlify (3 sites + staging), GitHub remote, Resend, domain | ~10 min | PLT-2, M1, deploy planning            | blocking   |
-| 3   | Decide purge scope: deploy zip, verification PNGs, duplicate media, v8/v9 folders, repo visibility     | ~10 min | PLT-4, M2, history rewrite            | blocking   |
-| 4   | Legal: entity name, jurisdiction, business address, support mailbox; rename off "GitHub Scout" or not  | ~15 min | PLT-3, M5, preflight green            | decision   |
-| 5   | Create Supabase project, Resend domain, Stripe webhook endpoint; put keys in `~/.api-keys` and Netlify | ~30 min | PLT-2, M4                             | after 1-2  |
-| 6   | Decide the fulfillment model: self-serve dashboard (v2) or manual onboarding form, not both            | ~5 min  | M3 copy fixes, thank-you page, emails | decision   |
-| 7   | Decide what happens to the v8 and v9 Netlify sites (retire, redirect, or leave)                        | ~5 min  | M7; removes retracted claims from web | decision   |
-| 8   | Decide whether account delete must cancel the Stripe subscription (needs Stripe API in functions)      | ~2 min  | M3 unit for `account-delete.js`       | decision   |
-| 9   | Decide pricing direction: keep $17/$37 subscriptions, or the v11-v14 audit/sprint ladder               | ~10 min | Copy, Stripe products, ads            | whenever   |
-| 10  | Give a go/no-go on pushing this session's files and on a first commit                                  | ~1 min  | Anything leaving this machine         | when ready |
+| #   | Do this                                                                                                | Effort  | Unblocks                               | Priority   |
+| --- | ------------------------------------------------------------------------------------------------------ | ------- | -------------------------------------- | ---------- |
+| 1   | Confirm in the Stripe dashboard that the unrestricted live secret key was rolled; roll it if unsure    | ~5 min  | PLT-1, any billing work, M4            | blocking   |
+| 2   | Confirm which accounts you control: Stripe, Netlify (3 sites + staging), GitHub remote, Resend, domain | ~10 min | PLT-2, M1, deploy planning             | blocking   |
+| 3   | Decide purge scope: deploy zip, verification PNGs, duplicate media, v8/v9 folders, repo visibility     | ~10 min | PLT-4, M2, history rewrite             | blocking   |
+| 4   | Legal: entity name, jurisdiction, business address, support mailbox; rename off "GitHub Scout" or not  | ~15 min | PLT-3, M5, preflight green             | decision   |
+| 5   | Create Supabase project, Resend domain, Stripe webhook endpoint; put keys in `~/.api-keys` and Netlify | ~30 min | PLT-2, M4                              | after 1-2  |
+| 6   | Decide the fulfillment model: self-serve dashboard (v2) or manual onboarding form, not both            | ~5 min  | M3 copy fixes, thank-you page, emails  | decision   |
+| 7   | Decide what happens to the v8 and v9 Netlify sites (retire, redirect, or leave)                        | ~5 min  | M7; removes retracted claims from web  | decision   |
+| 8   | Decide whether account delete must cancel the Stripe subscription (needs Stripe API in functions)      | ~2 min  | M3 unit for `account-delete.js`        | decision   |
+| 9   | Decide pricing direction: keep $17/$37 subscriptions, or the v11-v14 audit/sprint ladder               | ~10 min | Copy, Stripe products, ads             | whenever   |
+| 10  | Give a go/no-go on pushing this session's files and on a first commit                                  | ~1 min  | Anything leaving this machine          | when ready |
+| 11  | Decide whether the scanner honours `robots.txt` Disallow (Shopify disallows `/cart`, a live source)    | ~5 min  | PLT-5; the published live-source count | decision   |
 
 ## 1. Stripe key rotation (blocking)
 
@@ -128,6 +129,17 @@ No code depends on this yet. It decides which copy, Stripe products, and ads get
 **Nothing from this session is committed; per house rules no agent pushes without your word.**
 
 Say "commit" for a local commit on a `docs/adopt-repo` branch; say "push" separately.
+
+## 11. robots.txt Disallow (decision)
+
+**The scanner fetches `robots.txt` as an evidence source but never evaluates its `Disallow` rules, and Shopify's default `robots.txt` disallows `/cart` — which the `cart-html` adapter fetches on every scan.**
+
+Two defensible answers, and it is your call because it changes what we sell:
+
+- **Honour Disallow.** The most defensible position, and the one consistent with an integrity-first product. Cost: `cart-html` drops for nearly every Shopify store, so the live source count published on `index.html`, `methodology.html`, and the Stripe product descriptions goes from 10 to 9, and cart-only signals (some upsell and checkout apps) stop being detected.
+- **Keep fetching `/cart`, transparently.** Argument: the merchant submitted their own storefront and asked us to look at it, we fetch one page at low volume, and we identify ourselves by name so any operator can block or contact us. Cost: it is still a norms violation, and a competitor or a blog post could fairly call it one.
+
+What is already decided and shipped: the crawler **stays identifiable**. A browser-shaped User-Agent was tried, measured against five live storefronts, and changed zero source counts (`netlify/functions/lib/guard.js`), so it was reverted — a disguised UA plus unevaluated Disallow rules would have been evasion, and it bought nothing.
 
 ## Done — kept for history
 
