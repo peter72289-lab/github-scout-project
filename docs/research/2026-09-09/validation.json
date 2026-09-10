@@ -1,0 +1,12 @@
+{
+  "pages": 16,
+  "numbered_sources": 42,
+  "pdf_link_annotations": 58,
+  "screenshots": 8,
+  "competitor_entries": 18,
+  "remote_revision": "d159bcd28c7971d214989978b275a9dd2ee6ec8f",
+  "legacy_local_revision": "6232a6ee551c52a127afe66736ac6339a9bfb83a",
+  "remote_tests": "143 reported by repository ledger; not rerun",
+  "local_nested_prototype_tests": "13 passed",
+  "assessment_scope": "Read-only assessment; no deployment, payment, lead or merchant data submission"
+}
