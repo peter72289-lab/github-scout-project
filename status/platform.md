@@ -72,6 +72,8 @@
 
 **PLT-5 — The scanner does not evaluate robots.txt Disallow, and Shopify disallows `/cart`, which is a live source; honouring it drops the published count from 10 to 9.**
 
+**PLT-6 — Three live sites and both Stripe Payment Links are still armed; `fulfillmentReady` exists only in the undeployed tree, so nothing we merged protects a live buyer.**
+
 | ID    | Opened     | Type       | Blocks                 | What unblocks it                                                                  | Owner | State           |
 | ----- | ---------- | ---------- | ---------------------- | --------------------------------------------------------------------------------- | ----- | --------------- |
 | PLT-1 | 2026-08-20 | permission | M1, M4, any billing    | User confirms in Stripe that the key was rolled, or rolls it                      | User  | waiting-on-user |
@@ -79,6 +81,7 @@
 | PLT-3 | 2026-08-20 | decision   | M5, preflight green    | User supplies entity, jurisdiction, support address; rename decision              | User  | waiting-on-user |
 | PLT-4 | 2026-08-20 | decision   | M2                     | User answers `TASKS_FOR_USER.md` item 3                                           | User  | waiting-on-user |
 | PLT-5 | 2026-08-20 | decision   | Published source count | User decides: honour Disallow (9 live sources) or keep fetching `/cart` openly    | User  | waiting-on-user |
+| PLT-6 | 2026-09-18 | external   | First honest sale      | User takes v8/v9/old-v10 offline and deactivates both Payment Links               | User  | waiting-on-user |
 
 ## Recently completed (append-only, newest first)
 

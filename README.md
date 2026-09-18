@@ -37,7 +37,7 @@ placeholders in `terms.html` and `privacy.html`; that is a real launch blocker, 
 From `netlify-v10-githubscout-ecommerce/`:
 
 ```bash
-bun tests/run-tests.js     # 121 unit tests, no network. The gate — run before every commit.
+bun tests/run-tests.js     # 143 unit tests, no network. The gate — run before every commit.
 bun scripts/preflight.js   # launch-readiness gate; exits 1 on the legal placeholders above
 bunx netlify dev           # site + functions on :8888; functions degrade with no env vars
 ```
