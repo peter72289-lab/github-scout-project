@@ -19,12 +19,14 @@ Legend: DONE · WIP in progress · TODO not started · BLOCKED
   `bun tests/run-tests.js`. Ten PRs (#2-#10) closed every code-side defect the gap analysis
   found; what is left needs credentials or a decision, not engineering.
 - **Deployed.** Unchanged, and this is the headline: **the v2 build has still never been
-  deployed anywhere.** Two Netlify sites (v9, old v10) answer 200 with the pre-v2 funnel;
+  deployed anywhere.** Three Netlify sites (v8, v9, old v10) answer 200 with the pre-v2 funnel;
   `/login.html`, `/dashboard.html`, and the webhook 404, and `/health` is the old handler.
   Staging is empty. `githubscout.ai` does not resolve, so `support@githubscout.ai` is dead.
   Nothing in PRs #2-#10 is live. Do not describe any of it as shipped.
-- **Money.** The two live Stripe Payment Links still exist, but no page can reach them:
-  `fulfillmentReady: false` in `assets/launch-config.js` gates every CTA. Flipping that switch is
+- **Money.** The two live Stripe Payment Links still return 200 and are reachable **from the
+  deployed sites**: `fulfillmentReady: false` gates every CTA in the repo, but the live
+  `assets/launch-config.js` has no such key. The gate protects the next deploy, not today's
+  visitor. Deactivating the links is `TASKS_FOR_USER.md` item 1. Flipping that switch is
   the deliberate launch action, and it should not be flipped until `/health` reports
   `productionReady: true` on a deploy and a test-mode purchase has been watched end to end.
 - **Fixed since 2026-08-20.** Director buyers no longer get the Operator quota; savings require a
@@ -67,12 +69,14 @@ second stream is opened; its ledger is created in the same PR.
 
 ## Next 3 actions
 
-1. User: `TASKS_FOR_USER.md` items 1-3 (Stripe key rotation, account ownership, purge scope).
+1. User, today: `TASKS_FOR_USER.md` item 1 — take v8/v9/old-v10 offline and deactivate both Stripe
+   Payment Links. Re-verified 2026-09-18: all three sites and both links return 200, the live page
+   still publishes fabricated reviews, and our checkout gate exists only in the undeployed tree.
+2. User: items 2-5 (key rotation, account ownership, whether anyone has been charged, legal entity).
    Nothing downstream is safe until these close.
-2. User: items 4, 12, 13 (legal placeholders, Customer Portal link, restricted billing key). The
-   first makes preflight green; the other two are required before a first live sale.
-3. Platform, once M1/M4 clear: apply `supabase/schema.sql`, deploy to staging, run a test-mode
-   purchase end to end, confirm `/health` `productionReady: true`, then flip `fulfillmentReady`.
+3. Platform, once items 2-3 and 7 clear: apply `supabase/schema.sql`, deploy to staging, run a
+   test-mode purchase end to end, confirm `/health` `productionReady: true`, then flip
+   `fulfillmentReady`.
 
 ## Blockers index (detail in stream ledgers; protocol in CLAUDE.md)
 
@@ -81,5 +85,6 @@ second stream is opened; its ledger is created in the same PR.
 | [PLT-1](status/platform.md) | platform | Stripe live key rotation unconfirmed; no money work until confirmed | waiting-on-user |
 | [PLT-2](status/platform.md) | platform | No Supabase / Resend / webhook credentials; M4 cannot start         | waiting-on-user |
 | [PLT-3](status/platform.md) | platform | Legal entity, jurisdiction, and support mailbox undecided           | waiting-on-user |
-| [PLT-4](status/platform.md) | platform | Purge scope (zip, PNGs, v8/v9, repo visibility) needs a decision    | waiting-on-user |
+| [PLT-4](status/platform.md) | platform | Purge scope (`ads/` 57 MB, demo media, v9 tree, repo visibility)    | waiting-on-user |
 | [PLT-5](status/platform.md) | platform | robots.txt Disallow vs the `/cart` live source needs a decision     | waiting-on-user |
+| [PLT-6](status/platform.md) | platform | Live sites + Payment Links are armed; our gate only covers the repo | waiting-on-user |

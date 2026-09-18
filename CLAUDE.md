@@ -52,7 +52,7 @@ works), and `netlify-v10-githubscout-ecommerce/docs/AD-CLAIMS-GUIDE.md` (what co
 Run from `netlify-v10-githubscout-ecommerce/` unless noted. Bun runs every script here; Node 18+ is
 the fallback only because `netlify dev` executes functions under Node.
 
-- `bun tests/run-tests.js` (or `bun run test`): 121 unit tests, no network. **The gate.** Run
+- `bun tests/run-tests.js` (or `bun run test`): 143 unit tests, no network. **The gate.** Run
   before every commit.
 - `bun scripts/preflight.js` (or `bun run preflight`): launch-readiness gate. Currently exits 1
   on the `[[LEGAL ENTITY]]` placeholders in `terms.html` / `privacy.html`; that is a real blocker,
