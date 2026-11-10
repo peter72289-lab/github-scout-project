@@ -1,0 +1,143 @@
+1
+00:00:00,500 --> 00:00:07,000
+Most Shopify stores pay every month for apps nobody uses anymore.
+
+2
+00:00:07,000 --> 00:00:13,400
+Let's walk through how that happens, and how to find them.
+
+3
+00:00:14,500 --> 00:00:22,000
+This is what your customers see: products, a cart, and a few helpful widgets.
+
+4
+00:00:22,000 --> 00:00:30,000
+Each of those widgets comes from an app someone installed.
+
+5
+00:00:30,000 --> 00:00:39,400
+But the storefront only tells part of the story. The rest lives in your admin.
+
+6
+00:00:40,500 --> 00:00:49,000
+Now look behind the counter. This is the app list in an example store's admin.
+
+7
+00:00:49,000 --> 00:00:58,000
+Fourteen apps, and every one of them bills every month.
+
+8
+00:00:58,000 --> 00:01:09,400
+The question nobody asks: which of these are still doing anything?
+
+9
+00:01:10,500 --> 00:01:16,500
+Nobody installed these by mistake.
+
+10
+00:01:16,500 --> 00:01:23,000
+The founder added the basics at launch.
+
+11
+00:01:23,000 --> 00:01:29,000
+The marketing manager added a timer, a popup and a loyalty trial for Black Friday.
+
+12
+00:01:29,000 --> 00:01:34,500
+An agency added a page builder during the redesign. A freelancer added heatmaps to fix tracking.
+
+13
+00:01:34,500 --> 00:01:45,400
+Then each project ended. The apps stayed. So did the monthly bills.
+
+14
+00:01:46,500 --> 00:01:52,000
+Sort them by what they actually do today.
+
+15
+00:01:52,000 --> 00:01:58,000
+Six still earn their keep.
+
+16
+00:01:58,000 --> 00:02:10,000
+Eight are idle. A timer for a sale that ended. A popup nobody sees. Heatmaps nobody opens. A loyalty program that never launched.
+
+17
+00:02:10,000 --> 00:02:19,400
+Idle apps don't stop billing. That's bloat, and it adds up every single month.
+
+18
+00:02:20,500 --> 00:02:24,000
+That bloat comes in three kinds.
+
+19
+00:02:24,000 --> 00:02:31,000
+Idle: installed and billing, but not doing anything anymore.
+
+20
+00:02:31,000 --> 00:02:39,000
+Leftover: switched off, but its code can still load on your pages and slow them down.
+
+21
+00:02:39,000 --> 00:02:47,400
+Doubled: two tools doing one job, like two reviews apps.
+
+22
+00:02:48,500 --> 00:02:56,000
+GitHub Scout starts with a free check. Paste your store address.
+
+23
+00:02:56,000 --> 00:03:05,000
+It looks at your store the way a shopper's browser does, and lists the apps it can see loading.
+
+24
+00:03:05,000 --> 00:03:11,000
+It flags tools doing the same job, and shows what's still loading, like a timer from a sale that ended.
+
+25
+00:03:11,000 --> 00:03:17,400
+It can't see apps that only run inside your admin. We say so up front.
+
+26
+00:03:18,500 --> 00:03:26,000
+The reviewed audit adds the part only you can see: your app list from Shopify admin.
+
+27
+00:03:26,000 --> 00:03:33,000
+A person lines the two lists up.
+
+28
+00:03:33,000 --> 00:03:39,000
+Billing, but not showing up anywhere? Ask what it's for.
+
+29
+00:03:39,000 --> 00:03:43,400
+Loading on your pages, but gone from your list? That's leftover code.
+
+30
+00:03:44,500 --> 00:03:53,000
+You get one page back: what to cut, what to keep, what to swap, and what to test.
+
+31
+00:03:53,000 --> 00:04:01,400
+Read by a person. No app to install. And we don't sell any of the apps we recommend.
+
+32
+00:04:02,500 --> 00:04:05,000
+Then cut safely.
+
+33
+00:04:05,000 --> 00:04:14,000
+Export what you need. Switch it off for one billing cycle.
+
+34
+00:04:14,000 --> 00:04:25,400
+Check your theme for code it left behind. Then cancel.
+
+35
+00:04:26,500 --> 00:04:33,000
+Find the bloat. Keep what works.
+
+36
+00:04:33,000 --> 00:04:41,400
+Run the free check on your store. The link is right below this video.

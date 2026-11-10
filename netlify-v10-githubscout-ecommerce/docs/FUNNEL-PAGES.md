@@ -52,23 +52,20 @@ labelled as such. No slider or meter on these pages starts with a figure we supp
   check finds nothing worth fixing, we will tell you not to buy".
 - **Intake data policy** (`TASKS_FOR_USER.md` item 20) before the intake form takes real lists.
 
-## Micro-video script (for `watch.html`)
+## Walkthrough video (for `watch.html`)
 
-Record on a store whose owner gave written permission, or on the owner's own store. Never a famous
-brand, never a mock. Screen recording with voiceover; captions on; no autoplay with sound.
+`assets/video/bloat-walkthrough.mp4`, 4:42, 1920x1080, whiteboard style, captions burnt in, soft
+synthesized music bed, no voice. It walks an example store (not a real merchant): storefront,
+the admin app list, who installed each app for which project, idle versus working, the three
+kinds of bloat (idle, leftover, doubled), the free check, the reviewed audit, and how to cut
+safely. It shows no dollar figures.
 
-| Time | Beat         | What to say and show                                                                                    |
-| ---- | ------------ | ------------------------------------------------------------------------------------------------------- |
-| 0:00 | Hook         | "Many Shopify stores pay for two apps that do the same job. Here is how to check yours in a minute."    |
-| 0:20 | Problem      | Apps get added during launches and sales and never reviewed. The admin shows a list, not the overlap.   |
-| 1:00 | How it works | The check reads what a shopper's browser loads. It cannot see apps that only run in admin. Say so.      |
-| 1:45 | Live check   | Paste the permitted address. Walk the result: apps found, one overlap, clearly versus possibly running. |
-| 3:30 | The gap      | "That is the outside view. The audit adds your real app list and a person who reads both." Show plan.   |
-| 4:15 | When not to  | "If the free check finds nothing, do not buy." State the price once, once it is set.                    |
-| 4:45 | Call to act  | "The box is right under this video. Paste your address."                                                |
-
-When recorded, replace the `.video` slot in `watch.html` with a `<video>` element served from
-`assets/` (CSP `media-src 'self'`).
+Source lives in `scripts/video/` (denied from the public site by `/scripts/*`): `scenes.py` holds
+every scene, caption and timing; `vidlib.py` the drawing helpers; `NARRATION.md` and
+`bloat-walkthrough.srt` the script for recording a voiceover. To rebuild: `pip install pycairo
+numpy`, install the Kalam font, then `python3 render.py 0 1 2 ... 10`, join the parts with ffmpeg's
+concat demuxer, and add `music.wav` from `music.py`. A recorded voiceover can replace the music
+track with `ffmpeg -i video.mp4 -i voice.wav -map 0:v -map 1:a -c:v copy`.
 
 ## Test order and what to measure
 
