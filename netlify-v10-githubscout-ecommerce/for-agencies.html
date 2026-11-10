@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Know a prospect's Shopify apps before the first call | GitHub Scout</title>
+    <meta
+      name="description"
+      content="For Shopify agencies, freelancers, and operators with several stores. Paste any store address and see the apps it runs, with no access request."
+    />
+    <link rel="stylesheet" href="assets/funnel.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
+      <nav>
+        <a class="keep" href="#early">Get early access</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="narrow">
+        <div class="hero">
+          <span class="kicker">For agencies, freelancers, and multi-store operators</span>
+          <h1>Know a store's apps before the first call.</h1>
+          <p class="lede">
+            Paste any Shopify store address. See the apps it runs, where they overlap, and how we
+            spotted each one. No access request, no browser extension, nothing for the store to
+            install.
+          </p>
+          <form class="scanbox" data-scan="result" data-no-offer novalidate>
+            <input
+              type="text"
+              name="store_url"
+              placeholder="a-prospect-store.com"
+              aria-label="A store address"
+              autocomplete="url"
+              inputmode="url"
+            />
+            <button class="btn teal" type="submit">Try it on a prospect</button>
+          </form>
+          <p class="fineprint">
+            <a href="#result" data-show-example="result">See an example result.</a>
+          </p>
+          <div id="result" class="result" hidden aria-live="polite"></div>
+        </div>
+      </div>
+
+      <section class="tint">
+        <div class="wrap">
+          <h2>Where it fits in your week</h2>
+          <div class="grid">
+            <div class="card">
+              <h3>Before the pitch</h3>
+              <p>
+                Open the call with "I noticed you run two reviews tools." It shows you did the
+                homework, and it is usually the first easy win.
+              </p>
+            </div>
+            <div class="card">
+              <h3>When onboarding a client</h3>
+              <p>
+                Start with a picture of what is already there, instead of finding it out one
+                surprise at a time.
+              </p>
+            </div>
+            <div class="card">
+              <h3>At the quarterly review</h3>
+              <p>
+                Check again and show the client what changed. Cleanup work they can see is cleanup
+                work they renew.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="narrow letter">
+          <h2>Why not just use a free extension?</h2>
+          <p>
+            Free tools will list apps on a store, and some are good. Here is what we add, honestly:
+          </p>
+          <ul class="checks">
+            <li>How each app was spotted, so you can stand behind it in a proposal</li>
+            <li>A clear line between "clearly running" and "possibly running"</li>
+            <li>Tools doing the same job, grouped for you</li>
+            <li>No guessing: if we did not see it, we do not price it</li>
+            <li>We do not sell apps, so nothing in the result is steering you toward one</li>
+          </ul>
+          <p style="margin-top: 18px">
+            And what we do not have yet: no portfolio dashboard across clients, and no white-label
+            report. If you need those, tell us. Early users shape what comes next.
+          </p>
+          <h2>What about stores that block the check?</h2>
+          <p>
+            Some larger stores block outside checks. When that happens, the result says so plainly,
+            and the plan is built so a blocked check does not use up one of your checks.
+          </p>
+        </div>
+      </section>
+
+      <section class="tint" id="early">
+        <div class="offer">
+          <h2>The agency plan</h2>
+          <p class="price">
+            30 store checks a month, with every app listed and the evidence behind it. Opening to a
+            small first group.
+          </p>
+          <form
+            class="form"
+            name="agency-early-access"
+            method="POST"
+            data-netlify="true"
+            netlify-honeypot="bot-field"
+            action="audit-thanks.html?for=agency"
+          >
+            <input type="hidden" name="form-name" value="agency-early-access" />
+            <p hidden>
+              <label>Do not fill this out<input name="bot-field" /></label>
+            </p>
+            <label
+              >Work email<input type="email" name="email" required placeholder="you@agency.com"
+            /></label>
+            <label>Agency or business name<input type="text" name="business" /></label>
+            <label
+              >How many Shopify stores do you look at in a month?
+              <select name="stores_per_month">
+                <option>1 to 4</option>
+                <option>5 to 15</option>
+                <option>16 to 30</option>
+                <option>More than 30</option>
+              </select>
+            </label>
+            <button class="btn teal" type="submit">Get early access</button>
+          </form>
+          <p class="fineprint" style="margin-top: 12px">
+            We will email you when it opens. No card needed now.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a href="methodology.html">How the check works</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="support.html">Support</a>
+    </footer>
+
+    <script src="assets/funnel-example.js"></script>
+    <script src="assets/funnel-scan.js"></script>
+  </body>
+</html>

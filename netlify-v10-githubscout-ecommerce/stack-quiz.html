@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Is your app setup worth a cleanup? A 2-minute quiz | GitHub Scout</title>
+    <meta
+      name="description"
+      content="Seven quick questions about your Shopify apps, then a free check of your store. Find out if a cleanup is worth your time."
+    />
+    <link rel="stylesheet" href="assets/funnel.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <div class="hero" style="padding-top: 26px">
+          <div class="quiz" id="quiz">
+            <div id="intro">
+              <span class="kicker">2-minute quiz</span>
+              <h1>Is your app setup worth a cleanup?</h1>
+              <p class="lede">
+                Seven quick questions, then a free check of your store. If a cleanup is not worth
+                your time, we will tell you that.
+              </p>
+              <button class="btn" type="button" id="start">Start the quiz</button>
+            </div>
+
+            <div id="steps" hidden>
+              <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+              <div class="q" id="q"></div>
+              <div class="quiz-nav">
+                <button class="btn ghost" type="button" id="back">Back</button>
+                <button class="btn" type="button" id="next" hidden>Next</button>
+              </div>
+            </div>
+
+            <div id="outcome" hidden>
+              <span class="kicker">Your result</span>
+              <h1 id="out-title"></h1>
+              <div class="mirror" id="mirror"></div>
+              <p id="out-body"></p>
+              <div id="result" class="result" aria-live="polite" style="margin: 0 0 18px"></div>
+              <p id="compare" class="fineprint" hidden></p>
+              <div id="out-offer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <a href="methodology.html">How the check works</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </footer>
+
+    <script src="assets/funnel-example.js"></script>
+    <script src="assets/funnel-scan.js"></script>
+    <script>
+      ;(function () {
+        // Categories in the overlap question map onto categories the checker can
+        // actually see (netlify/functions/lib/rules.js categoryRules), so the
+        // result page can compare what the visitor said with what the check found.
+        var QUESTIONS = [
+          {
+            id: 'role',
+            title: 'What best describes you?',
+            options: [
+              'Store owner or founder',
+              'Ecommerce or marketing manager',
+              'Operations or finance',
+              'Agency or freelancer',
+            ],
+          },
+          {
+            id: 'stores',
+            title: 'How many stores do you look after?',
+            options: ['One', 'Two to four', 'Five or more'],
+          },
+          {
+            id: 'apps',
+            title: 'Roughly how many apps are installed?',
+            hint: 'A guess is fine. In Shopify admin it is under Settings, then Apps and sales channels.',
+            options: ['Fewer than 8', '8 to 15', '16 to 30', 'More than 30', 'Not sure'],
+          },
+          {
+            id: 'reviewed',
+            title: 'When did someone last go through the whole list?',
+            options: [
+              'In the last three months',
+              'Within the last year',
+              'Over a year ago',
+              'Never, as far as I know',
+            ],
+          },
+          {
+            id: 'doubles',
+            title: 'Do you have more than one tool for any of these?',
+            hint: 'Pick all that apply.',
+            multi: true,
+            options: [
+              'Reviews',
+              'Email or text marketing',
+              'Popups and signup forms',
+              'Upsells or bundles',
+              'Analytics or heatmaps',
+              'Loyalty or referrals',
+              'None that I know of',
+            ],
+          },
+          {
+            id: 'why',
+            title: 'What is making you look at this now?',
+            options: [
+              'The app bill feels high',
+              'The site feels slow or cluttered',
+              'Planning a redesign or move',
+              'New in the role',
+              'A renewal is coming up',
+              'Just curious',
+            ],
+          },
+          {
+            id: 'url',
+            title: 'Last one. What is your store address?',
+            hint: 'We will run the free check on it right away.',
+            input: true,
+          },
+        ]
+
+        var CATEGORY_OF = {
+          Reviews: ['Reviews'],
+          'Email or text marketing': ['Email/SMS'],
+          'Popups and signup forms': ['Forms'],
+          'Upsells or bundles': ['Upsell'],
+          'Analytics or heatmaps': ['Analytics'],
+          'Loyalty or referrals': ['Loyalty', 'Referral'],
+        }
+
+        var answers = {}
+        var i = 0
+        var $ = function (id) {
+          return document.getElementById(id)
+        }
+
+        function show(n) {
+          i = n
+          var q = QUESTIONS[i]
+          $('bar').style.width = Math.round((i / QUESTIONS.length) * 100) + '%'
+          $('back').style.visibility = i === 0 ? 'hidden' : 'visible'
+          var box = $('q')
+          box.textContent = ''
+          var h = document.createElement('h2')
+          h.textContent = q.title
+          box.appendChild(h)
+          if (q.hint) {
+            var p = document.createElement('p')
+            p.className = 'hint'
+            p.textContent = q.hint
+            box.appendChild(p)
+          }
+          if (q.input) {
+            var form = document.createElement('form')
+            form.className = 'scanbox'
+            form.innerHTML =
+              '<input type="text" placeholder="yourstore.com" aria-label="Your store address" inputmode="url" autocomplete="url"><button class="btn" type="submit">See my result</button>'
+            form.querySelector('input').value = answers.url || ''
+            form.addEventListener('submit', function (e) {
+              e.preventDefault()
+              var v = form.querySelector('input').value.trim()
+              if (!v) return form.querySelector('input').focus()
+              answers.url = v
+              finish()
+            })
+            box.appendChild(form)
+            $('next').hidden = true
+            setTimeout(function () {
+              form.querySelector('input').focus()
+            }, 50)
+            return
+          }
+          var wrap = document.createElement('div')
+          wrap.className = 'choices'
+          var picked = answers[q.id] || (q.multi ? [] : null)
+          q.options.forEach(function (opt) {
+            var b = document.createElement('button')
+            b.type = 'button'
+            b.className = 'choice'
+            b.textContent = opt
+            var on = q.multi ? picked.indexOf(opt) > -1 : picked === opt
+            b.setAttribute('aria-pressed', on ? 'true' : 'false')
+            b.addEventListener('click', function () {
+              if (!q.multi) {
+                answers[q.id] = opt
+                return show(i + 1)
+              }
+              var list = (answers[q.id] || []).slice()
+              var none = 'None that I know of'
+              if (opt === none) list = list.indexOf(none) > -1 ? [] : [none]
+              else {
+                list = list.filter(function (x) {
+                  return x !== none
+                })
+                var at = list.indexOf(opt)
+                if (at > -1) list.splice(at, 1)
+                else list.push(opt)
+              }
+              answers[q.id] = list
+              show(i)
+            })
+            wrap.appendChild(b)
+          })
+          box.appendChild(wrap)
+          $('next').hidden = !q.multi
+          $('next').disabled = q.multi && !(answers[q.id] || []).length
+        }
+
+        function segment() {
+          var a = answers
+          if (a.role === 'Agency or freelancer' || a.stores === 'Five or more') return 'agency'
+          var doubles = (a.doubles || []).filter(function (x) {
+            return x !== 'None that I know of'
+          })
+          var deep = a.apps === '16 to 30' || a.apps === 'More than 30'
+          var stale = a.reviewed === 'Over a year ago' || a.reviewed === 'Never, as far as I know'
+          if (a.apps === 'Fewer than 8' && !doubles.length) return 'light'
+          if (deep && stale) return 'overdue'
+          if (doubles.length >= 1) return 'overlap'
+          if (
+            ['Planning a redesign or move', 'New in the role', 'A renewal is coming up'].indexOf(
+              a.why,
+            ) > -1
+          )
+            return 'project'
+          if (a.apps === 'Not sure') return 'unsure'
+          return 'overlap'
+        }
+
+        function mirror() {
+          var a = answers
+          var bits = []
+          bits.push(
+            'You look after ' +
+              (a.stores === 'One' ? 'one store' : a.stores.toLowerCase() + ' stores'),
+          )
+          if (a.apps && a.apps !== 'Not sure') bits.push('with ' + a.apps.toLowerCase() + ' apps')
+          var s = bits.join(' ') + '.'
+          var REVIEWED = {
+            'In the last three months': ' Someone went through the list recently.',
+            'Within the last year': ' Someone went through the list in the last year.',
+            'Over a year ago': ' Nobody has gone through the list in over a year.',
+            'Never, as far as I know':
+              ' As far as you know, nobody has ever gone through the list.',
+          }
+          if (a.reviewed) s += REVIEWED[a.reviewed] || ''
+          var d = (a.doubles || []).filter(function (x) {
+            return x !== 'None that I know of'
+          })
+          if (d.length) s += ' You think you have doubles in: ' + d.join(', ').toLowerCase() + '.'
+          return s
+        }
+
+        var COPY = {
+          overdue: {
+            title: 'A cleanup is very likely worth it.',
+            body: 'A long app list that nobody has reviewed in a year is exactly where doubled-up tools hide. Here is what the free check found on your store.',
+          },
+          overlap: {
+            title: 'Worth a look, especially where you suspect doubles.',
+            body: 'Two tools doing one job is the fastest money back. Here is what the free check found on your store.',
+          },
+          project: {
+            title: 'Good timing. Clean up before the big change.',
+            body: 'Every app you cut now is one less thing to move, rebuild, or renew. Here is what the free check found on your store.',
+          },
+          unsure: {
+            title: 'Let us start with what we can see.',
+            body: 'Not knowing how many apps you run is common, and it is a good reason to look. Here is what the free check found. Your full list is in Shopify admin, under Settings, then Apps and sales channels.',
+          },
+          light: {
+            title: 'Honestly, you probably do not need an audit.',
+            body: 'A short app list with no doubles is in good shape. Here is the free check anyway, so you can confirm it. If it agrees, save your money.',
+          },
+          agency: {
+            title: 'You need the version built for multiple stores.',
+            body: 'Looking after several stores is a different job. Here is the free check on the store you entered, and below, the plan built for agencies and operators.',
+          },
+        }
+
+        function offerFor(seg) {
+          var wrap = $('out-offer')
+          wrap.textContent = ''
+          if (seg === 'light') return
+          var store = answers.url ? '?store=' + encodeURIComponent(answers.url) : ''
+          var a = document.createElement('a')
+          a.className = 'btn'
+          if (seg === 'agency') {
+            a.href = 'for-agencies.html'
+            a.textContent = 'See the plan for agencies'
+          } else {
+            a.href = 'reviewed-audit.html' + store
+            a.textContent =
+              seg === 'project' ? 'Get the pre-project audit' : 'Get the reviewed audit'
+          }
+          wrap.appendChild(a)
+        }
+
+        function compare(report) {
+          var said = (answers.doubles || []).filter(function (x) {
+            return CATEGORY_OF[x]
+          })
+          var node = $('compare')
+          if (!said.length || !report || !report.crawl || report.crawl.blocked) return
+          var found = (report.overlaps || []).map(function (o) {
+            return o.category
+          })
+          var lines = said.map(function (x) {
+            var hit = CATEGORY_OF[x].some(function (c) {
+              return found.indexOf(c) > -1
+            })
+            return hit
+              ? 'You said you have more than one tool for ' +
+                  x.toLowerCase() +
+                  ', and the check agrees.'
+              : 'You said you have more than one tool for ' +
+                  x.toLowerCase() +
+                  '. The check could not confirm it from outside, which is exactly what your own app list will settle.'
+          })
+          node.textContent = lines.join(' ')
+          node.hidden = false
+        }
+
+        function finish() {
+          var seg = segment()
+          try {
+            sessionStorage.setItem('scout_quiz', JSON.stringify({ segment: seg, answers: answers }))
+          } catch (e) {
+            /* storage is optional; the intake form still works without it */
+          }
+          $('steps').hidden = true
+          $('outcome').hidden = false
+          $('out-title').textContent = COPY[seg].title
+          $('out-body').textContent = COPY[seg].body
+          $('mirror').textContent = mirror()
+          offerFor(seg)
+          window.FunnelScan.run(answers.url, $('result'), { onResult: compare, noOffer: true })
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+
+        $('start').addEventListener('click', function () {
+          $('intro').hidden = true
+          $('steps').hidden = false
+          show(0)
+        })
+        $('back').addEventListener('click', function () {
+          if (i > 0) show(i - 1)
+        })
+        $('next').addEventListener('click', function () {
+          show(i + 1)
+        })
+      })()
+    </script>
+  </body>
+</html>

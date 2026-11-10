@@ -1137,6 +1137,40 @@ ta('accuracy: with no database it says so and exits clean', async () => {
   dbMod.enabled = true;
 });
 
+// ---------- Conversational funnel pages (docs/FUNNEL-PAGES.md) ----------
+const funnelExample = require('../scripts/build-funnel-example.js');
+const FUNNEL_PAGES = ['audit.html', 'app-bill.html', 'before-you-rebuild.html', 'stack-quiz.html', 'watch.html',
+  'for-agencies.html', 'reviewed-audit.html', 'audit-intake.html', 'audit-thanks.html'];
+const readRoot = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+t('funnel: example result is exactly what the engine produces today', () => {
+  assert.equal(readRoot('assets/funnel-example.js'), funnelExample.render(funnelExample.buildExample()));
+});
+t('funnel: example is a teaser-depth report with an overlap to show', () => {
+  const r = funnelExample.buildExample();
+  assert.equal(r.depth, 'teaser');
+  assert.ok(r.overlaps.length >= 1);
+  assert.ok(r.summary.monthlySavings);
+});
+t('funnel: pages hardcode no dollar figure; money comes only from a scan', () => {
+  FUNNEL_PAGES.forEach((f) => assert.doesNotMatch(readRoot(f), /\$\s?\d/, f));
+});
+t('funnel: pages never name a source count or the retired "15"', () => {
+  FUNNEL_PAGES.forEach((f) => assert.doesNotMatch(readRoot(f), /\b15\b[^.]{0,40}sources?|all 15/i, f));
+});
+t('funnel: audit price and payment link stay unset until the owner sets them', () => {
+  const win = {};
+  const src = readRoot('assets/audit-offer.js').split('(function ()')[0];
+  new Function('window', src)(win);
+  assert.deepEqual(win.AUDIT_OFFER, {price: null, paymentLink: null});
+});
+t('funnel: every page links the scan script or the offer script it relies on', () => {
+  FUNNEL_PAGES.forEach((f) => {
+    const s = readRoot(f);
+    if (/data-scan=/.test(s)) assert.match(s, /assets\/funnel-scan\.js/, f);
+    if (/data-audit-(cta|price)/.test(s)) assert.match(s, /assets\/audit-offer\.js/, f);
+  });
+});
+
 (async () => {
   for (const [name, fn] of asyncTests) {
     try { await fn(); pass++; } catch (e) { fail.push(`${name}: ${e.message}`); }

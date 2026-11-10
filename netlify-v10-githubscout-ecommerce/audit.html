@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Are two of your Shopify apps doing the same job? | GitHub Scout</title>
+    <meta
+      name="description"
+      content="Paste your store address. In about a minute, see the apps running on your Shopify store and where you may be paying twice."
+    />
+    <link rel="stylesheet" href="assets/funnel.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
+      <nav>
+        <a href="app-bill.html">Why this matters</a>
+        <a href="stack-quiz.html">Take the 2-minute quiz</a>
+        <a class="keep" href="reviewed-audit.html">Reviewed audit</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <div class="hero center">
+          <span class="kicker">Free store check</span>
+          <h1>Two apps doing one job?<br />Find out which to cut.</h1>
+          <p class="lede">
+            Paste your store address. In about a minute you will see the apps running on your
+            Shopify store, and where you may be paying twice for the same thing.
+          </p>
+          <form class="scanbox" data-scan="result" novalidate>
+            <input
+              type="text"
+              name="store_url"
+              placeholder="yourstore.com"
+              aria-label="Your store address"
+              autocomplete="url"
+              inputmode="url"
+            />
+            <button class="btn" type="submit">Check my store</button>
+          </form>
+          <p class="fineprint">
+            Free. No sign-up. No app to install. We only look at what your customers can already
+            see.
+          </p>
+          <div class="links">
+            <a href="#result" data-show-example="result">See an example result</a>
+            <a href="#how">How it works</a>
+          </div>
+          <div id="result" class="result" hidden aria-live="polite"></div>
+        </div>
+      </div>
+
+      <section class="tint" id="how">
+        <div class="wrap">
+          <h2>How it works</h2>
+          <div class="grid">
+            <div class="card">
+              <span class="num">1</span>
+              <h3>You paste your address</h3>
+              <p>
+                No login, no install, no access to your admin. We look at your store the way a
+                shopper's browser does.
+              </p>
+            </div>
+            <div class="card">
+              <span class="num">2</span>
+              <h3>We spot the apps</h3>
+              <p>
+                Reviews, popups, email, upsells, chat. Most apps leave a small, visible footprint on
+                your pages. We read it.
+              </p>
+            </div>
+            <div class="card">
+              <span class="num">3</span>
+              <h3>You see the overlap</h3>
+              <p>
+                If two tools are doing one job, we say so in plain words. That is usually the
+                fastest money back.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="narrow">
+          <h2>Being honest about what a free check can see</h2>
+          <div class="compare">
+            <div class="card yes">
+              <h3>What we can see</h3>
+              <ul class="checks">
+                <li>Apps that show up on your storefront</li>
+                <li>Two tools doing the same job</li>
+                <li>Rough list prices for the paid ones</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>What we cannot</h3>
+              <ul class="checks no">
+                <li>Apps that only run inside your admin</li>
+                <li>What you actually pay each month</li>
+                <li>Whether a tool is earning its keep</li>
+              </ul>
+            </div>
+          </div>
+          <p style="margin-top: 20px">
+            That second column is why the <a href="reviewed-audit.html">reviewed audit</a> exists.
+            You paste your real app list from Shopify admin, a person reads both, and you get a
+            short plan: what to cut, what to keep, and what to do first.
+          </p>
+        </div>
+      </section>
+
+      <section class="tint">
+        <div class="narrow">
+          <h2>Questions people ask</h2>
+          <details>
+            <summary>Can't I just look at my own app list?</summary>
+            <p>
+              You can, and you should. The list tells you what is installed. It does not tell you
+              which ones overlap, which to cut first, or what to replace them with. That judgment is
+              the part we do.
+            </p>
+          </details>
+          <details>
+            <summary>Will you try to sell me a different app?</summary>
+            <p>
+              No. We do not sell apps and we do not take a cut from the ones we mention. Our only
+              product is the advice.
+            </p>
+          </details>
+          <details>
+            <summary>Are those prices what I pay?</summary>
+            <p>
+              No. They are public list prices for each app, so treat them as a rough guide. Your
+              real bill can be higher or lower depending on your plan.
+            </p>
+          </details>
+          <details>
+            <summary>What if my store blocks the check?</summary>
+            <p>
+              Some bigger stores do. That is fine. The reviewed audit works from your own app list,
+              so it does not need the check to get through.
+            </p>
+          </details>
+          <details>
+            <summary>Do I need a Shopify store?</summary>
+            <p>Yes, for now. GitHub Scout only checks Shopify stores.</p>
+          </details>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap hero center" style="padding: 20px 0">
+          <h2>See what is running on your store</h2>
+          <form class="scanbox" data-scan="result2" novalidate>
+            <input
+              type="text"
+              name="store_url"
+              placeholder="yourstore.com"
+              aria-label="Your store address"
+              autocomplete="url"
+              inputmode="url"
+            />
+            <button class="btn" type="submit">Check my store</button>
+          </form>
+          <div id="result2" class="result" hidden aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a href="methodology.html">How the check works</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="support.html">Support</a>
+    </footer>
+
+    <script src="assets/funnel-example.js"></script>
+    <script src="assets/funnel-scan.js"></script>
+  </body>
+</html>

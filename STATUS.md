@@ -63,6 +63,7 @@ worth doing before a deploy proves the assumptions.
 | Stream   | Ledger               | Current phase                           | Session note                     |
 | -------- | -------------------- | --------------------------------------- | -------------------------------- |
 | platform | `status/platform.md` | M0/M2/M3 done; M1, M4, M5 owner-blocked | Created 2026-08-20, no owner yet |
+| growth   | `status/growth.md`   | Funnel pages built on a branch          | Created 2026-11-09               |
 
 Single stream until there is a reason for more. Blocker prefix `PLT-`. Add a row here when a
 second stream is opened; its ledger is created in the same PR.
@@ -88,3 +89,4 @@ second stream is opened; its ledger is created in the same PR.
 | [PLT-4](status/platform.md) | platform | Purge scope (`ads/` 57 MB, demo media, v9 tree, repo visibility)    | waiting-on-user |
 | [PLT-5](status/platform.md) | platform | robots.txt Disallow vs the `/cart` live source needs a decision     | waiting-on-user |
 | [PLT-6](status/platform.md) | platform | Live sites + Payment Links are armed; our gate only covers the repo | waiting-on-user |
+| [GRO-1](status/growth.md)   | growth   | No audit price or Payment Link; audit requestable, not buyable      | waiting-on-user |

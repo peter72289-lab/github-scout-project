@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Got it | GitHub Scout</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="assets/funnel.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
+    </header>
+
+    <main>
+      <div class="narrow">
+        <div class="hero">
+          <span class="kicker">Received</span>
+          <h1 id="title">Got it. Here is what happens next.</h1>
+          <div id="audit-steps">
+            <ul class="checks">
+              <li>We read what you sent and run the store check.</li>
+              <li>We email you the price and the date you will have your plan.</li>
+              <li>You pay only once you have agreed to both. Nothing has been charged.</li>
+            </ul>
+            <p class="fineprint" style="margin-top: 18px">
+              Remembered another app? Just reply to our email with it. Want to see what the check
+              sees in the meantime?
+              <a href="audit.html">Run the free check</a>.
+            </p>
+          </div>
+          <div id="agency-steps" hidden>
+            <p class="lede">
+              You are on the early-access list. We will email you when the agency plan opens. No
+              card needed until then.
+            </p>
+            <a class="btn ghost" href="for-agencies.html">Back to the agency page</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+    </footer>
+
+    <script>
+      if (new URLSearchParams(location.search).get('for') === 'agency') {
+        document.getElementById('title').textContent = 'Thanks. You are on the list.'
+        document.getElementById('audit-steps').hidden = true
+        document.getElementById('agency-steps').hidden = false
+      }
+    </script>
+  </body>
+</html>

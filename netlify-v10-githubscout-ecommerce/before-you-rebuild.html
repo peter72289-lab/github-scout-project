@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Before you rebuild, renew, or hire, check what is running | GitHub Scout</title>
+    <meta
+      name="description"
+      content="The cheapest time to clean up your Shopify apps is right before you pay someone to build on top of them."
+    />
+    <link rel="stylesheet" href="assets/funnel.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
+      <nav>
+        <a class="keep" href="reviewed-audit.html">Reviewed audit</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="narrow">
+        <div class="hero">
+          <span class="kicker">Got a big decision coming up?</span>
+          <h1>Before you rebuild the store, find out what is running on it.</h1>
+          <p class="lede">
+            The cheapest moment to clean up your apps is right before you pay someone to build on
+            top of them. What are you about to do?
+          </p>
+          <div class="choices" id="triggers">
+            <button class="choice" type="button" data-trigger="rebuild">
+              Redesign or rebuild the store
+            </button>
+            <button class="choice" type="button" data-trigger="agency">
+              Hire an agency or freelancer
+            </button>
+            <button class="choice" type="button" data-trigger="renew">
+              Renew a big app contract
+            </button>
+            <button class="choice" type="button" data-trigger="inherit">
+              Take over a store I did not set up
+            </button>
+          </div>
+          <div id="trigger-copy" hidden style="margin-top: 22px">
+            <div class="mirror" id="trigger-line"></div>
+            <form class="scanbox" data-scan="result" novalidate>
+              <input
+                type="text"
+                name="store_url"
+                placeholder="yourstore.com"
+                aria-label="Your store address"
+                autocomplete="url"
+                inputmode="url"
+              />
+              <button class="btn" type="submit">Check my store free</button>
+            </form>
+            <p class="fineprint">No sign-up, no install. About a minute.</p>
+          </div>
+          <div id="result" class="result" hidden aria-live="polite"></div>
+        </div>
+      </div>
+
+      <section class="tint">
+        <div class="wrap">
+          <h2>Why now is the right time</h2>
+          <div class="grid">
+            <div class="card">
+              <h3>Rebuilding or redesigning</h3>
+              <p>
+                Every app you keep has to be set up again on the new theme. Every one you cut first
+                is one less thing to pay a developer to move.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Hiring an agency</h3>
+              <p>
+                Walk into the first call knowing what you run. You will get a sharper quote, and you
+                will spot it if anyone suggests adding a tool you already have.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Renewing a contract</h3>
+              <p>
+                Annual renewals lock you in. Check whether another app you already pay for covers
+                the same job before you sign for another year.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Taking over a store</h3>
+              <p>
+                You inherited someone else's choices. Find out what is there and why before you own
+                the bill.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="narrow letter">
+          <h2>What you hand to your team</h2>
+          <p>
+            The reviewed audit gives you a short, printable page you can forward to your developer,
+            agency, or business partner. It lists the apps on your store, where two overlap, what we
+            would cut and keep, and what to check before switching anything off.
+          </p>
+          <p>
+            We also ask about the tools that run behind the scenes and never show on your
+            storefront: shipping, returns, accounting, inventory, help desk. You tell us what you
+            use, and we flag anything that looks doubled up or that your new setup might replace.
+          </p>
+          <div class="pull">
+            We do not sell apps, we do not build stores, and we do not take referral fees. The
+            advice has no angle.
+          </div>
+          <h2>A fair question</h2>
+          <p>
+            <b>"Won't my agency do this?"</b> Some will. Ask whether they check your existing apps
+            before they quote, and whether they resell or partner with any of the apps they
+            recommend. If the answers are yes and no, you may not need us.
+          </p>
+        </div>
+      </section>
+
+      <section class="tint">
+        <div class="offer">
+          <h2>The pre-project audit</h2>
+          <p class="price" data-audit-price>One time, no subscription.</p>
+          <ul class="checks">
+            <li>Free store check, plus your real app list from Shopify admin</li>
+            <li>Questions about the tools behind the scenes</li>
+            <li>A one-page plan you can forward: cut, keep, replace, in order</li>
+            <li>One round of follow-up questions by email</li>
+          </ul>
+          <a class="btn" href="audit-intake.html" data-audit-cta>Request my audit</a>
+          <p class="fineprint" style="margin-top: 12px">
+            If the free check finds nothing worth fixing, we will tell you not to buy this.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a href="methodology.html">How the check works</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="support.html">Support</a>
+    </footer>
+
+    <script src="assets/funnel-example.js"></script>
+    <script src="assets/funnel-scan.js"></script>
+    <script src="assets/audit-offer.js"></script>
+    <script>
+      ;(function () {
+        var lines = {
+          rebuild:
+            'Good call. Let us see what is on the store now, so you only pay to rebuild what you are keeping.',
+          agency:
+            'Good call. Let us see what is running, so you walk into that first call knowing your own setup.',
+          renew:
+            'Good call. Let us see whether anything else on your store already covers what that contract does.',
+          inherit:
+            'Good call. Let us see what the last person left you, before it becomes your bill.',
+        }
+        var buttons = document.querySelectorAll('[data-trigger]')
+        buttons.forEach(function (b) {
+          b.addEventListener('click', function () {
+            buttons.forEach(function (x) {
+              x.setAttribute('aria-pressed', x === b ? 'true' : 'false')
+            })
+            document.getElementById('trigger-line').textContent =
+              lines[b.getAttribute('data-trigger')]
+            document.getElementById('trigger-copy').hidden = false
+            document.querySelector('#trigger-copy input').focus()
+          })
+        })
+      })()
+    </script>
+  </body>
+</html>
