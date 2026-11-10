@@ -2,7 +2,8 @@ import os, subprocess, sys
 from scenes import SCENES, frame, FPS, W, H
 for idx in map(int, sys.argv[1:]):
     name, dur, _, _ = SCENES[idx]
-    out = f'/home/claude/video/parts/{name}.mp4'
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'parts', f'{name}.mp4')
+    os.makedirs(os.path.dirname(out), exist_ok=True)
     tmp = out.replace('.mp4', '.tmp.mp4')
     p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'bgra', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
                           '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', str(FPS), tmp], stdin=subprocess.PIPE)
