@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 400" font-family="Inter, system-ui, sans-serif">
+  <defs><filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity=".3"/></filter></defs>
+  <g filter="url(#sh)">
+    <g transform="translate(30 40)"><rect width="200" height="140" rx="14" fill="#1c2c35"/><rect x="16" y="16" width="90" height="10" rx="5" fill="#d7ff6b"/><rect x="16" y="40" width="168" height="8" rx="4" fill="#33464f"/><rect x="16" y="58" width="130" height="8" rx="4" fill="#33464f"/><rect x="16" y="96" width="64" height="24" rx="12" fill="#16b386"/><text x="26" y="112" font-size="11" font-weight="900" fill="#fff">6 apps</text></g>
+    <g transform="translate(270 40)"><rect width="200" height="140" rx="14" fill="#1c2c35"/><rect x="16" y="16" width="70" height="10" rx="5" fill="#d7ff6b"/><rect x="16" y="40" width="168" height="8" rx="4" fill="#33464f"/><rect x="16" y="58" width="110" height="8" rx="4" fill="#33464f"/><rect x="16" y="96" width="92" height="24" rx="12" fill="#ff6f61"/><text x="26" y="112" font-size="11" font-weight="900" fill="#fff">2 overlaps</text></g>
+    <g transform="translate(30 210)"><rect width="200" height="140" rx="14" fill="#1c2c35"/><rect x="16" y="16" width="100" height="10" rx="5" fill="#d7ff6b"/><rect x="16" y="40" width="168" height="8" rx="4" fill="#33464f"/><rect x="16" y="58" width="140" height="8" rx="4" fill="#33464f"/><rect x="16" y="96" width="70" height="24" rx="12" fill="#16b386"/><text x="26" y="112" font-size="11" font-weight="900" fill="#fff">9 apps</text></g>
+    <g transform="translate(270 210)"><rect width="200" height="140" rx="14" fill="#1c2c35"/><rect x="16" y="16" width="80" height="10" rx="5" fill="#d7ff6b"/><rect x="16" y="40" width="168" height="8" rx="4" fill="#33464f"/><rect x="16" y="58" width="120" height="8" rx="4" fill="#33464f"/><rect x="16" y="96" width="78" height="24" rx="12" fill="#ffca3a"/><text x="26" y="112" font-size="11" font-weight="900" fill="#101820">Blocked</text></g>
+  </g>
+  <g transform="translate(330 150)">
+    <circle cx="40" cy="40" r="44" fill="#d7ff6b" opacity=".18"/>
+    <circle cx="40" cy="40" r="30" fill="none" stroke="#d7ff6b" stroke-width="8"/>
+    <path d="M62 62l30 30" stroke="#d7ff6b" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>

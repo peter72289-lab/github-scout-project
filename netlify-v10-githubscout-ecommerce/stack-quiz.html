@@ -8,56 +8,112 @@
       name="description"
       content="Seven quick questions about your Shopify apps, then a free check of your store. Find out if a cleanup is worth your time."
     />
+
     <link rel="stylesheet" href="assets/funnel.css" />
   </head>
   <body>
-    <header class="topbar">
-      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
-    </header>
-
+    <nav class="nav">
+      <div class="nav-in">
+        <a class="brand" href="audit.html"><span class="brand-mark">GS</span>GitHub Scout</a>
+        <div class="nav-links">
+          <a href="app-bill.html">Why it matters</a>
+          <a href="stack-quiz.html">2-minute quiz</a>
+          <a href="for-agencies.html">For agencies</a>
+          <a class="btn small dark" href="reviewed-audit.html">Reviewed audit</a>
+        </div>
+      </div>
+    </nav>
     <main>
-      <div class="wrap">
-        <div class="hero" style="padding-top: 26px">
-          <div class="quiz" id="quiz">
-            <div id="intro">
-              <span class="kicker">2-minute quiz</span>
-              <h1>Is your app setup worth a cleanup?</h1>
-              <p class="lede">
-                Seven quick questions, then a free check of your store. If a cleanup is not worth
-                your time, we will tell you that.
-              </p>
-              <button class="btn" type="button" id="start">Start the quiz</button>
-            </div>
-
-            <div id="steps" hidden>
-              <div class="progress" aria-hidden="true"><i id="bar"></i></div>
-              <div class="q" id="q"></div>
-              <div class="quiz-nav">
-                <button class="btn ghost" type="button" id="back">Back</button>
-                <button class="btn" type="button" id="next" hidden>Next</button>
+      <header class="hero">
+        <div class="wrap">
+          <div id="quiz">
+            <div id="intro" class="hero-grid">
+              <div>
+                <span class="eyebrow"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-list"></use>
+                  </svg>
+                  2-minute quiz</span
+                >
+                <h1>Is your app setup <span class="accent">worth a cleanup?</span></h1>
+                <p class="lede">
+                  Seven quick questions, then a free check of your store. If a cleanup is not worth
+                  your time, we will tell you that.
+                </p>
+                <div class="actions">
+                  <button class="btn" type="button" id="start">
+                    Start the quiz
+                    <svg class="ic" aria-hidden="true">
+                      <use href="assets/funnel-icons.svg#i-arrow"></use>
+                    </svg>
+                  </button>
+                </div>
+                <div class="stats">
+                  <div class="stat"><b>7</b><span>Questions</span></div>
+                  <div class="stat"><b>2 min</b><span>To finish</span></div>
+                  <div class="stat"><b>Free</b><span>Store check</span></div>
+                </div>
+              </div>
+              <div class="hero-art">
+                <img
+                  src="assets/funnel-art/stack.svg"
+                  alt="A growing stack of apps"
+                  width="480"
+                  height="400"
+                />
               </div>
             </div>
 
-            <div id="outcome" hidden>
-              <span class="kicker">Your result</span>
-              <h1 id="out-title"></h1>
+            <div id="steps" class="quiz quiz-card" hidden>
+              <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+              <div class="qcount" id="qcount"></div>
+              <div class="q" id="q"></div>
+              <div class="quiz-nav">
+                <button class="btn ghost small" type="button" id="back">Back</button>
+                <button class="btn small" type="button" id="next" hidden>
+                  Next
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-arrow"></use>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div id="outcome" class="quiz" hidden>
+              <span class="eyebrow"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-sparkle"></use>
+                </svg>
+                Your result</span
+              >
+              <h1 id="out-title" style="font-size: clamp(34px, 5vw, 58px)"></h1>
+              <div class="meter">
+                <div class="meter-top">Cleanup priority <span id="meter-word"></span></div>
+                <div class="meter-track"><i id="meter-dot" style="left: 4%"></i></div>
+                <small
+                  >Based only on your answers, not on your store. The check below shows what we can
+                  actually see.</small
+                >
+              </div>
               <div class="mirror" id="mirror"></div>
               <p id="out-body"></p>
               <div id="result" class="result" aria-live="polite" style="margin: 0 0 18px"></div>
               <p id="compare" class="fineprint" hidden></p>
-              <div id="out-offer"></div>
+              <div id="out-offer" class="actions"></div>
             </div>
           </div>
         </div>
-      </div>
+      </header>
     </main>
-
-    <footer>
-      <a href="methodology.html">How the check works</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
+    <footer class="foot">
+      <div class="foot-in">
+        <span>GitHub Scout. We do not sell apps or take commissions on them.</span>
+        <span
+          ><a href="methodology.html">How the check works</a><a href="privacy.html">Privacy</a
+          ><a href="terms.html">Terms</a><a href="support.html">Support</a></span
+        >
+      </div>
     </footer>
-
     <script src="assets/funnel-example.js"></script>
     <script src="assets/funnel-scan.js"></script>
     <script>
@@ -151,6 +207,7 @@
           i = n
           var q = QUESTIONS[i]
           $('bar').style.width = Math.round((i / QUESTIONS.length) * 100) + '%'
+          $('qcount').textContent = 'Question ' + (i + 1) + ' of ' + QUESTIONS.length
           $('back').style.visibility = i === 0 ? 'hidden' : 'visible'
           var box = $('q')
           box.textContent = ''
@@ -190,7 +247,11 @@
             var b = document.createElement('button')
             b.type = 'button'
             b.className = 'choice'
-            b.textContent = opt
+            b.innerHTML =
+              '<svg class="ic" aria-hidden="true"><use href="assets/funnel-icons.svg#' +
+              (q.multi ? 'i-check' : 'i-arrow') +
+              '"></use></svg>'
+            b.appendChild(document.createTextNode(opt))
             var on = q.multi ? picked.indexOf(opt) > -1 : picked === opt
             b.setAttribute('aria-pressed', on ? 'true' : 'false')
             b.addEventListener('click', function () {
@@ -334,6 +395,33 @@
           node.hidden = false
         }
 
+        // Cleanup priority from the visitor's own answers. It is a reading of
+        // what they told us, not a measurement of their store, and the page says so.
+        function priority() {
+          var a = answers
+          var p = 0
+          p +=
+            {
+              'Fewer than 8': 0,
+              '8 to 15': 15,
+              '16 to 30': 30,
+              'More than 30': 40,
+              'Not sure': 20,
+            }[a.apps] || 0
+          p +=
+            {
+              'In the last three months': 0,
+              'Within the last year': 10,
+              'Over a year ago': 25,
+              'Never, as far as I know': 30,
+            }[a.reviewed] || 0
+          var d = (a.doubles || []).filter(function (x) {
+            return x !== 'None that I know of'
+          }).length
+          p += Math.min(d, 3) * 10
+          return Math.max(4, Math.min(96, p))
+        }
+
         function finish() {
           var seg = segment()
           try {
@@ -346,6 +434,9 @@
           $('out-title').textContent = COPY[seg].title
           $('out-body').textContent = COPY[seg].body
           $('mirror').textContent = mirror()
+          var pr = priority()
+          $('meter-dot').style.left = pr + '%'
+          $('meter-word').textContent = pr >= 60 ? 'High' : pr >= 30 ? 'Medium' : 'Low'
           offerFor(seg)
           window.FunnelScan.run(answers.url, $('result'), { onResult: compare, noOffer: true })
           window.scrollTo({ top: 0, behavior: 'smooth' })

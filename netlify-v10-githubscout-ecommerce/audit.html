@@ -8,154 +8,460 @@
       name="description"
       content="Paste your store address. In about a minute, see the apps running on your Shopify store and where you may be paying twice."
     />
+
     <link rel="stylesheet" href="assets/funnel.css" />
   </head>
   <body>
-    <header class="topbar">
-      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
-      <nav>
-        <a href="app-bill.html">Why this matters</a>
-        <a href="stack-quiz.html">Take the 2-minute quiz</a>
-        <a class="keep" href="reviewed-audit.html">Reviewed audit</a>
-      </nav>
-    </header>
-
-    <main>
-      <div class="wrap">
-        <div class="hero center">
-          <span class="kicker">Free store check</span>
-          <h1>Two apps doing one job?<br />Find out which to cut.</h1>
-          <p class="lede">
-            Paste your store address. In about a minute you will see the apps running on your
-            Shopify store, and where you may be paying twice for the same thing.
-          </p>
-          <form class="scanbox" data-scan="result" novalidate>
-            <input
-              type="text"
-              name="store_url"
-              placeholder="yourstore.com"
-              aria-label="Your store address"
-              autocomplete="url"
-              inputmode="url"
-            />
-            <button class="btn" type="submit">Check my store</button>
-          </form>
-          <p class="fineprint">
-            Free. No sign-up. No app to install. We only look at what your customers can already
-            see.
-          </p>
-          <div class="links">
-            <a href="#result" data-show-example="result">See an example result</a>
-            <a href="#how">How it works</a>
-          </div>
-          <div id="result" class="result" hidden aria-live="polite"></div>
+    <nav class="nav">
+      <div class="nav-in">
+        <a class="brand" href="audit.html"><span class="brand-mark">GS</span>GitHub Scout</a>
+        <div class="nav-links">
+          <a href="app-bill.html">Why it matters</a>
+          <a href="stack-quiz.html">2-minute quiz</a>
+          <a href="for-agencies.html">For agencies</a>
+          <a class="btn small dark" href="reviewed-audit.html">Reviewed audit</a>
         </div>
       </div>
+    </nav>
+    <main>
+      <header class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <span class="eyebrow"
+              ><svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-store"></use>
+              </svg>
+              Free store check for Shopify</span
+            >
+            <h1>Two apps doing one job? <span class="accent">Find out which to cut.</span></h1>
+            <p class="lede">
+              Paste your store address. In about a minute you will see the apps running on your
+              store, and where you may be paying twice for the same thing.
+            </p>
+            <form class="scanbox" data-scan="result" novalidate>
+              <svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-search"></use>
+              </svg>
+              <input
+                type="text"
+                name="store_url"
+                placeholder="yourstore.com"
+                aria-label="Your store address"
+                autocomplete="url"
+                inputmode="url"
+              />
+              <button class="btn" type="submit">Check my store</button>
+            </form>
+            <div class="links">
+              <a href="#result" data-show-example="result"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-eye"></use>
+                </svg>
+                See an example result</a
+              >
+              <a href="#how"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-arrow"></use>
+                </svg>
+                How it works</a
+              >
+            </div>
+            <div class="pills">
+              <span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use>
+                </svg>
+                Free</span
+              ><span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use>
+                </svg>
+                No sign-up</span
+              ><span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use>
+                </svg>
+                Nothing to install</span
+              ><span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use>
+                </svg>
+                We do not sell apps</span
+              >
+            </div>
+            <div id="result" class="result" hidden aria-live="polite"></div>
+          </div>
+          <div class="hero-art">
+            <img
+              src="assets/funnel-art/storefront.svg"
+              alt="A storefront with app badges, two of them flagged as doing the same job"
+              width="560"
+              height="420"
+            />
+            <span class="float-tag" style="left: 2%; bottom: 4%"
+              ><svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-eye"></use>
+              </svg>
+              We look at what shoppers see</span
+            >
+            <span class="float-tag" style="right: 0; top: 0"
+              ><svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-lock"></use>
+              </svg>
+              No admin access needed</span
+            >
+          </div>
+        </div>
+      </header>
 
-      <section class="tint" id="how">
+      <section class="sec dark">
         <div class="wrap">
-          <h2>How it works</h2>
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">Where the money goes</span>
+              <h2>
+                Most stores do not need more apps. They need
+                <span class="accent">fewer, on purpose.</span>
+              </h2>
+            </div>
+            <p>
+              Apps get installed by whoever needs them on a busy day. Nobody's job is to remove
+              them.
+            </p>
+          </div>
           <div class="grid">
             <div class="card">
-              <span class="num">1</span>
-              <h3>You paste your address</h3>
+              <span class="ic-badge lime"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-copy"></use></svg
+              ></span>
+              <span class="tag">Leak 01</span>
+              <h3>Two tools, one job</h3>
               <p>
-                No login, no install, no access to your admin. We look at your store the way a
-                shopper's browser does.
+                A second reviews app for photo reviews. A popup tool next to your email platform's
+                own forms.
               </p>
             </div>
             <div class="card">
-              <span class="num">2</span>
+              <span class="ic-badge lime"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-clock"></use></svg
+              ></span>
+              <span class="tag">Leak 02</span>
+              <h3>Trials that never ended</h3>
+              <p>
+                Someone tried a loyalty app and moved on. It is still installed, and maybe still
+                billing.
+              </p>
+            </div>
+            <div class="card">
+              <span class="ic-badge lime"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-popup"></use></svg
+              ></span>
+              <span class="tag">Leak 03</span>
+              <h3>Leftovers from old projects</h3>
+              <p>The agency's upsell tool. The freelancer's tracking fix. Each made sense once.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="how">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">How the free check works</span>
+              <h2>From your address to answers in three steps.</h2>
+            </div>
+            <p>
+              No login, no install, nothing to connect. Just the address you already give your
+              customers.
+            </p>
+          </div>
+          <div class="grid">
+            <div class="card">
+              <span class="step-no">1</span>
+              <span class="ic-badge"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-store"></use></svg
+              ></span>
+              <h3>Paste your address</h3>
+              <p>We look at your store the way a shopper's browser does.</p>
+            </div>
+            <div class="card">
+              <span class="step-no">2</span>
+              <span class="ic-badge"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-search"></use></svg
+              ></span>
               <h3>We spot the apps</h3>
-              <p>
-                Reviews, popups, email, upsells, chat. Most apps leave a small, visible footprint on
-                your pages. We read it.
-              </p>
+              <p>Reviews, popups, email, upsells, chat. Most leave a small, visible footprint.</p>
             </div>
             <div class="card">
-              <span class="num">3</span>
+              <span class="step-no">3</span>
+              <span class="ic-badge coral"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-scissors"></use></svg
+              ></span>
               <h3>You see the overlap</h3>
-              <p>
-                If two tools are doing one job, we say so in plain words. That is usually the
-                fastest money back.
+              <p>If two tools are doing one job, we say so in plain words.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec mist">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-sliders"></use>
+                </svg>
+                Your app bill, your math</span
+              >
+              <h2>What is one unneeded app worth to you?</h2>
+            </div>
+            <p>
+              Put in your own numbers. We fill in nothing and promise nothing. It is just your bill,
+              laid out over a year.
+            </p>
+          </div>
+          <div class="calc" data-calc>
+            <div class="calc-rows">
+              <div class="calc-row">
+                <label for="calc-bill"
+                  >Your monthly app bill <span data-v="bill">Not set</span></label
+                >
+                <input
+                  id="calc-bill"
+                  type="range"
+                  min="0"
+                  max="5000"
+                  step="25"
+                  value="0"
+                  data-in="bill"
+                />
+                <small>Shopify admin, Settings, Billing shows your app charges.</small>
+              </div>
+              <div class="calc-row">
+                <label for="calc-apps">Apps installed <span data-v="apps">Not set</span></label>
+                <input
+                  id="calc-apps"
+                  type="range"
+                  min="0"
+                  max="60"
+                  step="1"
+                  value="0"
+                  data-in="apps"
+                />
+                <small>Settings, then Apps and sales channels. A guess is fine.</small>
+              </div>
+              <div class="calc-row">
+                <label for="calc-cut"
+                  >Apps you suspect you could cut
+                  <span data-v="cut">Set your app count first</span></label
+                >
+                <input
+                  id="calc-cut"
+                  type="range"
+                  min="0"
+                  max="60"
+                  step="1"
+                  value="0"
+                  data-in="cut"
+                />
+                <small>Doubles, old trials, tools from a past sale.</small>
+              </div>
+            </div>
+            <div class="calc-out">
+              <span class="eyebrow">Your yearly app bill</span>
+              <div class="calc-big" data-o="year">—</div>
+              <div class="calc-bar"><i data-o="bar"></i></div>
+              <div class="calc-legend">
+                <span>Share you would cut</span><span>Your inputs only</span>
+              </div>
+              <ul class="calc-lines">
+                <li><span>Average per app</span><b data-o="avg">—</b></li>
+                <li><span>Apps you would cut</span><b data-o="cutyear">—</b></li>
+                <li><span>Left after the cut</span><b data-o="left">—</b></li>
+              </ul>
+              <p data-o="msg">
+                Drag the sliders to match your store. Nothing is filled in for you.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section>
-        <div class="narrow">
-          <h2>Being honest about what a free check can see</h2>
-          <div class="compare">
-            <div class="card yes">
-              <h3>What we can see</h3>
+      <section class="sec">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">Straight talk</span>
+              <h2>What a free check can and cannot see.</h2>
+            </div>
+            <p>We would rather tell you the limits up front than have you find them later.</p>
+          </div>
+          <div class="vs">
+            <div class="card good">
+              <header>
+                <span class="eyebrow">We can see</span>
+                <h3>What shows on your storefront</h3>
+              </header>
               <ul class="checks">
-                <li>Apps that show up on your storefront</li>
-                <li>Two tools doing the same job</li>
-                <li>Rough list prices for the paid ones</li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  Apps that load on your pages
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  Two tools doing the same job
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  Public list prices for the paid ones
+                </li>
               </ul>
             </div>
             <div class="card">
-              <h3>What we cannot</h3>
+              <header>
+                <span class="eyebrow">We cannot see</span>
+                <h3>What happens behind the scenes</h3>
+              </header>
               <ul class="checks no">
-                <li>Apps that only run inside your admin</li>
-                <li>What you actually pay each month</li>
-                <li>Whether a tool is earning its keep</li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-eye-off"></use>
+                  </svg>
+                  Apps that only run inside your admin
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-eye-off"></use>
+                  </svg>
+                  What you actually pay each month
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-eye-off"></use>
+                  </svg>
+                  Whether a tool is earning its keep
+                </li>
               </ul>
             </div>
           </div>
-          <p style="margin-top: 20px">
-            That second column is why the <a href="reviewed-audit.html">reviewed audit</a> exists.
-            You paste your real app list from Shopify admin, a person reads both, and you get a
-            short plan: what to cut, what to keep, and what to do first.
-          </p>
         </div>
       </section>
 
-      <section class="tint">
-        <div class="narrow">
-          <h2>Questions people ask</h2>
-          <details>
-            <summary>Can't I just look at my own app list?</summary>
+      <section class="sec mist">
+        <div class="wrap split">
+          <div class="art-frame">
+            <img
+              src="assets/funnel-art/plan.svg"
+              alt="A one-page plan with cut, keep, swap and test labels"
+              width="480"
+              height="400"
+            />
+          </div>
+          <div>
+            <span class="eyebrow">When you want the whole picture</span>
+            <h2>A person reads your real app list and hands you a plan.</h2>
             <p>
-              You can, and you should. The list tells you what is installed. It does not tell you
-              which ones overlap, which to cut first, or what to replace them with. That judgment is
-              the part we do.
+              You paste the list from Shopify admin. We line it up against the check and send back
+              one page: what to cut, what to keep, and what to do first.
             </p>
-          </details>
-          <details>
-            <summary>Will you try to sell me a different app?</summary>
-            <p>
-              No. We do not sell apps and we do not take a cut from the ones we mention. Our only
-              product is the advice.
-            </p>
-          </details>
-          <details>
-            <summary>Are those prices what I pay?</summary>
-            <p>
-              No. They are public list prices for each app, so treat them as a rough guide. Your
-              real bill can be higher or lower depending on your plan.
-            </p>
-          </details>
-          <details>
-            <summary>What if my store blocks the check?</summary>
-            <p>
-              Some bigger stores do. That is fine. The reviewed audit works from your own app list,
-              so it does not need the check to get through.
-            </p>
-          </details>
-          <details>
-            <summary>Do I need a Shopify store?</summary>
-            <p>Yes, for now. GitHub Scout only checks Shopify stores.</p>
-          </details>
+            <ul class="checks" style="margin-top: 20px">
+              <li>
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use>
+                </svg>
+                Every overlap explained, app by app
+              </li>
+              <li>
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use>
+                </svg>
+                Your real costs, wherever you share them
+              </li>
+              <li>
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use>
+                </svg>
+                One payment, no subscription
+              </li>
+            </ul>
+            <div class="actions" style="margin-top: 22px">
+              <a class="btn dark" href="reviewed-audit.html"
+                >See the reviewed audit
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-arrow"></use></svg
+              ></a>
+              <a class="btn ghost" href="stack-quiz.html">Not sure? Take the quiz</a>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section>
-        <div class="wrap hero center" style="padding: 20px 0">
-          <h2>See what is running on your store</h2>
+      <section class="sec">
+        <div class="wrap faq">
+          <div>
+            <span class="eyebrow">Questions</span>
+            <h2>The things people ask first.</h2>
+          </div>
+          <div>
+            <details>
+              <summary>Can't I just look at my own app list?</summary>
+              <p>
+                You can, and you should. The list tells you what is installed. It does not tell you
+                which ones overlap, which to cut first, or what to replace them with.
+              </p>
+            </details>
+            <details>
+              <summary>Will you try to sell me a different app?</summary>
+              <p>
+                No. We do not sell apps and we do not take a cut from the ones we mention. Our only
+                product is the advice.
+              </p>
+            </details>
+            <details>
+              <summary>Are those prices what I pay?</summary>
+              <p>
+                No. They are public list prices, so treat them as a rough guide. Your real bill
+                depends on your plan.
+              </p>
+            </details>
+            <details>
+              <summary>What if my store blocks the check?</summary>
+              <p>
+                Some bigger stores do. The reviewed audit works from your own app list, so it does
+                not need the check to get through.
+              </p>
+            </details>
+            <details>
+              <summary>Do I need a Shopify store?</summary>
+              <p>Yes, for now. GitHub Scout only checks Shopify stores.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec dark cta-band">
+        <div class="wrap center">
+          <span class="eyebrow">Start free</span>
+          <h2>See what is running on <span class="accent">your</span> store.</h2>
+          <p>About a minute. No sign-up. Nothing to install.</p>
           <form class="scanbox" data-scan="result2" novalidate>
+            <svg class="ic" aria-hidden="true">
+              <use href="assets/funnel-icons.svg#i-search"></use>
+            </svg>
             <input
               type="text"
               name="store_url"
@@ -170,15 +476,17 @@
         </div>
       </section>
     </main>
-
-    <footer>
-      <a href="methodology.html">How the check works</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="support.html">Support</a>
+    <footer class="foot">
+      <div class="foot-in">
+        <span>GitHub Scout. We do not sell apps or take commissions on them.</span>
+        <span
+          ><a href="methodology.html">How the check works</a><a href="privacy.html">Privacy</a
+          ><a href="terms.html">Terms</a><a href="support.html">Support</a></span
+        >
+      </div>
     </footer>
-
     <script src="assets/funnel-example.js"></script>
     <script src="assets/funnel-scan.js"></script>
+    <script src="assets/funnel-calc.js"></script>
   </body>
 </html>

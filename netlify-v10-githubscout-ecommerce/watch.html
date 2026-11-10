@@ -8,62 +8,86 @@
       name="description"
       content="A five-minute walkthrough of a real Shopify store check, then run the same free check on yours."
     />
+
     <link rel="stylesheet" href="assets/funnel.css" />
   </head>
   <body>
-    <header class="topbar">
-      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
-      <nav>
-        <a class="keep" href="reviewed-audit.html">Reviewed audit</a>
-      </nav>
-    </header>
-
-    <main>
-      <div class="narrow">
-        <div class="hero">
-          <span class="kicker">5-minute walkthrough</span>
-          <h1>Watch us find two apps doing one job.</h1>
-          <p class="lede">
-            A real store, checked from the outside in about a minute. Then run the same free check
-            on yours, right below.
-          </p>
-
-          <!-- The recording is made on a store whose owner gave written permission
-               (docs/FUNNEL-PAGES.md, micro-video script). Until it exists, the slot
-               says so instead of showing an unrelated clip. -->
-          <div class="video" role="img" aria-label="Video not recorded yet">
-            <div>
-              <b>Walkthrough video coming soon</b>
-              Meanwhile, the chapters below cover the same ground, and the check is live underneath.
-            </div>
-          </div>
-
-          <form class="scanbox" data-scan="result" novalidate>
-            <input
-              type="text"
-              name="store_url"
-              placeholder="yourstore.com"
-              aria-label="Your store address"
-              autocomplete="url"
-              inputmode="url"
-            />
-            <button class="btn" type="submit">Check my store free</button>
-          </form>
-          <p class="fineprint">
-            No sign-up, no install.
-            <a href="#result" data-show-example="result">See an example result.</a>
-          </p>
-          <div id="result" class="result" hidden aria-live="polite"></div>
+    <nav class="nav">
+      <div class="nav-in">
+        <a class="brand" href="audit.html"><span class="brand-mark">GS</span>GitHub Scout</a>
+        <div class="nav-links">
+          <a href="app-bill.html">Why it matters</a>
+          <a href="stack-quiz.html">2-minute quiz</a>
+          <a href="for-agencies.html">For agencies</a>
+          <a class="btn small dark" href="reviewed-audit.html">Reviewed audit</a>
         </div>
       </div>
+    </nav>
+    <main>
+      <header class="hero">
+        <div class="wrap">
+          <div class="center" style="max-width: 860px; margin: 0 auto">
+            <span class="eyebrow"
+              ><svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-play"></use>
+              </svg>
+              5-minute walkthrough</span
+            >
+            <h1>Watch us find <span class="accent">two apps doing one job.</span></h1>
+            <p class="lede">
+              A real store, checked from the outside in about a minute. Then run the same free check
+              on yours, right below.
+            </p>
+            <!-- The recording is made on a store whose owner gave written permission
+           (docs/FUNNEL-PAGES.md, micro-video script). Until it exists, the poster
+           says so instead of showing an unrelated clip. -->
+            <div class="video">
+              <img src="assets/funnel-art/video-poster.svg" alt="" width="1280" height="720" />
+              <div class="overlay">
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-play"></use></svg
+                ><b>Video coming soon. The chapters below cover the same ground.</b>
+              </div>
+            </div>
+            <form class="scanbox" data-scan="result" novalidate>
+              <svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-search"></use>
+              </svg>
+              <input
+                type="text"
+                name="store_url"
+                placeholder="yourstore.com"
+                aria-label="Your store address"
+                autocomplete="url"
+                inputmode="url"
+              />
+              <button class="btn" type="submit">Check my store free</button>
+            </form>
+            <div class="links">
+              <a href="#result" data-show-example="result"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-eye"></use>
+                </svg>
+                See an example result</a
+              >
+            </div>
+            <div id="result" class="result" hidden aria-live="polite"></div>
+          </div>
+        </div>
+      </header>
 
-      <section class="tint">
-        <div class="narrow">
-          <h2>What the video covers</h2>
+      <section class="sec dark">
+        <div class="wrap split">
+          <div>
+            <span class="eyebrow">What the video covers</span>
+            <h2>Five minutes, <span class="accent">seven chapters.</span></h2>
+            <p>
+              No webinar, no sign-up wall. Just the problem, a real check, and when it is worth
+              going further.
+            </p>
+          </div>
           <ol class="chapters">
-            <li>
-              <time>0:00</time><span>Why most stores end up paying for the same job twice</span>
-            </li>
+            <li><time>0:00</time><span>Why so many stores pay for the same job twice</span></li>
             <li>
               <time>0:20</time
               ><span
@@ -75,36 +99,88 @@
               ><span>What a store check can see from outside, and what it cannot</span>
             </li>
             <li><time>1:45</time><span>A live check on a real store, start to finish</span></li>
-            <li>
-              <time>3:30</time
-              ><span>The outside view versus your real app list, and what the audit adds</span>
-            </li>
+            <li><time>3:30</time><span>The outside view versus your real app list</span></li>
             <li><time>4:15</time><span>When not to buy, and what you get if you do</span></li>
             <li><time>4:45</time><span>Your turn: paste your address</span></li>
           </ol>
         </div>
       </section>
 
-      <section>
-        <div class="narrow">
-          <h2>Want the full plan?</h2>
-          <p>
-            The free check shows what we can see from outside. The reviewed audit adds your real app
-            list and a person who reads both, then sends you a plain-English plan: what to cut, what
-            to keep, and what to do first.
-          </p>
-          <a class="btn" href="reviewed-audit.html">See the reviewed audit</a>
+      <section class="sec">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">What you will learn</span>
+              <h2>Three things worth five minutes.</h2>
+            </div>
+            <p>Even if you never buy anything from us.</p>
+          </div>
+          <div class="grid">
+            <div class="card">
+              <span class="ic-badge coral"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-copy"></use></svg
+              ></span>
+              <h3>Where doubles hide</h3>
+              <p>The app categories where stores most often end up with two tools for one job.</p>
+            </div>
+            <div class="card">
+              <span class="ic-badge"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-eye"></use></svg
+              ></span>
+              <h3>What an outside check sees</h3>
+              <p>And the part it cannot, so you know what to look for in your own admin.</p>
+            </div>
+            <div class="card">
+              <span class="ic-badge sun"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-scissors"></use></svg
+              ></span>
+              <h3>How to cut safely</h3>
+              <p>Run both for one billing cycle at most, move your data, then cancel the loser.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec mist">
+        <div class="wrap split">
+          <div class="art-frame">
+            <img
+              src="assets/funnel-art/plan.svg"
+              alt="A one-page plan with cut, keep, swap and test labels"
+              width="480"
+              height="400"
+            />
+          </div>
+          <div>
+            <span class="eyebrow">Want the full plan?</span>
+            <h2>The free check is the outside view. The audit is the whole story.</h2>
+            <p>
+              The reviewed audit adds your real app list and a person who reads both, then sends you
+              a plain-English plan: what to cut, what to keep, and what to do first.
+            </p>
+            <div class="actions" style="margin-top: 22px">
+              <a class="btn dark" href="reviewed-audit.html"
+                >See the reviewed audit
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-arrow"></use></svg
+              ></a>
+            </div>
+          </div>
         </div>
       </section>
     </main>
-
-    <footer>
-      <a href="methodology.html">How the check works</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="support.html">Support</a>
+    <footer class="foot">
+      <div class="foot-in">
+        <span>GitHub Scout. We do not sell apps or take commissions on them.</span>
+        <span
+          ><a href="methodology.html">How the check works</a><a href="privacy.html">Privacy</a
+          ><a href="terms.html">Terms</a><a href="support.html">Support</a></span
+        >
+      </div>
     </footer>
-
     <script src="assets/funnel-example.js"></script>
     <script src="assets/funnel-scan.js"></script>
   </body>

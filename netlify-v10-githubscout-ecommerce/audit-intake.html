@@ -4,140 +4,209 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Request your reviewed audit | GitHub Scout</title>
+    <meta
+      name="description"
+      content="Tell us about your Shopify store and app list for a reviewed audit."
+    />
     <meta name="robots" content="noindex" />
     <link rel="stylesheet" href="assets/funnel.css" />
   </head>
   <body>
-    <header class="topbar">
-      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
-    </header>
-
-    <main>
-      <div class="narrow">
-        <div class="hero" style="padding-bottom: 10px">
-          <span class="kicker">Takes about 5 minutes</span>
-          <h1>Tell us about your store</h1>
-          <p class="lede">
-            The more you share, the sharper your plan. Only your email and store address are
-            required.
-          </p>
+    <nav class="nav">
+      <div class="nav-in">
+        <a class="brand" href="audit.html"><span class="brand-mark">GS</span>GitHub Scout</a>
+        <div class="nav-links">
+          <a href="app-bill.html">Why it matters</a>
+          <a href="stack-quiz.html">2-minute quiz</a>
+          <a href="for-agencies.html">For agencies</a>
+          <a class="btn small dark" href="reviewed-audit.html">Reviewed audit</a>
         </div>
-
-        <form
-          class="form"
-          name="reviewed-audit-intake"
-          method="POST"
-          data-netlify="true"
-          netlify-honeypot="bot-field"
-          action="audit-thanks.html"
-        >
-          <input type="hidden" name="form-name" value="reviewed-audit-intake" />
-          <input type="hidden" name="quiz_answers" />
-          <input type="hidden" name="landing_page" />
-          <p hidden>
-            <label>Do not fill this out<input name="bot-field" /></label>
-          </p>
-
-          <label
-            >Your email<input
-              type="email"
-              name="email"
-              required
-              placeholder="you@yourstore.com"
-              autocomplete="email"
-          /></label>
-          <label
-            >Store address<input
-              type="text"
-              name="store_url"
-              required
-              placeholder="yourstore.com"
-              inputmode="url"
-          /></label>
-          <label
-            >Your role
-            <select name="role">
-              <option>Store owner or founder</option>
-              <option>Ecommerce or marketing manager</option>
-              <option>Operations or finance</option>
-              <option>Other</option>
-            </select>
-          </label>
-
-          <label
-            >Your app list
-            <small>Optional, but it is what makes the audit worth it.</small>
-            <ol class="steps-inline">
-              <li>In Shopify admin, open Settings</li>
-              <li>Click Apps and sales channels</li>
-              <li>Copy the app names and paste them here, one per line</li>
-            </ol>
-            <textarea
-              name="app_list"
-              placeholder="Klaviyo&#10;Judge.me&#10;Yotpo&#10;..."
-            ></textarea>
-          </label>
-
-          <label
-            >What you pay for them, if you know
-            <small
-              >A monthly total, or app by app. Leave blank and we will use public list
-              prices.</small
-            >
-            <textarea name="app_costs" style="min-height: 90px"></textarea>
-          </label>
-
-          <label
-            >Tools that run behind the scenes
-            <small
-              >Anything that does not show on your storefront: shipping, returns, accounting,
-              inventory, help desk, wholesale.</small
-            >
-            <textarea
-              name="backend_tools"
-              style="min-height: 90px"
-              placeholder="ShipStation, QuickBooks, Gorgias..."
-            ></textarea>
-          </label>
-
-          <label
-            >What is prompting this now?
-            <select name="trigger">
-              <option>The app bill feels high</option>
-              <option>The site feels slow or cluttered</option>
-              <option>Planning a redesign or move</option>
-              <option>A renewal is coming up</option>
-              <option>New in the role</option>
-              <option>Just want a second opinion</option>
-            </select>
-          </label>
-
-          <label
-            >Anything specific you want answered?
-            <textarea
-              name="question"
-              style="min-height: 90px"
-              placeholder="For example: do we need both Yotpo and Judge.me?"
-            ></textarea>
-          </label>
-
-          <button class="btn" type="submit">Send my details</button>
-          <p class="fineprint">
-            Nothing is charged now. We reply by email with the price and delivery date, and you pay
-            only once you have agreed to both. We use what you send only to write your plan.
-            <a href="privacy.html">Privacy</a>.
-          </p>
-        </form>
       </div>
+    </nav>
+    <main>
+      <header class="hero">
+        <div class="wrap hero-grid" style="align-items: start">
+          <div style="position: sticky; top: 90px">
+            <span class="eyebrow"
+              ><svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-clock"></use>
+              </svg>
+              Takes about 5 minutes</span
+            >
+            <h1 style="font-size: clamp(38px, 5vw, 62px)">
+              Tell us about <span class="accent">your store.</span>
+            </h1>
+            <p class="lede">
+              The more you share, the sharper your plan. Only your email and store address are
+              required.
+            </p>
+            <div class="beats">
+              <div class="beat">
+                <span class="ic-badge"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-lock"></use></svg
+                ></span>
+                <div>
+                  <b>Nothing charged now</b>
+                  <p>We confirm the price and delivery date by email first.</p>
+                </div>
+              </div>
+              <div class="beat">
+                <span class="ic-badge sun"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-user"></use></svg
+                ></span>
+                <div>
+                  <b>Read by a person</b>
+                  <p>Your list is used only to write your plan.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-card">
+            <form
+              class="form"
+              name="reviewed-audit-intake"
+              method="POST"
+              data-netlify="true"
+              netlify-honeypot="bot-field"
+              action="audit-thanks.html"
+            >
+              <input type="hidden" name="form-name" value="reviewed-audit-intake" />
+              <input type="hidden" name="quiz_answers" />
+              <input type="hidden" name="landing_page" />
+              <p hidden>
+                <label>Do not fill this out<input name="bot-field" /></label>
+              </p>
+
+              <fieldset>
+                <legend>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-store"></use>
+                  </svg>
+                  The basics
+                </legend>
+                <label
+                  >Your email<input
+                    type="email"
+                    name="email"
+                    required
+                    placeholder="you@yourstore.com"
+                    autocomplete="email"
+                /></label>
+                <label
+                  >Store address<input
+                    type="text"
+                    name="store_url"
+                    required
+                    placeholder="yourstore.com"
+                    inputmode="url"
+                /></label>
+                <label
+                  >Your role
+                  <select name="role">
+                    <option>Store owner or founder</option>
+                    <option>Ecommerce or marketing manager</option>
+                    <option>Operations or finance</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+              </fieldset>
+
+              <div class="divider"></div>
+
+              <fieldset>
+                <legend>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-list"></use>
+                  </svg>
+                  Your apps
+                </legend>
+                <label
+                  >Your app list <small>Optional, but it is what makes the audit worth it.</small>
+                  <div class="howto">
+                    <span><b>Step 1</b>Open Settings in Shopify admin</span>
+                    <span><b>Step 2</b>Click Apps and sales channels</span>
+                    <span><b>Step 3</b>Paste the names here, one per line</span>
+                  </div>
+                  <textarea
+                    name="app_list"
+                    placeholder="Klaviyo&#10;Judge.me&#10;Yotpo&#10;..."
+                  ></textarea>
+                </label>
+                <label
+                  >What you pay for them, if you know
+                  <small
+                    >A monthly total, or app by app. Leave blank and we use public list
+                    prices.</small
+                  >
+                  <textarea class="short" name="app_costs"></textarea>
+                </label>
+                <label
+                  >Tools that run behind the scenes
+                  <small>Shipping, returns, accounting, inventory, help desk, wholesale.</small>
+                  <textarea
+                    class="short"
+                    name="backend_tools"
+                    placeholder="ShipStation, QuickBooks, Gorgias..."
+                  ></textarea>
+                </label>
+              </fieldset>
+
+              <div class="divider"></div>
+
+              <fieldset>
+                <legend>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-sparkle"></use>
+                  </svg>
+                  What you want out of it
+                </legend>
+                <label
+                  >What is prompting this now?
+                  <select name="trigger">
+                    <option>The app bill feels high</option>
+                    <option>The site feels slow or cluttered</option>
+                    <option>Planning a redesign or move</option>
+                    <option>A renewal is coming up</option>
+                    <option>New in the role</option>
+                    <option>Just want a second opinion</option>
+                  </select>
+                </label>
+                <label
+                  >Anything specific you want answered?
+                  <textarea
+                    class="short"
+                    name="question"
+                    placeholder="For example: do we need both Yotpo and Judge.me?"
+                  ></textarea>
+                </label>
+              </fieldset>
+
+              <button class="btn" type="submit">
+                Send my details
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-arrow"></use>
+                </svg>
+              </button>
+              <p class="fineprint">
+                Nothing is charged now. We reply by email with the price and delivery date, and you
+                pay only once you have agreed to both. <a href="privacy.html">Privacy</a>.
+              </p>
+            </form>
+          </div>
+        </div>
+      </header>
     </main>
-
-    <footer>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="support.html">Support</a>
+    <footer class="foot">
+      <div class="foot-in">
+        <span>GitHub Scout. We do not sell apps or take commissions on them.</span>
+        <span
+          ><a href="methodology.html">How the check works</a><a href="privacy.html">Privacy</a
+          ><a href="terms.html">Terms</a><a href="support.html">Support</a></span
+        >
+      </div>
     </footer>
-
-    <script src="assets/audit-offer.js"></script>
     <script>
       ;(function () {
         var form = document.querySelector('form[name="reviewed-audit-intake"]')
@@ -150,5 +219,6 @@
         }
       })()
     </script>
+    <script src="assets/audit-offer.js"></script>
   </body>
 </html>

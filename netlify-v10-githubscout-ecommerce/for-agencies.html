@@ -8,146 +8,318 @@
       name="description"
       content="For Shopify agencies, freelancers, and operators with several stores. Paste any store address and see the apps it runs, with no access request."
     />
+
     <link rel="stylesheet" href="assets/funnel.css" />
   </head>
   <body>
-    <header class="topbar">
-      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
-      <nav>
-        <a class="keep" href="#early">Get early access</a>
-      </nav>
-    </header>
-
-    <main>
-      <div class="narrow">
-        <div class="hero">
-          <span class="kicker">For agencies, freelancers, and multi-store operators</span>
-          <h1>Know a store's apps before the first call.</h1>
-          <p class="lede">
-            Paste any Shopify store address. See the apps it runs, where they overlap, and how we
-            spotted each one. No access request, no browser extension, nothing for the store to
-            install.
-          </p>
-          <form class="scanbox" data-scan="result" data-no-offer novalidate>
-            <input
-              type="text"
-              name="store_url"
-              placeholder="a-prospect-store.com"
-              aria-label="A store address"
-              autocomplete="url"
-              inputmode="url"
-            />
-            <button class="btn teal" type="submit">Try it on a prospect</button>
-          </form>
-          <p class="fineprint">
-            <a href="#result" data-show-example="result">See an example result.</a>
-          </p>
-          <div id="result" class="result" hidden aria-live="polite"></div>
+    <nav class="nav">
+      <div class="nav-in">
+        <a class="brand" href="audit.html"><span class="brand-mark">GS</span>GitHub Scout</a>
+        <div class="nav-links">
+          <a href="app-bill.html">Why it matters</a>
+          <a href="stack-quiz.html">2-minute quiz</a>
+          <a href="for-agencies.html">For agencies</a>
+          <a class="btn small dark" href="reviewed-audit.html">Reviewed audit</a>
         </div>
       </div>
+    </nav>
+    <main>
+      <header class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <span class="eyebrow"
+              ><svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-users"></use>
+              </svg>
+              For agencies, freelancers, multi-store operators</span
+            >
+            <h1>Know a store's apps <span class="accent">before the first call.</span></h1>
+            <p class="lede">
+              Paste any Shopify store address. See the apps it runs, where they overlap, and how we
+              spotted each one. No access request, no extension, nothing for the store to install.
+            </p>
+            <form class="scanbox" data-scan="result" data-no-offer novalidate>
+              <svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-search"></use>
+              </svg>
+              <input
+                type="text"
+                name="store_url"
+                placeholder="yourstore.com"
+                aria-label="Your store address"
+                autocomplete="url"
+                inputmode="url"
+              />
+              <button class="btn" type="submit">Try it on a prospect</button>
+            </form>
+            <div class="links">
+              <a href="#result" data-show-example="result"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-eye"></use>
+                </svg>
+                See an example result</a
+              ><a href="#early"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-arrow"></use>
+                </svg>
+                Get early access</a
+              >
+            </div>
+            <div id="result" class="result" hidden aria-live="polite"></div>
+          </div>
+          <div class="hero-art">
+            <div class="mock" style="padding: 10px">
+              <img
+                src="assets/funnel-art/agency.svg"
+                alt="Several client stores, each with its app count and overlaps"
+                width="520"
+                height="400"
+              />
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <section class="tint">
+      <section class="sec">
         <div class="wrap">
-          <h2>Where it fits in your week</h2>
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">Where it fits in your week</span>
+              <h2>Three moments it earns its keep.</h2>
+            </div>
+            <p>Less digging, sharper proposals, and cleanup work clients can see.</p>
+          </div>
           <div class="grid">
             <div class="card">
+              <span class="step-no">1</span
+              ><span class="ic-badge"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-handshake"></use></svg
+              ></span>
               <h3>Before the pitch</h3>
               <p>
-                Open the call with "I noticed you run two reviews tools." It shows you did the
-                homework, and it is usually the first easy win.
+                Open with "I noticed you run two reviews tools." It shows you did the homework and
+                finds the first easy win.
               </p>
             </div>
             <div class="card">
-              <h3>When onboarding a client</h3>
+              <span class="step-no">2</span
+              ><span class="ic-badge sun"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-list"></use></svg
+              ></span>
+              <h3>When onboarding</h3>
               <p>
-                Start with a picture of what is already there, instead of finding it out one
-                surprise at a time.
+                Start with a picture of what is already there, instead of finding it one surprise at
+                a time.
               </p>
             </div>
             <div class="card">
+              <span class="step-no">3</span
+              ><span class="ic-badge coral"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-refresh"></use></svg
+              ></span>
               <h3>At the quarterly review</h3>
               <p>
-                Check again and show the client what changed. Cleanup work they can see is cleanup
-                work they renew.
+                Check again and show what changed. Cleanup clients can see is cleanup clients renew.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section>
-        <div class="narrow letter">
-          <h2>Why not just use a free extension?</h2>
-          <p>
-            Free tools will list apps on a store, and some are good. Here is what we add, honestly:
-          </p>
-          <ul class="checks">
-            <li>How each app was spotted, so you can stand behind it in a proposal</li>
-            <li>A clear line between "clearly running" and "possibly running"</li>
-            <li>Tools doing the same job, grouped for you</li>
-            <li>No guessing: if we did not see it, we do not price it</li>
-            <li>We do not sell apps, so nothing in the result is steering you toward one</li>
-          </ul>
-          <p style="margin-top: 18px">
-            And what we do not have yet: no portfolio dashboard across clients, and no white-label
-            report. If you need those, tell us. Early users shape what comes next.
-          </p>
-          <h2>What about stores that block the check?</h2>
-          <p>
-            Some larger stores block outside checks. When that happens, the result says so plainly,
-            and the plan is built so a blocked check does not use up one of your checks.
-          </p>
+      <section class="sec dark">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">Why not a free extension?</span>
+              <h2>Free tools list apps. <span class="accent">We show our work.</span></h2>
+            </div>
+            <p>
+              Some free tools are good. Here is honestly what we add, and what we do not have yet.
+            </p>
+          </div>
+          <div class="vs">
+            <div class="card good">
+              <header>
+                <span class="eyebrow">What you get</span>
+                <h3>Evidence you can stand behind</h3>
+              </header>
+              <ul class="checks">
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  How each app was spotted, ready for a proposal
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  "Clearly running" kept apart from "possibly running"
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  Tools doing the same job, grouped for you
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  If we did not see it, we do not price it
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-check"></use>
+                  </svg>
+                  We sell no apps, so nothing steers you
+                </li>
+              </ul>
+            </div>
+            <div class="card">
+              <header>
+                <span class="eyebrow">Not yet</span>
+                <h3>Tell us if you need these</h3>
+              </header>
+              <ul class="checks no">
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-x"></use>
+                  </svg>
+                  A dashboard across all your clients
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-x"></use>
+                  </svg>
+                  White-label reports with your logo
+                </li>
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-x"></use>
+                  </svg>
+                  Change alerts when a client adds an app
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="tint" id="early">
-        <div class="offer">
-          <h2>The agency plan</h2>
-          <p class="price">
-            30 store checks a month, with every app listed and the evidence behind it. Opening to a
-            small first group.
-          </p>
-          <form
-            class="form"
-            name="agency-early-access"
-            method="POST"
-            data-netlify="true"
-            netlify-honeypot="bot-field"
-            action="audit-thanks.html?for=agency"
-          >
-            <input type="hidden" name="form-name" value="agency-early-access" />
-            <p hidden>
-              <label>Do not fill this out<input name="bot-field" /></label>
+      <section class="sec">
+        <div class="wrap split">
+          <div>
+            <span class="eyebrow"
+              ><svg class="ic" aria-hidden="true">
+                <use href="assets/funnel-icons.svg#i-shield"></use>
+              </svg>
+              Stores that block the check</span
+            >
+            <h2>Blocked is reported as blocked.</h2>
+            <p>
+              Some larger stores block outside checks. When that happens the result says so plainly,
+              and the plan is built so a blocked check does not use up one of your checks.
             </p>
-            <label
-              >Work email<input type="email" name="email" required placeholder="you@agency.com"
-            /></label>
-            <label>Agency or business name<input type="text" name="business" /></label>
-            <label
-              >How many Shopify stores do you look at in a month?
-              <select name="stores_per_month">
-                <option>1 to 4</option>
-                <option>5 to 15</option>
-                <option>16 to 30</option>
-                <option>More than 30</option>
-              </select>
-            </label>
-            <button class="btn teal" type="submit">Get early access</button>
-          </form>
-          <p class="fineprint" style="margin-top: 12px">
-            We will email you when it opens. No card needed now.
-          </p>
+          </div>
+          <div class="beats">
+            <div class="beat">
+              <span class="ic-badge"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-check"></use></svg
+              ></span>
+              <div>
+                <b>Found</b>
+                <p>Apps listed with how each was spotted.</p>
+              </div>
+            </div>
+            <div class="beat">
+              <span class="ic-badge sun"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-shield"></use></svg
+              ></span>
+              <div>
+                <b>Blocked</b>
+                <p>Said plainly. Not counted as a finding about the store.</p>
+              </div>
+            </div>
+            <div class="beat">
+              <span class="ic-badge coral"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-eye-off"></use></svg
+              ></span>
+              <div>
+                <b>Quiet</b>
+                <p>Nothing visible from outside. We do not invent a result.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec dark" id="early">
+        <div class="wrap split">
+          <div>
+            <span class="eyebrow">The agency plan</span>
+            <h2>
+              30 store checks a month, <span class="accent">opening to a small first group.</span>
+            </h2>
+            <p>
+              Every app listed with the evidence behind it. Early users shape what we build next,
+              starting with the client dashboard.
+            </p>
+          </div>
+          <div class="offer">
+            <span class="badge">Early access</span>
+            <h2>Get on the list</h2>
+            <form
+              class="form"
+              name="agency-early-access"
+              method="POST"
+              data-netlify="true"
+              netlify-honeypot="bot-field"
+              action="audit-thanks.html?for=agency"
+            >
+              <input type="hidden" name="form-name" value="agency-early-access" />
+              <p hidden>
+                <label>Do not fill this out<input name="bot-field" /></label>
+              </p>
+              <label
+                >Work email<input type="email" name="email" required placeholder="you@agency.com"
+              /></label>
+              <label>Agency or business name<input type="text" name="business" /></label>
+              <label
+                >Shopify stores you look at in a month
+                <select name="stores_per_month">
+                  <option>1 to 4</option>
+                  <option>5 to 15</option>
+                  <option>16 to 30</option>
+                  <option>More than 30</option>
+                </select>
+              </label>
+              <button class="btn lime" type="submit">
+                Get early access
+                <svg class="ic" aria-hidden="true">
+                  <use href="assets/funnel-icons.svg#i-arrow"></use>
+                </svg>
+              </button>
+            </form>
+            <p class="fineprint">We will email you when it opens. No card needed now.</p>
+          </div>
         </div>
       </section>
     </main>
-
-    <footer>
-      <a href="methodology.html">How the check works</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="support.html">Support</a>
+    <footer class="foot">
+      <div class="foot-in">
+        <span>GitHub Scout. We do not sell apps or take commissions on them.</span>
+        <span
+          ><a href="methodology.html">How the check works</a><a href="privacy.html">Privacy</a
+          ><a href="terms.html">Terms</a><a href="support.html">Support</a></span
+        >
+      </div>
     </footer>
-
     <script src="assets/funnel-example.js"></script>
     <script src="assets/funnel-scan.js"></script>
   </body>

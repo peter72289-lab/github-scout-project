@@ -28,10 +28,15 @@ operators, not technical founders. Copy is plain, second person, and avoids engi
 | `audit-intake.html`       | Netlify form `reviewed-audit-intake`: app list, costs, back-end tools | `audit-thanks`                 |
 | `audit-thanks.html`       | Confirmation for both forms                                           | none                           |
 
-Shared assets: `assets/funnel.css` (palette from `assets/styles.css`), `assets/funnel-scan.js`
+Shared assets: `assets/funnel.css` (tokens and section rhythm from `index.html`), `assets/funnel-icons.svg`
+(icon sprite), `assets/funnel-art/*.svg` (original illustrations, no third-party marks),
+`assets/funnel-calc.js` ("your numbers" calculator: visitor inputs only, starts empty), `assets/funnel-scan.js`
 (plain-language renderer over the existing `operator-url-scan` function at teaser depth),
 `assets/audit-offer.js` (price and Payment Link, both null), `assets/funnel-example.js` (generated
 by `scripts/build-funnel-example.js` from the real engine; labelled "Example store, not yours").
+
+The quiz result shows a cleanup-priority meter computed only from the visitor's answers and
+labelled as such. No slider or meter on these pages starts with a figure we supplied.
 
 ## Owner decisions these pages wait on
 

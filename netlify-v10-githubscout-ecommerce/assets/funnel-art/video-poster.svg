@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <radialGradient id="g1" cx=".2" cy=".2" r=".7"><stop offset="0" stop-color="#16b386" stop-opacity=".45"/><stop offset="1" stop-color="#16b386" stop-opacity="0"/></radialGradient>
+    <radialGradient id="g2" cx=".9" cy=".9" r=".6"><stop offset="0" stop-color="#d7ff6b" stop-opacity=".3"/><stop offset="1" stop-color="#d7ff6b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1280" height="720" fill="#101820"/>
+  <rect width="1280" height="720" fill="url(#g1)"/>
+  <rect width="1280" height="720" fill="url(#g2)"/>
+  <g opacity=".9">
+    <rect x="760" y="150" width="400" height="420" rx="24" fill="#1c2c35"/>
+    <rect x="796" y="190" width="160" height="14" rx="7" fill="#d7ff6b"/>
+    <rect x="796" y="236" width="328" height="64" rx="14" fill="#ff6f61" opacity=".9"/>
+    <rect x="796" y="320" width="328" height="44" rx="12" fill="#26404a"/>
+    <rect x="796" y="378" width="328" height="44" rx="12" fill="#26404a"/>
+    <rect x="796" y="436" width="328" height="44" rx="12" fill="#26404a"/>
+    <rect x="796" y="500" width="180" height="40" rx="20" fill="#16b386"/>
+  </g>
+  <text x="110" y="300" font-size="66" font-weight="900" fill="#fff" letter-spacing="-2">Two apps.</text>
+  <text x="110" y="378" font-size="66" font-weight="900" fill="#d7ff6b" letter-spacing="-2">One job.</text>
+  <text x="112" y="440" font-size="26" fill="#a9bab5">A real store check, in 5 minutes</text>
+</svg>

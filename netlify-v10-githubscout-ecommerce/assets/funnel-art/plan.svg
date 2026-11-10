@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" font-family="Inter, system-ui, sans-serif">
+  <defs><filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#101820" flood-opacity=".16"/></filter></defs>
+  <rect x="96" y="30" width="300" height="350" rx="16" fill="#eef3f1" transform="rotate(4 246 205)"/>
+  <rect x="80" y="24" width="300" height="350" rx="16" fill="#fff" filter="url(#sh)"/>
+  <text x="104" y="64" font-size="11" font-weight="900" letter-spacing="1.6" fill="#16b386">YOUR APP PLAN</text>
+  <text x="104" y="90" font-size="19" font-weight="900" fill="#101820">What to do first</text>
+  <g font-size="13" font-weight="700" fill="#101820">
+    <rect x="104" y="112" width="252" height="48" rx="10" fill="#fff1ef"/>
+    <rect x="116" y="126" width="46" height="20" rx="10" fill="#ff6f61"/><text x="125" y="140" font-size="11" font-weight="900" fill="#fff">CUT</text>
+    <text x="174" y="141">Second reviews app</text>
+    <rect x="104" y="170" width="252" height="48" rx="10" fill="#e8f8f2"/>
+    <rect x="116" y="184" width="46" height="20" rx="10" fill="#16b386"/><text x="122" y="198" font-size="11" font-weight="900" fill="#fff">KEEP</text>
+    <text x="174" y="199">Email marketing</text>
+    <rect x="104" y="228" width="252" height="48" rx="10" fill="#fff8e1"/>
+    <rect x="116" y="242" width="46" height="20" rx="10" fill="#ffca3a"/><text x="119" y="256" font-size="10" font-weight="900" fill="#101820">SWAP</text>
+    <text x="174" y="257">Popup tool → built-in forms</text>
+    <rect x="104" y="286" width="252" height="48" rx="10" fill="#eef1ff"/>
+    <rect x="116" y="300" width="46" height="20" rx="10" fill="#3563ff"/><text x="123" y="314" font-size="11" font-weight="900" fill="#fff">TEST</text>
+    <text x="174" y="315">Upsell app, one month</text>
+  </g>
+  <circle cx="390" cy="58" r="34" fill="#d7ff6b"/>
+  <path d="M374 58l11 11 21-22" fill="none" stroke="#101820" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

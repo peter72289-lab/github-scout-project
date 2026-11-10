@@ -30,6 +30,44 @@
     possible: { text: 'Possibly running', cls: 'sure maybe' },
   }
 
+  var ICON_OF = {
+    'Email/SMS': 'i-mail',
+    Support: 'i-chat',
+    Subscriptions: 'i-refresh',
+    Upsell: 'i-cart',
+    Reviews: 'i-star',
+    Loyalty: 'i-gift',
+    Search: 'i-search',
+    Analytics: 'i-chart',
+    Personalization: 'i-sparkle',
+    Shipping: 'i-truck',
+    Payments: 'i-coins',
+    Forms: 'i-popup',
+    Quiz: 'i-list',
+    Referral: 'i-users',
+    Testing: 'i-sliders',
+  }
+
+  var SPRITE = 'assets/funnel-icons.svg#'
+
+  function icon(id) {
+    var ns = 'http://www.w3.org/2000/svg'
+    var svg = document.createElementNS(ns, 'svg')
+    svg.setAttribute('class', 'ic')
+    svg.setAttribute('aria-hidden', 'true')
+    var use = document.createElementNS(ns, 'use')
+    use.setAttribute('href', SPRITE + id)
+    svg.appendChild(use)
+    return svg
+  }
+
+  function alertBox(iconId, title, body) {
+    return el('div', { cls: 'alert' }, [
+      icon(iconId),
+      el('div', {}, [el('strong', { text: title }), body]),
+    ])
+  }
+
   function plain(category) {
     return PLAIN_CATEGORY[category] || String(category || 'other').toLowerCase()
   }
@@ -90,10 +128,11 @@
     })
     box.appendChild(
       el('div', { cls: 'panel' }, [
-        el('div', { cls: 'alert' }, [
-          el('strong', { text: 'We could not run the check just now.' }),
+        alertBox(
+          'i-clock',
+          'We could not run the check just now.',
           message || 'Please try again in a minute.',
-        ]),
+        ),
         window.FUNNEL_EXAMPLE ? tryExample : null,
       ]),
     )
@@ -117,10 +156,11 @@
 
     if (crawl.blocked) {
       panel.appendChild(
-        el('div', { cls: 'alert' }, [
-          el('strong', { text: 'Your store’s security stopped us from looking.' }),
+        alertBox(
+          'i-shield',
+          'Your store’s security stopped us from looking.',
           'That is common on bigger stores, and it says nothing bad about yours. It just means an outside check cannot see your apps. The reviewed audit works from your own app list instead.',
-        ]),
+        ),
       )
       if (!opts.noOffer)
         panel.appendChild(
@@ -131,20 +171,22 @@
 
     if (!crawl.ok || !(crawl.pagesFetched || []).length) {
       panel.appendChild(
-        el('div', { cls: 'alert' }, [
-          el('strong', { text: 'We could not reach that store.' }),
+        alertBox(
+          'i-store',
+          'We could not reach that store.',
           'Check the address and try again. Nothing is estimated from a check that did not run.',
-        ]),
+        ),
       )
       return done(report, opts)
     }
 
     if (crawl.shopifyConfirmed === false && !apps.length) {
       panel.appendChild(
-        el('div', { cls: 'alert' }, [
-          el('strong', { text: 'This does not look like a Shopify store.' }),
+        alertBox(
+          'i-store',
+          'This does not look like a Shopify store.',
           'GitHub Scout only checks Shopify stores for now.',
-        ]),
+        ),
       )
       return done(report, opts)
     }
@@ -176,19 +218,26 @@
     overlaps.forEach(function (o) {
       var count = typeof o.apps === 'number' ? o.apps : (o.apps || []).length
       panel.appendChild(
-        el('div', { cls: 'alert' }, [
-          el('strong', { text: 'You may be paying twice for ' + plain(o.category) + '.' }),
+        alertBox(
+          'i-copy',
+          'You may be paying twice for ' + plain(o.category) + '.',
           'We found ' + count + ' tools doing that one job. Usually one is enough.',
-        ]),
+        ),
       )
     })
 
+    var overlapCats = overlaps.map(function (o) {
+      return o.category
+    })
     var list = el('ul', { cls: 'apps' })
     apps.forEach(function (a) {
       var sure = SURE[a.strength] || SURE.possible
       list.appendChild(
         el('li', {}, [
-          el('div', {}, [
+          el('span', { cls: 'ic-badge' + (overlapCats.indexOf(a.category) > -1 ? ' coral' : '') }, [
+            icon(ICON_OF[a.category] || 'i-sparkle'),
+          ]),
+          el('div', { cls: 'name' }, [
             el('b', { text: a.name }),
             el('div', { cls: 'what', text: 'For ' + plain(a.category) }),
           ]),
@@ -211,10 +260,8 @@
     if (summary.monthlySavings) {
       panel.appendChild(
         el('div', { cls: 'estimate' }, [
-          el('div', {}, [
-            'Possible savings, estimated: ',
-            el('b', { text: summary.monthlySavings }),
-          ]),
+          el('span', { cls: 'eyebrow', text: 'Possible savings, estimated' }),
+          el('b', { text: summary.monthlySavings }),
           el('p', {
             text: 'Based on public list prices for the paid apps we spotted, not your actual bills. Results vary. Your real numbers come from your own app list.',
           }),

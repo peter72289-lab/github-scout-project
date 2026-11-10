@@ -4,28 +4,62 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Got it | GitHub Scout</title>
+    <meta name="description" content="Thanks for your request." />
     <meta name="robots" content="noindex" />
     <link rel="stylesheet" href="assets/funnel.css" />
   </head>
   <body>
-    <header class="topbar">
-      <a class="wordmark" href="audit.html">GitHub <span>Scout</span></a>
-    </header>
-
+    <nav class="nav">
+      <div class="nav-in">
+        <a class="brand" href="audit.html"><span class="brand-mark">GS</span>GitHub Scout</a>
+        <div class="nav-links">
+          <a href="app-bill.html">Why it matters</a>
+          <a href="stack-quiz.html">2-minute quiz</a>
+          <a href="for-agencies.html">For agencies</a>
+          <a class="btn small dark" href="reviewed-audit.html">Reviewed audit</a>
+        </div>
+      </div>
+    </nav>
     <main>
-      <div class="narrow">
-        <div class="hero">
-          <span class="kicker">Received</span>
-          <h1 id="title">Got it. Here is what happens next.</h1>
+      <header class="hero">
+        <div class="wrap center" style="max-width: 820px">
+          <span class="ic-badge ink" style="width: 64px; height: 64px; border-radius: 20px"
+            ><svg class="ic" aria-hidden="true">
+              <use href="assets/funnel-icons.svg#i-check"></use></svg
+          ></span>
+          <h1 id="title">Got it. <span class="accent">Here is what happens next.</span></h1>
           <div id="audit-steps">
-            <ul class="checks">
-              <li>We read what you sent and run the store check.</li>
-              <li>We email you the price and the date you will have your plan.</li>
-              <li>You pay only once you have agreed to both. Nothing has been charged.</li>
-            </ul>
-            <p class="fineprint" style="margin-top: 18px">
-              Remembered another app? Just reply to our email with it. Want to see what the check
-              sees in the meantime?
+            <div class="grid" style="text-align: left; margin-top: 30px">
+              <div class="card">
+                <span class="step-no">1</span
+                ><span class="ic-badge"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-search"></use></svg
+                ></span>
+                <h3>We read it</h3>
+                <p>We go through what you sent and run the store check.</p>
+              </div>
+              <div class="card">
+                <span class="step-no">2</span
+                ><span class="ic-badge sun"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-mail"></use></svg
+                ></span>
+                <h3>We email you</h3>
+                <p>With the price and the date you will have your plan.</p>
+              </div>
+              <div class="card">
+                <span class="step-no">3</span
+                ><span class="ic-badge coral"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="assets/funnel-icons.svg#i-lock"></use></svg
+                ></span>
+                <h3>You decide</h3>
+                <p>You pay only once you agree to both. Nothing has been charged.</p>
+              </div>
+            </div>
+            <p class="fineprint" style="margin-top: 26px">
+              Remembered another app? Reply to our email with it. Curious in the meantime?
               <a href="audit.html">Run the free check</a>.
             </p>
           </div>
@@ -34,17 +68,22 @@
               You are on the early-access list. We will email you when the agency plan opens. No
               card needed until then.
             </p>
-            <a class="btn ghost" href="for-agencies.html">Back to the agency page</a>
+            <div class="actions">
+              <a class="btn ghost" href="for-agencies.html">Back to the agency page</a>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
     </main>
-
-    <footer>
-      <a href="privacy.html">Privacy</a>
-      <a href="support.html">Support</a>
+    <footer class="foot">
+      <div class="foot-in">
+        <span>GitHub Scout. We do not sell apps or take commissions on them.</span>
+        <span
+          ><a href="methodology.html">How the check works</a><a href="privacy.html">Privacy</a
+          ><a href="terms.html">Terms</a><a href="support.html">Support</a></span
+        >
+      </div>
     </footer>
-
     <script>
       if (new URLSearchParams(location.search).get('for') === 'agency') {
         document.getElementById('title').textContent = 'Thanks. You are on the list.'
